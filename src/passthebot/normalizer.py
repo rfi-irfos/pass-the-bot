@@ -29,7 +29,9 @@ def extract_discrete_keywords(text: str, entries: list[SkillEntry]) -> list[Extr
             continue
         for alias in entry.aliases:
             needle = normalize_string(alias)
-            if needle and re.search(rf"\b{re.escape(needle)}\b", normalized_text):
+            if needle and re.search(
+                rf"(?<![a-z0-9]){re.escape(needle)}(?![a-z0-9])", normalized_text
+            ):
                 found[entry.id] = ExtractedKeyword(
                     id=entry.id, category=entry.category, matched_text=alias, confidence=1.0
                 )

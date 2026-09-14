@@ -36,3 +36,39 @@ def test_does_not_double_count_same_skill_mentioned_twice():
     result = extract_discrete_keywords("Python, python, PYTHON required.", ENTRIES)
     assert len(result) == 1
     assert result[0].id == "python"
+
+
+JAVA_ENTRIES = [
+    SkillEntry(
+        id="java", category="languages", display={"en": "Java"},
+        status="curated", added="2026-09-14",
+        aliases=["Java", "java"],
+    ),
+    SkillEntry(
+        id="javascript", category="languages", display={"en": "JavaScript"},
+        status="curated", added="2026-09-14",
+        aliases=["JavaScript", "Javascript", "javascript", "JS", "js"],
+    ),
+]
+
+
+def test_javascript_mention_does_not_falsely_match_java():
+    result = extract_discrete_keywords("We use JavaScript extensively.", JAVA_ENTRIES)
+    ids = {r.id for r in result}
+    assert ids == {"javascript"}
+    assert "java" not in ids
+
+
+CPLUSPLUS_ENTRIES = [
+    SkillEntry(
+        id="cplusplus", category="languages", display={"en": "C++"},
+        status="curated", added="2026-09-14",
+        aliases=["C++", "c++"],
+    ),
+]
+
+
+def test_matches_alias_ending_in_punctuation():
+    result = extract_discrete_keywords("Experience with C++ required.", CPLUSPLUS_ENTRIES)
+    ids = {r.id for r in result}
+    assert ids == {"cplusplus"}
