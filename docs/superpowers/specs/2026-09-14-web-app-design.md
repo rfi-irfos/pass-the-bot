@@ -47,25 +47,18 @@ Two independently deployable pieces:
 The frontend never talks to the engine directly — only to the backend's one
 API endpoint. This is the whole integration surface.
 
-## 4. The `required_ids` question
+## 4. The `required_ids` question (resolved 2026-09-14)
 
-`run_pipeline` requires the caller to supply which posting-side skill IDs
-count as "required" (see the engine's own deferred "Next steps": automatic
-required-vs-optional detection from posting text was never built). A
-real user cannot be expected to name skill IDs manually.
-
-**V1 resolution:** treat every skill ID extracted from the posting text as
-required. This matches the engine design spec's own stated fallback
-behavior for when no required/optional signal exists ("defaulting to
-required: true when no signal is found") — it is not a new heuristic, it's
-the existing spec's default applied uniformly. Concretely: extract posting
-keywords first (same extraction the engine already does internally), pass
-`required_ids = {kw.id for kw in posting_keywords}` into `run_pipeline`.
-This requires calling the extraction step once from the backend before
-calling `run_pipeline` — acceptable duplication for V1; a future engine
-change that returns extracted-posting-keywords as part of `run_pipeline`'s
-own contract would remove the need for this, but that's a matching-engine
-sub-project concern, not this one's.
+`run_pipeline`'s `required_ids` parameter is now optional
+(`set[str] | None = None`). When omitted, the engine auto-detects
+required-vs-optional from the posting text itself
+(`passthebot.requirement.detect_required_ids`, shipped alongside NEAR_MISS
+wiring in the same PR). The backend simply calls
+`run_pipeline(posting_text, resume_text, data_dir=None, repo_root=None)` —
+no `required_ids` argument at all — and does not need to call the
+extraction functions itself beforehand. The manual "treat everything as
+required" workaround this section originally described is gone; it was a
+V1 stopgap for a heuristic that has since been built.
 
 ## 5. API contract
 
@@ -87,9 +80,10 @@ sub-project concern, not this one's.
 - On submit: disable the button, show a loading state, POST to the backend
   URL (configured via a single JS constant, pointing at the Fly.io app URL).
 - On success: render the score prominently (e.g. "18 / 24 required skills
-  matched — 75%"), then three sections: Matched, Near-miss (once NEAR_MISS
-  is wired into the engine — until then, this section stays empty/hidden,
-  not fake data), Missing. Each skill shown with its display name (from the
+  matched — 75%"), then three sections: Matched, Near-Miss (NEAR_MISS is
+  wired into the engine as of 2026-09-14 — render real `found_text`/
+  `suggested_alias` data, e.g. "found 'dockr', did you mean Docker?"),
+  Missing. Each skill shown with its display name (from the
   report — note: the engine's own report doesn't currently include display
   names, only IDs, see section 8 below for what this spec adds).
 - On error: show the backend's error message plainly, no generic "something
@@ -147,8 +141,6 @@ built now (YAGNI).
 
 - Accounts, login, saved history.
 - The KMU/business decision-support agent and its dashboard.
-- NEAR_MISS rendering (the engine doesn't produce it yet; the frontend's
-  Near-miss section stays empty until the engine's matcher is extended).
 - Multi-language UI (English only, see section 9).
 - Rate limiting / abuse prevention beyond the file-size cap (acceptable
   initial risk for a free public tool with no state; revisit if abused).
