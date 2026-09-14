@@ -20,7 +20,7 @@ def test_load_skill_graph_parses_soft_skill_fields():
     teamwork = next(e for e in entries if e.id == "teamwork")
     assert teamwork.category == "soft_skills"
     assert "team player" in teamwork.anchor_phrases
-    assert teamwork.embedding_threshold == 0.45
+    assert teamwork.embedding_threshold == 0.48
 
 
 def test_active_entries_filters_by_status():

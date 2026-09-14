@@ -46,16 +46,24 @@ def test_extract_soft_skills_below_threshold_excluded():
     assert result == []
 
 
-def test_extract_soft_skills_uses_0_45_default_when_threshold_not_set():
-    """Verify that entries without embedding_threshold explicitly set fall back to 0.45 default."""
+def test_extract_soft_skills_uses_0_48_default_when_threshold_not_set():
+    """Verify that entries without embedding_threshold explicitly set fall back to 0.48 default.
+
+    Raised from the original 0.45 placeholder (2026-09-14) after real-CV testing with a
+    fuller soft-skill graph (6 entries instead of 1) surfaced two borderline false positives
+    at 0.45-0.47 (problem_solving/analytical_thinking matching an unrelated regulatory-text
+    fragment) sitting right next to a genuine match at 0.49 (communication). 0.48 keeps the
+    genuine match, rejects the two false positives. Still not a full calibration harness
+    (see the plan's Next-steps note) — just an evidence-based nudge from a real n=1 test.
+    """
     embedder = Embedder()
-    # This should match because the similarity to "leader" exceeds 0.45 default
+    # This should match because the similarity to "leader" exceeds 0.48 default
     result = extract_soft_skills(
         "We need a strong leader to guide the organization.", SOFT_SKILL_NO_THRESHOLD, embedder
     )
     assert len(result) == 1
     assert result[0].id == "leadership"
-    assert result[0].confidence >= 0.45
+    assert result[0].confidence >= 0.48
 
 
 def test_extract_soft_skills_finds_signal_diluted_in_multi_sentence_document():

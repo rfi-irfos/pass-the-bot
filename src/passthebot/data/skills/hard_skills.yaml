@@ -1,1 +1,108 @@
-[]
+- id: machine_learning
+  category: hard_skills
+  display: { de: "Machine Learning", en: "Machine Learning" }
+  aliases: ["Machine Learning", "ML"]
+  status: curated
+  added: "2026-09-14"
+- id: deep_learning
+  category: hard_skills
+  display: { de: "Deep Learning", en: "Deep Learning" }
+  aliases: ["Deep Learning"]
+  status: curated
+  added: "2026-09-14"
+- id: reinforcement_learning
+  category: hard_skills
+  display: { de: "Reinforcement Learning", en: "Reinforcement Learning" }
+  aliases: ["Reinforcement Learning", "RL"]
+  status: curated
+  added: "2026-09-14"
+- id: nlp
+  category: hard_skills
+  display: { de: "Natural Language Processing", en: "Natural Language Processing" }
+  aliases: ["Natural Language Processing", "NLP"]
+  status: curated
+  added: "2026-09-14"
+- id: computer_vision
+  category: hard_skills
+  display: { de: "Computer Vision", en: "Computer Vision" }
+  aliases: ["Computer Vision"]
+  status: curated
+  added: "2026-09-14"
+- id: llm
+  category: hard_skills
+  display: { de: "Large Language Models", en: "Large Language Models" }
+  aliases: ["Large Language Models", "LLM", "LLMs"]
+  status: curated
+  added: "2026-09-14"
+- id: generative_ai
+  category: hard_skills
+  display: { de: "Generative AI", en: "Generative AI" }
+  aliases: ["Generative AI", "GenAI"]
+  status: curated
+  added: "2026-09-14"
+- id: penetration_testing
+  category: hard_skills
+  display: { de: "Penetration Testing", en: "Penetration Testing" }
+  aliases: ["Penetration Testing", "Pentesting", "Pentest"]
+  status: curated
+  added: "2026-09-14"
+- id: application_security
+  category: hard_skills
+  display: { de: "Application Security", en: "Application Security" }
+  aliases: ["Application Security", "AppSec"]
+  status: curated
+  added: "2026-09-14"
+- id: network_security
+  category: hard_skills
+  display: { de: "Network Security", en: "Network Security" }
+  aliases: ["Network Security", "Netzwerksicherheit"]
+  status: curated
+  added: "2026-09-14"
+- id: devops
+  category: hard_skills
+  display: { de: "DevOps", en: "DevOps" }
+  aliases: ["DevOps"]
+  status: curated
+  added: "2026-09-14"
+- id: cicd
+  category: hard_skills
+  display: { de: "CI/CD", en: "CI/CD" }
+  aliases: ["CI/CD", "Continuous Integration", "Continuous Deployment"]
+  status: curated
+  added: "2026-09-14"
+- id: cloud_computing
+  category: hard_skills
+  display: { de: "Cloud Computing", en: "Cloud Computing" }
+  aliases: ["Cloud Computing"]
+  status: curated
+  added: "2026-09-14"
+- id: data_science
+  category: hard_skills
+  display: { de: "Data Science", en: "Data Science" }
+  aliases: ["Data Science"]
+  status: curated
+  added: "2026-09-14"
+- id: automata_learning
+  category: hard_skills
+  display: { de: "Automata Learning", en: "Automata Learning" }
+  aliases: ["Automata Learning"]
+  status: curated
+  added: "2026-09-14"
+- id: tinyml
+  category: hard_skills
+  display: { de: "TinyML", en: "TinyML" }
+  aliases: ["TinyML", "Tiny ML"]
+  status: curated
+  added: "2026-09-14"
+- id: federated_learning
+  category: hard_skills
+  display: { de: "Federated Learning", en: "Federated Learning" }
+  aliases: ["Federated Learning"]
+  status: curated
+  added: "2026-09-14"
+- id: data_analysis
+  category: hard_skills
+  display: { de: "Data Analysis", en: "Data Analysis" }
+  aliases: ["Data Analysis", "Datenanalyse"]
+  status: curated
+  added: "2026-09-14"

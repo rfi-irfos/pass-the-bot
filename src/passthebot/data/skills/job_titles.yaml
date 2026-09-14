@@ -1,1 +1,66 @@
-[]
+- id: software_engineer
+  category: job_titles
+  display: { de: "Software Engineer", en: "Software Engineer" }
+  aliases: ["Software Engineer", "Softwareentwickler", "Software Developer"]
+  status: curated
+  added: "2026-09-14"
+- id: data_scientist
+  category: job_titles
+  display: { de: "Data Scientist", en: "Data Scientist" }
+  aliases: ["Data Scientist"]
+  status: curated
+  added: "2026-09-14"
+- id: devops_engineer
+  category: job_titles
+  display: { de: "DevOps Engineer", en: "DevOps Engineer" }
+  aliases: ["DevOps Engineer"]
+  status: curated
+  added: "2026-09-14"
+- id: security_engineer
+  category: job_titles
+  display: { de: "Security Engineer", en: "Security Engineer" }
+  aliases: ["Security Engineer", "Sicherheitsingenieur"]
+  status: curated
+  added: "2026-09-14"
+- id: penetration_tester
+  category: job_titles
+  display: { de: "Penetration Tester", en: "Penetration Tester" }
+  aliases: ["Penetration Tester", "Pentester"]
+  status: curated
+  added: "2026-09-14"
+- id: machine_learning_engineer
+  category: job_titles
+  display: { de: "Machine Learning Engineer", en: "Machine Learning Engineer" }
+  aliases: ["Machine Learning Engineer", "ML Engineer"]
+  status: curated
+  added: "2026-09-14"
+- id: backend_developer
+  category: job_titles
+  display: { de: "Backend Developer", en: "Backend Developer" }
+  aliases: ["Backend Developer", "Backend-Entwickler"]
+  status: curated
+  added: "2026-09-14"
+- id: frontend_developer
+  category: job_titles
+  display: { de: "Frontend Developer", en: "Frontend Developer" }
+  aliases: ["Frontend Developer", "Frontend-Entwickler"]
+  status: curated
+  added: "2026-09-14"
+- id: fullstack_developer
+  category: job_titles
+  display: { de: "Full Stack Developer", en: "Full Stack Developer" }
+  aliases: ["Full Stack Developer", "Full-Stack Developer", "Fullstack Developer"]
+  status: curated
+  added: "2026-09-14"
+- id: systems_architect
+  category: job_titles
+  display: { de: "Systemarchitekt", en: "Systems Architect" }
+  aliases: ["Systems Architect", "Systemarchitekt", "Solution Architect"]
+  status: curated
+  added: "2026-09-14"
+- id: project_manager
+  category: job_titles
+  display: { de: "Projektleiter", en: "Project Manager" }
+  aliases: ["Project Manager", "Projektleiter", "Projektmanager"]
+  status: curated
+  added: "2026-09-14"

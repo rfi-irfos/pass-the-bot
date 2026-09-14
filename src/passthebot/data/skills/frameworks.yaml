@@ -4,3 +4,69 @@
   aliases: ["React", "React.js", "ReactJS", "react"]
   status: curated
   added: "2026-09-14"
+- id: pytorch
+  category: frameworks
+  display: { de: "PyTorch", en: "PyTorch" }
+  aliases: ["PyTorch", "Pytorch", "pytorch"]
+  status: curated
+  added: "2026-09-14"
+- id: tensorflow
+  category: frameworks
+  display: { de: "TensorFlow", en: "TensorFlow" }
+  aliases: ["TensorFlow", "Tensorflow", "tensorflow"]
+  status: curated
+  added: "2026-09-14"
+- id: keras
+  category: frameworks
+  display: { de: "Keras", en: "Keras" }
+  aliases: ["Keras"]
+  status: curated
+  added: "2026-09-14"
+- id: scikit_learn
+  category: frameworks
+  display: { de: "scikit-learn", en: "scikit-learn" }
+  aliases: ["scikit-learn", "scikit learn", "sklearn"]
+  status: curated
+  added: "2026-09-14"
+- id: django
+  category: frameworks
+  display: { de: "Django", en: "Django" }
+  aliases: ["Django"]
+  status: curated
+  added: "2026-09-14"
+- id: flask
+  category: frameworks
+  display: { de: "Flask", en: "Flask" }
+  aliases: ["Flask"]
+  status: curated
+  added: "2026-09-14"
+- id: fastapi
+  category: frameworks
+  display: { de: "FastAPI", en: "FastAPI" }
+  aliases: ["FastAPI", "Fastapi", "fastapi"]
+  status: curated
+  added: "2026-09-14"
+- id: spring
+  category: frameworks
+  display: { de: "Spring", en: "Spring" }
+  aliases: ["Spring Framework", "Spring Boot"]
+  status: curated
+  added: "2026-09-14"
+- id: angular
+  category: frameworks
+  display: { de: "Angular", en: "Angular" }
+  aliases: ["Angular", "AngularJS"]
+  status: curated
+  added: "2026-09-14"
+- id: vuejs
+  category: frameworks
+  display: { de: "Vue.js", en: "Vue.js" }
+  aliases: ["Vue.js", "VueJS", "vue js"]
+  status: curated
+  added: "2026-09-14"
+- id: dotnet
+  category: frameworks
+  display: { de: ".NET", en: ".NET" }
+  aliases: [".NET", "dotnet", "DotNet"]
+  status: curated
+  added: "2026-09-14"

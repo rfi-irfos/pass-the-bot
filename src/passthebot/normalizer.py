@@ -117,7 +117,7 @@ def extract_soft_skills(
             phrase, score = embedder.best_match(sentence, entry.anchor_phrases)
             if score > best_score:
                 best_phrase, best_score = phrase, score
-        threshold = entry.embedding_threshold if entry.embedding_threshold is not None else 0.45
+        threshold = entry.embedding_threshold if entry.embedding_threshold is not None else 0.48
         if best_score >= threshold:
             found.append(
                 ExtractedKeyword(

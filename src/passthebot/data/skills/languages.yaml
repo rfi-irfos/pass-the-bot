@@ -16,3 +16,69 @@
   aliases: ["Node.js", "Node", "NodeJS", "nodejs", "node js"]
   status: curated
   added: "2026-09-14"
+- id: java
+  category: languages
+  display: { de: "Java", en: "Java" }
+  aliases: ["Java"]
+  status: curated
+  added: "2026-09-14"
+- id: typescript
+  category: languages
+  display: { de: "TypeScript", en: "TypeScript" }
+  aliases: ["TypeScript", "Typescript", "typescript", "TS"]
+  status: curated
+  added: "2026-09-14"
+- id: cplusplus
+  category: languages
+  display: { de: "C++", en: "C++" }
+  aliases: ["C++", "c++"]
+  status: curated
+  added: "2026-09-14"
+- id: csharp
+  category: languages
+  display: { de: "C#", en: "C#" }
+  aliases: ["C#", "c#"]
+  status: curated
+  added: "2026-09-14"
+- id: golang
+  category: languages
+  display: { de: "Go", en: "Go" }
+  aliases: ["Golang", "Go Programming Language", "Go-Programmiersprache"]
+  status: curated
+  added: "2026-09-14"
+- id: php
+  category: languages
+  display: { de: "PHP", en: "PHP" }
+  aliases: ["PHP"]
+  status: curated
+  added: "2026-09-14"
+- id: ruby
+  category: languages
+  display: { de: "Ruby", en: "Ruby" }
+  aliases: ["Ruby"]
+  status: curated
+  added: "2026-09-14"
+- id: kotlin
+  category: languages
+  display: { de: "Kotlin", en: "Kotlin" }
+  aliases: ["Kotlin"]
+  status: curated
+  added: "2026-09-14"
+- id: swift
+  category: languages
+  display: { de: "Swift", en: "Swift" }
+  aliases: ["Swift"]
+  status: curated
+  added: "2026-09-14"
+- id: sql
+  category: languages
+  display: { de: "SQL", en: "SQL" }
+  aliases: ["SQL"]
+  status: curated
+  added: "2026-09-14"
+- id: rust
+  category: languages
+  display: { de: "Rust", en: "Rust" }
+  aliases: ["Rust"]
+  status: curated
+  added: "2026-09-14"

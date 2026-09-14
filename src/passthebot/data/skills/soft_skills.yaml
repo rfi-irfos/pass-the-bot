@@ -2,6 +2,41 @@
   category: soft_skills
   display: { de: "Teamfähigkeit", en: "Team player" }
   anchor_phrases: ["Teamfähigkeit", "teamorientiert arbeiten", "team player", "works well in teams", "collaborative"]
-  embedding_threshold: 0.45
+  embedding_threshold: 0.48
+  status: curated
+  added: "2026-09-14"
+- id: communication
+  category: soft_skills
+  display: { de: "Kommunikationsfähigkeit", en: "Communication" }
+  anchor_phrases: ["Kommunikationsfähigkeit", "gute Kommunikationsfähigkeiten", "good communication skills", "strong communicator"]
+  embedding_threshold: 0.48
+  status: curated
+  added: "2026-09-14"
+- id: leadership
+  category: soft_skills
+  display: { de: "Führungsqualitäten", en: "Leadership" }
+  anchor_phrases: ["Führungsqualitäten", "Führungserfahrung", "leadership skills", "proven leadership experience"]
+  embedding_threshold: 0.48
+  status: curated
+  added: "2026-09-14"
+- id: problem_solving
+  category: soft_skills
+  display: { de: "Problemlösungskompetenz", en: "Problem Solving" }
+  anchor_phrases: ["Problemlösungskompetenz", "analytisches Problemlösen", "strong problem solving skills", "problem-solving ability"]
+  embedding_threshold: 0.48
+  status: curated
+  added: "2026-09-14"
+- id: analytical_thinking
+  category: soft_skills
+  display: { de: "Analytisches Denken", en: "Analytical Thinking" }
+  anchor_phrases: ["analytisches Denken", "analytisches Denkvermögen", "analytical thinking", "strong analytical skills"]
+  embedding_threshold: 0.48
+  status: curated
+  added: "2026-09-14"
+- id: adaptability
+  category: soft_skills
+  display: { de: "Flexibilität", en: "Adaptability" }
+  anchor_phrases: ["Flexibilität", "Anpassungsfähigkeit", "adaptability", "flexible and adaptable"]
+  embedding_threshold: 0.48
   status: curated
   added: "2026-09-14"

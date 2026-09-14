@@ -4,3 +4,141 @@
   aliases: ["Docker", "docker"]
   status: curated
   added: "2026-09-14"
+- id: git
+  category: tools
+  display: { de: "Git", en: "Git" }
+  aliases: ["Git"]
+  status: curated
+  added: "2026-09-14"
+- id: github
+  category: tools
+  display: { de: "GitHub", en: "GitHub" }
+  aliases: ["GitHub", "Github", "github"]
+  status: curated
+  added: "2026-09-14"
+- id: gitlab
+  category: tools
+  display: { de: "GitLab", en: "GitLab" }
+  aliases: ["GitLab", "Gitlab", "gitlab"]
+  status: curated
+  added: "2026-09-14"
+- id: kubernetes
+  category: tools
+  display: { de: "Kubernetes", en: "Kubernetes" }
+  aliases: ["Kubernetes", "K8s", "k8s"]
+  status: curated
+  added: "2026-09-14"
+- id: jenkins
+  category: tools
+  display: { de: "Jenkins", en: "Jenkins" }
+  aliases: ["Jenkins"]
+  status: curated
+  added: "2026-09-14"
+- id: terraform
+  category: tools
+  display: { de: "Terraform", en: "Terraform" }
+  aliases: ["Terraform"]
+  status: curated
+  added: "2026-09-14"
+- id: aws
+  category: tools
+  display: { de: "AWS", en: "AWS" }
+  aliases: ["AWS", "Amazon Web Services"]
+  status: curated
+  added: "2026-09-14"
+- id: azure
+  category: tools
+  display: { de: "Azure", en: "Azure" }
+  aliases: ["Azure", "Microsoft Azure"]
+  status: curated
+  added: "2026-09-14"
+- id: gcp
+  category: tools
+  display: { de: "GCP", en: "GCP" }
+  aliases: ["GCP", "Google Cloud Platform", "Google Cloud"]
+  status: curated
+  added: "2026-09-14"
+- id: linux
+  category: tools
+  display: { de: "Linux", en: "Linux" }
+  aliases: ["Linux"]
+  status: curated
+  added: "2026-09-14"
+- id: windows
+  category: tools
+  display: { de: "Windows", en: "Windows" }
+  aliases: ["Windows"]
+  status: curated
+  added: "2026-09-14"
+- id: burp_suite
+  category: tools
+  display: { de: "Burp Suite", en: "Burp Suite" }
+  aliases: ["Burp Suite", "BurpSuite", "Burp"]
+  status: curated
+  added: "2026-09-14"
+- id: nmap
+  category: tools
+  display: { de: "Nmap", en: "Nmap" }
+  aliases: ["Nmap", "nmap"]
+  status: curated
+  added: "2026-09-14"
+- id: metasploit
+  category: tools
+  display: { de: "Metasploit", en: "Metasploit" }
+  aliases: ["Metasploit"]
+  status: curated
+  added: "2026-09-14"
+- id: wireshark
+  category: tools
+  display: { de: "Wireshark", en: "Wireshark" }
+  aliases: ["Wireshark"]
+  status: curated
+  added: "2026-09-14"
+- id: jira
+  category: tools
+  display: { de: "Jira", en: "Jira" }
+  aliases: ["Jira", "JIRA"]
+  status: curated
+  added: "2026-09-14"
+- id: confluence
+  category: tools
+  display: { de: "Confluence", en: "Confluence" }
+  aliases: ["Confluence"]
+  status: curated
+  added: "2026-09-14"
+- id: postman
+  category: tools
+  display: { de: "Postman", en: "Postman" }
+  aliases: ["Postman"]
+  status: curated
+  added: "2026-09-14"
+- id: postgresql
+  category: tools
+  display: { de: "PostgreSQL", en: "PostgreSQL" }
+  aliases: ["PostgreSQL", "Postgres", "postgres"]
+  status: curated
+  added: "2026-09-14"
+- id: mysql
+  category: tools
+  display: { de: "MySQL", en: "MySQL" }
+  aliases: ["MySQL", "mysql"]
+  status: curated
+  added: "2026-09-14"
+- id: mongodb
+  category: tools
+  display: { de: "MongoDB", en: "MongoDB" }
+  aliases: ["MongoDB", "Mongo"]
+  status: curated
+  added: "2026-09-14"
+- id: redis
+  category: tools
+  display: { de: "Redis", en: "Redis" }
+  aliases: ["Redis"]
+  status: curated
+  added: "2026-09-14"
+- id: kali_linux
+  category: tools
+  display: { de: "Kali Linux", en: "Kali Linux" }
+  aliases: ["Kali Linux", "Kali"]
+  status: curated
+  added: "2026-09-14"

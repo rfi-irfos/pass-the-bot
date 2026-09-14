@@ -1,1 +1,54 @@
-[]
+- id: oscp
+  category: certifications
+  display: { de: "OSCP", en: "OSCP" }
+  aliases: ["OSCP", "Offensive Security Certified Professional"]
+  status: curated
+  added: "2026-09-14"
+- id: oswe
+  category: certifications
+  display: { de: "OSWE", en: "OSWE" }
+  aliases: ["OSWE", "Offensive Security Web Expert"]
+  status: curated
+  added: "2026-09-14"
+- id: crtp
+  category: certifications
+  display: { de: "CRTP", en: "CRTP" }
+  aliases: ["CRTP", "Certified Red Team Professional"]
+  status: curated
+  added: "2026-09-14"
+- id: ewpt
+  category: certifications
+  display: { de: "eWPT", en: "eWPT" }
+  aliases: ["eWPT", "eLearnSecurity Web Application Penetration Tester"]
+  status: curated
+  added: "2026-09-14"
+- id: aws_certified_solutions_architect
+  category: certifications
+  display: { de: "AWS Certified Solutions Architect", en: "AWS Certified Solutions Architect" }
+  aliases: ["AWS Certified Solutions Architect", "AWS Solutions Architect"]
+  status: curated
+  added: "2026-09-14"
+- id: cissp
+  category: certifications
+  display: { de: "CISSP", en: "CISSP" }
+  aliases: ["CISSP", "Certified Information Systems Security Professional"]
+  status: curated
+  added: "2026-09-14"
+- id: ceh
+  category: certifications
+  display: { de: "CEH", en: "CEH" }
+  aliases: ["CEH", "Certified Ethical Hacker"]
+  status: curated
+  added: "2026-09-14"
+- id: pmp
+  category: certifications
+  display: { de: "PMP", en: "PMP" }
+  aliases: ["PMP", "Project Management Professional"]
+  status: curated
+  added: "2026-09-14"
+- id: scrum_master
+  category: certifications
+  display: { de: "Certified Scrum Master", en: "Certified Scrum Master" }
+  aliases: ["Certified Scrum Master", "CSM"]
+  status: curated
+  added: "2026-09-14"
