@@ -1,0 +1,18 @@
+- id: python
+  category: languages
+  display: { de: "Python", en: "Python" }
+  aliases: ["Python", "python", "Python3", "Python 3"]
+  status: curated
+  added: "2026-09-14"
+- id: javascript
+  category: languages
+  display: { de: "JavaScript", en: "JavaScript" }
+  aliases: ["JavaScript", "Javascript", "javascript", "JS", "js"]
+  status: curated
+  added: "2026-09-14"
+- id: nodejs
+  category: languages
+  display: { de: "Node.js", en: "Node.js" }
+  aliases: ["Node.js", "Node", "NodeJS", "nodejs", "node js"]
+  status: curated
+  added: "2026-09-14"
