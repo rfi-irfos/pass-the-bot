@@ -17,3 +17,16 @@ jobs:
         run: python3 -m passthebot.validate_graph
       - name: Run tests
         run: pytest -v
+
+  test-web-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - run: pip install -e "web/backend[dev]"
+      - name: Run backend tests
+        run: pytest -v
+        working-directory: web/backend
