@@ -1,0 +1,6 @@
+- id: docker
+  category: tools
+  display: { de: "Docker", en: "Docker" }
+  aliases: ["Docker", "docker"]
+  status: curated
+  added: "2026-09-14"

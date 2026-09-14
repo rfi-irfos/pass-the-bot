@@ -1,0 +1,6 @@
+- id: react
+  category: frameworks
+  display: { de: "React", en: "React" }
+  aliases: ["React", "React.js", "ReactJS", "react"]
+  status: curated
+  added: "2026-09-14"

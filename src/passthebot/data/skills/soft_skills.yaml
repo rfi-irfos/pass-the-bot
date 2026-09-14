@@ -1,0 +1,7 @@
+- id: teamwork
+  category: soft_skills
+  display: { de: "Teamfähigkeit", en: "Team player" }
+  anchor_phrases: ["Teamfähigkeit", "teamorientiert arbeiten", "team player", "works well in teams", "collaborative"]
+  embedding_threshold: 0.45
+  status: curated
+  added: "2026-09-14"

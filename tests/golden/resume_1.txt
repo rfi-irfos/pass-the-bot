@@ -1,0 +1,3 @@
+Experienced backend developer. Strong Python background.
+Comfortable with Docker and Kubernetes in production.
+Works well in teams and enjoys mentoring juniors.
