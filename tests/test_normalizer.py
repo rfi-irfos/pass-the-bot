@@ -106,3 +106,45 @@ def test_javascript_alone_still_matches_when_nodejs_not_present():
     result = extract_discrete_keywords("We use JS extensively.", NODEJS_JS_ENTRIES)
     ids = {r.id for r in result}
     assert ids == {"javascript"}
+
+
+def test_repeated_nodejs_mention_does_not_leak_javascript_false_positive():
+    """Regression test: extract_discrete_keywords used to break out of the
+    finditer loop after claiming only the FIRST occurrence of a matched
+    alias. A repeated mention of "Node.js" left the second occurrence's
+    span unclaimed, so the shorter "js" alias (owned by javascript) could
+    still match inside it once matching moved on to shorter aliases. Every
+    non-overlapping occurrence of the longest alias must be claimed, not
+    just the first.
+    """
+    result = extract_discrete_keywords(
+        "Node.js backend. Node.js everywhere.", NODEJS_JS_ENTRIES
+    )
+    ids = {r.id for r in result}
+    assert ids == {"nodejs"}
+    assert "javascript" not in ids
+
+
+FOO_FOOBAR_ENTRIES = [
+    SkillEntry(
+        id="foo", category="languages", display={"en": "Foo"},
+        status="curated", added="2026-09-14",
+        aliases=["Foo"],
+    ),
+    SkillEntry(
+        id="foobar", category="languages", display={"en": "FooBar"},
+        status="curated", added="2026-09-14",
+        aliases=["FooBar"],
+    ),
+]
+
+
+def test_shorter_alias_fully_contained_in_longer_claimed_span_is_suppressed():
+    """Pins the documented span-claiming semantics: when a shorter entry's
+    alias is a substring of a longer, different entry's alias, and only the
+    longer form appears in the text, only the longer entry is extracted -
+    the shorter entry is not also reported for the same occurrence.
+    """
+    result = extract_discrete_keywords("We use FooBar here.", FOO_FOOBAR_ENTRIES)
+    ids = {r.id for r in result}
+    assert ids == {"foobar"}

@@ -32,6 +32,16 @@ def extract_discrete_keywords(text: str, entries: list[SkillEntry]) -> list[Extr
     same failure class as the Java/JavaScript regression case (design spec
     section 8), just reached via punctuation normalization instead of a raw
     substring collision.
+
+    Span-claiming semantics: overlapping aliases from different entries
+    resolve to the longest match. If a shorter entry's alias falls fully
+    inside a span already claimed by a longer, different entry's alias, the
+    shorter entry is NOT also extracted for that occurrence (e.g. once a
+    "React Native" entry exists alongside a "react" entry, the text "React
+    Native experience" extracts only react_native, not react, for that
+    occurrence). This is an intentional design choice, not a bug: a single
+    mention is not double-counted as both the specific and the more general
+    skill it happens to contain as a substring.
     """
     normalized_text = normalize_string(text)
     claimed = [False] * len(normalized_text)
@@ -46,8 +56,6 @@ def extract_discrete_keywords(text: str, entries: list[SkillEntry]) -> list[Extr
 
     found: dict[str, ExtractedKeyword] = {}
     for needle, alias, entry in pairs:
-        if entry.id in found:
-            continue
         for m in re.finditer(
             rf"(?<![a-z0-9]){re.escape(needle)}(?![a-z0-9])", normalized_text
         ):
@@ -56,10 +64,10 @@ def extract_discrete_keywords(text: str, entries: list[SkillEntry]) -> list[Extr
                 continue
             for i in range(start, end):
                 claimed[i] = True
-            found[entry.id] = ExtractedKeyword(
-                id=entry.id, category=entry.category, matched_text=alias, confidence=1.0
-            )
-            break
+            if entry.id not in found:
+                found[entry.id] = ExtractedKeyword(
+                    id=entry.id, category=entry.category, matched_text=alias, confidence=1.0
+                )
     return list(found.values())
 
 
