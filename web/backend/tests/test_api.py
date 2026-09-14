@@ -38,6 +38,24 @@ def test_check_returns_real_report_with_display_names():
     assert python_result["display_name"] == "Python"
 
 
+def test_check_returns_german_display_names_when_lang_is_de():
+    pdf_path = FIXTURES / "api_test_resume_de.pdf"
+    FIXTURES.mkdir(exist_ok=True)
+    _make_resume_pdf(pdf_path, "Strong communication and teamwork skills.")
+
+    with pdf_path.open("rb") as f:
+        response = client.post(
+            "/api/check",
+            files={"resume_file": ("resume.pdf", f, "application/pdf")},
+            data={"posting_text": "Good communication skills required.", "lang": "de"},
+        )
+
+    assert response.status_code == 200
+    body = response.json()
+    communication_result = next(r for r in body["results"] if r["id"] == "communication")
+    assert communication_result["display_name"] == "Kommunikationsfähigkeit"
+
+
 def test_check_rejects_empty_posting_text():
     pdf_path = FIXTURES / "api_test_resume2.pdf"
     FIXTURES.mkdir(exist_ok=True)

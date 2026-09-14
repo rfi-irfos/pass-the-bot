@@ -33,7 +33,11 @@ app.add_middleware(
 
 
 @app.post("/api/check")
-async def check(resume_file: UploadFile = File(...), posting_text: str = Form(...)) -> dict:
+async def check(
+    resume_file: UploadFile = File(...),
+    posting_text: str = Form(...),
+    lang: str = Form("en"),
+) -> dict:
     raw = await resume_file.read()
     if len(raw) > MAX_FILE_BYTES:
         raise HTTPException(status_code=413, detail="resume_file exceeds the 5MB limit.")
@@ -49,4 +53,4 @@ async def check(resume_file: UploadFile = File(...), posting_text: str = Form(..
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     entries = active_entries(load_skill_graph(DEFAULT_DATA_DIR))
-    return add_display_names(report, entries)
+    return add_display_names(report, entries, lang=lang)

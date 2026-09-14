@@ -9,16 +9,19 @@ from __future__ import annotations
 
 from passthebot.graph import SkillEntry
 
-DISPLAY_LANGUAGE = "en"  # matches the frontend's language, see spec section 9
+DEFAULT_DISPLAY_LANGUAGE = "en"
 
 
-def add_display_names(report: dict, entries: list[SkillEntry]) -> dict:
+def add_display_names(report: dict, entries: list[SkillEntry], lang: str = DEFAULT_DISPLAY_LANGUAGE) -> dict:
     """Return a copy of report with a display_name field added to every
     entry in report['results'], looked up from the skill graph's own
-    display names. Falls back to the raw id if an entry is somehow not
-    found in the graph (should not happen in practice, but never crash the
-    API over a cosmetic field)."""
-    display_by_id = {e.id: e.display.get(DISPLAY_LANGUAGE, e.id) for e in entries}
+    display names in the requested language. Falls back to English, then
+    to the raw id, if a translation is missing (should not happen in
+    practice, but never crash the API over a cosmetic field)."""
+    display_by_id = {
+        e.id: e.display.get(lang, e.display.get(DEFAULT_DISPLAY_LANGUAGE, e.id))
+        for e in entries
+    }
     enriched_results = [
         {**result, "display_name": display_by_id.get(result["id"], result["id"])}
         for result in report["results"]
