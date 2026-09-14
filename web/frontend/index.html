@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="pageTitle">Pass The Bot! — sieh deinen Lebenslauf wie ein ATS</title>
+<title data-i18n="pageTitle">Pass The Bot! Sieh deinen Lebenslauf wie ein ATS</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   html { scroll-behavior: smooth; font-size: 125%; }
@@ -31,6 +31,7 @@
   [data-i18n], [data-i18n-placeholder] {
     transition: opacity 0.25s ease;
   }
+
   .lang-fading {
     opacity: 0;
   }
@@ -72,15 +73,15 @@
           <p class="text-xl font-semibold mb-4" data-i18n="tagline"></p>
           <p class="text-gray-500 max-w-md mx-auto md:mx-0 mb-8" data-i18n="desc1"></p>
           <div class="flex flex-nowrap justify-center md:justify-start gap-2 text-sm">
-            <span class="badge-pill bg-white border-2 border-green-600 text-green-700 rounded-full pl-2.5 pr-4 py-1.5 inline-flex items-center gap-1.5 font-medium whitespace-nowrap">
+            <span class="badge-pill bg-white border-2 border-green-600 text-green-700 rounded-full pl-2.5 pr-4 py-1.5 inline-flex items-center gap-1.5 font-medium whitespace-nowrap shadow-md">
               <svg width="16" height="16" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#15803d"></circle><path d="M5 9.5 L7.5 12 L13 6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
               <span data-i18n="badgeFree"></span>
             </span>
-            <span class="badge-pill bg-white border-2 border-blue-600 text-blue-700 rounded-full pl-2.5 pr-4 py-1.5 inline-flex items-center gap-1.5 font-medium whitespace-nowrap">
+            <span class="badge-pill bg-white border-2 border-blue-600 text-blue-700 rounded-full pl-2.5 pr-4 py-1.5 inline-flex items-center gap-1.5 font-medium whitespace-nowrap shadow-md">
               <svg width="16" height="16" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#15803d"></circle><path d="M5 9.5 L7.5 12 L13 6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
               <span data-i18n="badgeNoAccount"></span>
             </span>
-            <span class="badge-pill bg-white border-2 border-purple-600 text-purple-700 rounded-full pl-2.5 pr-4 py-1.5 inline-flex items-center gap-1.5 font-medium whitespace-nowrap">
+            <span class="badge-pill bg-white border-2 border-purple-600 text-purple-700 rounded-full pl-2.5 pr-4 py-1.5 inline-flex items-center gap-1.5 font-medium whitespace-nowrap shadow-md">
               <svg width="16" height="16" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#15803d"></circle><path d="M5 9.5 L7.5 12 L13 6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
               <span data-i18n="badgeOpenSource"></span>
             </span>
@@ -88,7 +89,7 @@
         </div>
 
         <div class="hidden md:flex justify-center">
-          <svg width="280" height="280" viewBox="0 0 280 280">
+          <svg width="280" height="280" viewBox="0 0 280 280" class="drop-shadow-xl">
             <circle cx="140" cy="140" r="130" fill="#2563eb"></circle>
             <path d="M140 10 A130 130 0 0 1 140 270 L140 140 Z" fill="#1e40af"></path>
             <g transform="translate(78, 55)">
@@ -111,14 +112,25 @@
   <main class="w-full max-w-4xl mx-auto px-6 py-12">
 
     <!-- Single expanding app card: form on top, results grow in below -->
-    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm mb-8 overflow-hidden">
+    <div class="relative bg-white border border-gray-200 rounded-2xl shadow-xl mb-8 overflow-hidden">
+    <button type="button" id="info-btn" aria-label="What is an ATS?"
+      class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-amber-50 border border-amber-200 shadow-sm flex items-center justify-center text-amber-500 hover:text-amber-600 hover:bg-amber-100 transition">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 21h6M10 18h4M12 3a6 6 0 0 0-3.5 10.9c.5.36.8.95.8 1.6v.5h5.4v-.5c0-.65.3-1.24.8-1.6A6 6 0 0 0 12 3Z"
+          stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="rgba(251,191,36,0.15)"/>
+      </svg>
+    </button>
     <form id="check-form" class="p-8">
       <div class="grid md:grid-cols-2 gap-6">
         <div>
           <label for="posting_text" class="block text-center text-lg font-semibold mb-3" data-i18n="labelPosting"></label>
-          <textarea id="posting_text" name="posting_text" required
-            class="w-full h-32 border border-gray-300 rounded-lg p-4 text-base focus:outline-none focus:ring-2 focus:ring-black resize-none"
-            data-i18n-placeholder="placeholderPosting"></textarea>
+          <div class="relative h-32">
+            <textarea id="posting_text" name="posting_text" required
+              class="relative z-10 w-full h-32 bg-transparent border border-gray-300 rounded-lg p-4 text-base focus:outline-none focus:ring-2 focus:ring-black resize-none"></textarea>
+            <div id="posting-placeholder"
+              class="absolute inset-0 flex items-center justify-center text-center text-base text-gray-400 px-6 pointer-events-none"
+              data-i18n="placeholderPosting"></div>
+          </div>
         </div>
 
         <div>
@@ -152,7 +164,10 @@
           <div id="progress-bar" class="bg-green-700 h-2 rounded-full w-1/3"></div>
         </div>
         <p class="text-sm text-gray-500 mt-2 text-center" data-i18n="progressText"></p>
-        <p id="progress-step" class="text-sm text-gray-900 font-medium mt-2 text-center"></p>
+        <div id="progress-step" class="mt-3 text-center">
+          <p id="progress-step-title" class="text-base font-semibold text-gray-900"></p>
+          <p id="progress-step-subtitle" class="text-sm text-gray-500 mt-0.5"></p>
+        </div>
       </div>
 
       <div id="error-box" class="hidden mt-4 p-4 rounded-lg bg-red-50 text-red-800 border border-red-200"></div>
@@ -166,7 +181,7 @@
           <circle id="gauge-circle" cx="70" cy="70" r="60" fill="none" stroke="#16a34a" stroke-width="12"
             stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377"
             transform="rotate(-90 70 70)"></circle>
-          <text id="gauge-text" x="70" y="75" text-anchor="middle" font-size="26" font-weight="bold" fill="#111827">—</text>
+          <text id="gauge-text" x="70" y="75" text-anchor="middle" font-size="26" font-weight="bold" fill="#111827">·</text>
         </svg>
         <div>
           <h2 class="text-lg font-semibold mb-1" data-i18n="atsResultHeading"></h2>
@@ -201,6 +216,25 @@
     </div>
 
   </main>
+
+  <!-- Info modal: what is an ATS and why this tool exists -->
+  <div id="info-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div id="info-modal-backdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto p-10">
+      <button type="button" id="info-modal-close" aria-label="Close"
+        class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M6 6 L18 18 M18 6 L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <h2 class="text-2xl font-bold mb-5 pr-8" data-i18n="infoTitle"></h2>
+      <p class="text-gray-900 text-sm mb-3" data-i18n="infoBody1"></p>
+      <p class="text-gray-900 text-sm mb-3" data-i18n="infoBodyPipeline"></p>
+      <p class="text-gray-900 text-sm mb-3" data-i18n="infoBody2"></p>
+      <p class="text-gray-900 text-sm mb-3" data-i18n="infoBody3"></p>
+      <p class="text-gray-900 text-sm font-medium" data-i18n="infoBody4"></p>
+    </div>
+  </div>
 
   <footer class="max-w-xl mx-auto px-6 pb-16 text-center">
     <p class="text-xs text-gray-400" data-i18n="privacyNote"></p>

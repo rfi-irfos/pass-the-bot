@@ -3,7 +3,7 @@ const GAUGE_CIRCUMFERENCE = 2 * Math.PI * 60;
 
 const TRANSLATIONS = {
   de: {
-    pageTitle: "Pass The Bot! — sieh deinen Lebenslauf wie ein ATS",
+    pageTitle: "Pass The Bot! Sieh deinen Lebenslauf wie ein ATS",
     tagline: "Sieh deinen Lebenslauf so, wie ihn ein Bewerbermanagementsystem (ATS) sieht.",
     desc1: 'Anzeige einfügen, Lebenslauf hochladen und sofort eine transparente Auswertung bekommen: welche geforderten Skills erkannt wurden, welche knapp danebenlagen (Tippfehler wie "Dockr" statt "Docker"), und welche wirklich fehlen.',
     badgeFree: "Kostenlos",
@@ -18,12 +18,19 @@ const TRANSLATIONS = {
     analyzing: "Analysiere...",
     progressText: "Dein Lebenslauf wird analysiert...",
     progressSteps: [
-      "Dein Lebenslauf wird eingelesen und der Text daraus extrahiert.",
-      "Parallel dazu wird die Stellenanzeige nach Skills und Keywords durchsucht.",
-      "Anschließend wird geprüft, welche Anforderungen als Pflicht und welche nur als Kür gelten.",
-      "Jetzt vergleicht das System, welche dieser Skills tatsächlich in deinem Lebenslauf auftauchen.",
-      "Auch Tippfehler werden erkannt — so zählt \"Dockr\" trotzdem als \"Docker\".",
-      "Am Ende steht dein persönlicher ATS-Score.",
+      { title: "Lebenslauf-Datei geöffnet", subtitle: "PDF oder DOCX wird eingelesen" },
+      { title: "Text extrahiert", subtitle: "Rohtext aus der Datei gewonnen" },
+      { title: "Anzeige gelesen", subtitle: "Text der Stellenanzeige übernommen" },
+      { title: "Skills in der Anzeige erkannt", subtitle: "Bekannte Begriffe aus dem Skill-Graph abgeglichen" },
+      { title: "Soft Skills in der Anzeige erkannt", subtitle: "Ähnlichkeitsvergleich per Embedding" },
+      { title: "Skills im Lebenslauf erkannt", subtitle: "Bekannte Begriffe aus dem Skill-Graph abgeglichen" },
+      { title: "Soft Skills im Lebenslauf erkannt", subtitle: "Ähnlichkeitsvergleich per Embedding" },
+      { title: "Pflichtanforderungen erkannt", subtitle: 'Signalwörter wie "erforderlich" oder "must have" gesucht' },
+      { title: "Wunschkenntnisse erkannt", subtitle: 'Signalwörter wie "von Vorteil" oder "nice to have" gesucht' },
+      { title: "Direkter Abgleich", subtitle: "Skill-IDs aus Anzeige und Lebenslauf verglichen" },
+      { title: "Tippfehler geprüft", subtitle: 'Ähnliche Schreibweisen im Lebenslauf gesucht, z. B. "Dockr"' },
+      { title: "Score berechnet", subtitle: "Pflicht-Abdeckung in Prozent ermittelt" },
+      { title: "Ergebnis aufbereitet", subtitle: "Bericht für die Anzeige vorbereitet" },
     ],
     errorBoth: "Bitte sowohl den Anzeigentext als auch eine Lebenslauf-Datei angeben.",
     errorUnreachable: "Backend nicht erreichbar. Läuft es gerade?",
@@ -39,19 +46,30 @@ const TRANSLATIONS = {
     missingHeading: "Fehlende Skills",
     emptyMatched: "Noch nichts gefunden.",
     emptyNearMiss: "Keine Beinahe-Treffer.",
-    emptyMissing: "Nichts fehlt — passt sehr gut.",
+    emptyMissing: "Nichts fehlt: passt sehr gut.",
     foundLabel: (text) => `gefunden: "${text}"`,
     tipsHeading: "Bevor du diesen Lebenslauf abschickst",
-    tipsEmpty: "Keine Änderungen nötig — dieser Lebenslauf deckt alles ab, was die Anzeige verlangt.",
+    tipsEmpty: "Keine Änderungen nötig: dieser Lebenslauf deckt alles ab, was die Anzeige verlangt.",
     tipFix: (found, alias, name) =>
       `Schreibe "${found}" als exakten Begriff "${alias}", damit es als ${name} erkannt wird.`,
-    tipRequired: (name) => `Ergänze Belege für ${name} — das ist laut Anzeige ein Pflicht-Skill.`,
-    tipOptional: (name) => `Erwähne ${name}, falls vorhanden — laut Anzeige von Vorteil.`,
+    tipRequired: (name) => `Ergänze Belege für ${name}: das ist laut Anzeige ein Pflicht-Skill.`,
+    tipOptional: (name) => `Erwähne ${name}, falls vorhanden: laut Anzeige von Vorteil.`,
+    infoTitle: "Was ist ein ATS, und warum gibt's Pass The Bot?",
+    infoBody1:
+      "Ein Applicant Tracking System (ATS) ist die Software, die heute fast jede große Firma vor die eigentliche Bewerbung schaltet. Bevor ein Mensch deinen Lebenslauf überhaupt sieht, durchsucht das System ihn nach Keywords aus der Stellenanzeige: automatisiert, in Sekunden, für hunderte Bewerbungen gleichzeitig.",
+    infoBodyPipeline:
+      "Auch wenn sich einzelne Systeme unterscheiden, folgen die meisten ATS-Lösungen einem ähnlichen Ablauf: Der Lebenslauf wird als Datei eingelesen und der reine Text daraus extrahiert. Das System erkennt typische Abschnitte wie Berufserfahrung, Ausbildung und Skills, normalisiert den Text (Groß-/Kleinschreibung, Sonderzeichen, Schreibvarianten) und zerlegt ihn in einzelne Begriffe. Parallel dazu werden aus der Stellenanzeige die Anforderungen extrahiert und in Pflicht- und Kür-Kriterien getrennt. Danach vergleicht das System beide Seiten Begriff für Begriff, oft ergänzt um einen Fuzzy-Abgleich für Tippfehler und Schreibvarianten. Am Ende steht ein Score oder Ranking, das mitentscheidet, ob eine Bewerbung überhaupt bei einem Menschen landet.",
+    infoBody2:
+      'Das Problem: Diese Systeme sind oft gnadenlos wörtlich. Schreibst du "JS" statt "JavaScript", "Python" statt "python" oder hast einen simplen Tippfehler wie "Dockr" statt "Docker", dann zählt das für viele ATS-Filter als "nicht vorhanden". Qualifizierte Bewerber:innen fliegen raus, nicht weil ihnen die Skills fehlen, sondern weil die Formulierung nicht exakt passt.',
+    infoBody3:
+      "Gleichzeitig nutzen immer mehr Bewerber:innen KI, um Lebensläufe zu schreiben, und Firmen nutzen KI, um sie auszusortieren. Am Ende entscheiden zwei Blackboxen übereinander, ohne dass irgendjemand genau weiß, warum.",
+    infoBody4:
+      "Pass The Bot dreht das um: Lass deine Bewerbung hier durchlaufen, bevor du sie irgendwo hochlädst, mit der gleichen nachvollziehbaren Logik, die viele echte ATS-Systeme verwenden. Schwarz auf weiß, welche Skills erkannt wurden, welche knapp danebenlagen und welche fehlen. Keine Blackbox, keine Überraschung.",
     privacyNote:
-      "Diagnose statt KI-Blackbox: Das System entscheidet deterministisch und nachvollziehbar, warum ein Keyword-Filter dich durchlässt oder aussortiert — ohne deinen Lebenslauf umzuschreiben. Deine Daten werden dabei nicht gespeichert, nicht zum Trainieren eines Modells verwendet, und diese Seite setzt keine Cookies: alles bleibt in deinem Browser und wird nur für diese eine Prüfung an die Analyse-Engine geschickt.",
+      "Diagnose statt KI-Blackbox: Das System entscheidet deterministisch und nachvollziehbar, warum ein Keyword-Filter dich durchlässt oder aussortiert, ohne deinen Lebenslauf umzuschreiben. Deine Daten werden dabei nicht gespeichert, nicht zum Trainieren eines Modells verwendet, und diese Seite setzt keine Cookies: alles bleibt in deinem Browser und wird nur für diese eine Prüfung an die Analyse-Engine geschickt.",
   },
   en: {
-    pageTitle: "Pass The Bot! — see your CV the way the machine sees it",
+    pageTitle: "Pass The Bot! See your CV the way the machine sees it",
     tagline: "See your resume the way an Applicant Tracking System (ATS) sees it.",
     desc1: 'Paste a job posting, upload your CV, and get an instant, transparent breakdown: which required skills matched, which were near-misses caught by typos or phrasing (like "Dockr" vs "Docker"), and which are genuinely missing.',
     badgeFree: "Free",
@@ -66,12 +84,19 @@ const TRANSLATIONS = {
     analyzing: "Analyzing...",
     progressText: "Analyzing your resume...",
     progressSteps: [
-      "Your resume is opened and the text is extracted from it.",
-      "At the same time, the job posting is scanned for skills and keywords.",
-      "Next, the system checks which requirements are mandatory and which are just nice-to-have.",
-      "Now it compares which of those skills actually show up in your resume.",
-      "Typos get caught too — so \"Dockr\" still counts as \"Docker\".",
-      "Finally, your personal ATS score is calculated.",
+      { title: "Resume file opened", subtitle: "Reading the PDF or DOCX" },
+      { title: "Text extracted", subtitle: "Raw text pulled from the file" },
+      { title: "Job posting read", subtitle: "Posting text loaded" },
+      { title: "Skills detected in the posting", subtitle: "Matched against the skill graph" },
+      { title: "Soft skills detected in the posting", subtitle: "Compared by embedding similarity" },
+      { title: "Skills detected in your resume", subtitle: "Matched against the skill graph" },
+      { title: "Soft skills detected in your resume", subtitle: "Compared by embedding similarity" },
+      { title: "Required skills identified", subtitle: 'Signal phrases like "required" or "must have"' },
+      { title: "Nice-to-haves identified", subtitle: 'Signal phrases like "nice to have" or "a plus"' },
+      { title: "Direct matching", subtitle: "Skill IDs from posting and resume compared" },
+      { title: "Typos checked", subtitle: 'Similar spellings searched for, e.g. "Dockr"' },
+      { title: "Score calculated", subtitle: "Required-skill coverage computed as a percentage" },
+      { title: "Report assembled", subtitle: "Result prepared for display" },
     ],
     errorBoth: "Please provide both the job posting text and a resume file.",
     errorUnreachable: "Could not reach the backend. Is it running?",
@@ -87,16 +112,27 @@ const TRANSLATIONS = {
     missingHeading: "Missing Skills",
     emptyMatched: "Nothing matched yet.",
     emptyNearMiss: "No near-misses found.",
-    emptyMissing: "Nothing missing — great fit.",
+    emptyMissing: "Nothing missing, great fit.",
     foundLabel: (text) => `found "${text}"`,
     tipsHeading: "Before you submit this resume",
-    tipsEmpty: "No changes needed — this resume covers everything the posting asks for.",
+    tipsEmpty: "No changes needed: this resume covers everything the posting asks for.",
     tipFix: (found, alias, name) =>
       `Fix "${found}" to the exact term "${alias}" so it's recognized as ${name}.`,
-    tipRequired: (name) => `Add evidence of ${name} — this is listed as a required skill in the posting.`,
-    tipOptional: (name) => `Consider mentioning ${name} if you have it — it's listed as a nice-to-have.`,
+    tipRequired: (name) => `Add evidence of ${name}: this is listed as a required skill in the posting.`,
+    tipOptional: (name) => `Consider mentioning ${name} if you have it: it's listed as a nice-to-have.`,
+    infoTitle: "What is an ATS, and why does Pass The Bot exist?",
+    infoBody1:
+      "An Applicant Tracking System (ATS) is the software almost every large company runs your application through before a human ever sees it. It scans your resume for keywords from the job posting: automatically, in seconds, across hundreds of applications at once.",
+    infoBodyPipeline:
+      "While individual systems differ, most ATS solutions follow a similar flow: your resume is read as a file and the raw text is extracted from it. The system detects typical sections like work experience, education, and skills, normalizes the text (casing, special characters, spelling variants), and breaks it down into individual terms. In parallel, requirements are extracted from the job posting and split into required and nice-to-have criteria. It then compares both sides term by term, often with fuzzy matching for typos and spelling variants layered on top. The result is a score or ranking that helps decide whether an application ever reaches a human at all.",
+    infoBody2:
+      'The problem: these systems are often ruthlessly literal. Write "JS" instead of "JavaScript", "Python" instead of "python", or make a simple typo like "Dockr" instead of "Docker", and many ATS filters will count that skill as missing. Qualified candidates get filtered out, not because they lack the skill, but because the wording didn\'t match exactly.',
+    infoBody3:
+      "Meanwhile, more and more candidates use AI to write their resumes, and more and more companies use AI to filter them out. In the end, two black boxes are deciding against each other, and nobody really knows why.",
+    infoBody4:
+      "Pass The Bot flips that around: run your application through here before you submit it anywhere, using the same kind of deterministic, explainable logic many real ATS systems use. See in plain sight which skills were recognized, which were close misses, and which are missing. No black box, no surprises.",
     privacyNote:
-      "A diagnosis, not an AI black box: the system decides deterministically and transparently why a keyword filter would pass or reject you — without rewriting your resume for you. None of your data is stored or used to train anything, and this page sets no cookies: everything stays in your browser and is sent to the analysis engine only for this one check.",
+      "A diagnosis, not an AI black box: the system decides deterministically and transparently why a keyword filter would pass or reject you, without rewriting your resume for you. None of your data is stored or used to train anything, and this page sets no cookies: everything stays in your browser and is sent to the analysis engine only for this one check.",
   },
 };
 
@@ -108,6 +144,8 @@ const submitBtn = document.getElementById("submit-btn");
 const submitBtnLabel = document.getElementById("submit-btn-label");
 const progressWrap = document.getElementById("progress-wrap");
 const progressStepEl = document.getElementById("progress-step");
+const progressStepTitleEl = document.getElementById("progress-step-title");
+const progressStepSubtitleEl = document.getElementById("progress-step-subtitle");
 const errorBox = document.getElementById("error-box");
 const resultsCard = document.getElementById("results-card");
 const fileInput = document.getElementById("resume_file");
@@ -163,6 +201,35 @@ function setLang(lang) {
 
 langDeBtn.addEventListener("click", () => setLang("de"));
 langEnBtn.addEventListener("click", () => setLang("en"));
+
+const infoBtn = document.getElementById("info-btn");
+const infoModal = document.getElementById("info-modal");
+const infoModalClose = document.getElementById("info-modal-close");
+const infoModalBackdrop = document.getElementById("info-modal-backdrop");
+
+function openInfoModal() {
+  infoModal.classList.remove("hidden");
+}
+
+function closeInfoModal() {
+  infoModal.classList.add("hidden");
+}
+
+infoBtn.addEventListener("click", openInfoModal);
+infoModalClose.addEventListener("click", closeInfoModal);
+infoModalBackdrop.addEventListener("click", closeInfoModal);
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeInfoModal();
+});
+
+const postingTextarea = document.getElementById("posting_text");
+const postingPlaceholder = document.getElementById("posting-placeholder");
+
+function syncPostingPlaceholder() {
+  postingPlaceholder.classList.toggle("hidden", postingTextarea.value.length > 0);
+}
+
+postingTextarea.addEventListener("input", syncPostingPlaceholder);
 
 const FILE_UPLOAD_ICON = `<svg width="28" height="28" viewBox="0 0 28 28" class="mb-1">
   <circle cx="14" cy="14" r="13" fill="none" stroke="#9ca3af" stroke-width="1.5"></circle>
@@ -371,7 +438,15 @@ form.addEventListener("submit", async (event) => {
 
   let stepIndex = 0;
   const steps = t("progressSteps");
-  progressStepEl.textContent = steps[0];
+
+  function renderStep(index) {
+    const step = steps[index];
+    const number = String(index + 1).padStart(2, "0");
+    progressStepTitleEl.textContent = `${number} · ${step.title}`;
+    progressStepSubtitleEl.textContent = step.subtitle;
+  }
+
+  renderStep(0);
   const stepInterval = setInterval(() => {
     if (stepIndex >= steps.length - 1) {
       clearInterval(stepInterval);
@@ -380,7 +455,7 @@ form.addEventListener("submit", async (event) => {
     stepIndex += 1;
     progressStepEl.classList.add("fading");
     setTimeout(() => {
-      progressStepEl.textContent = steps[stepIndex];
+      renderStep(stepIndex);
       progressStepEl.classList.remove("fading");
     }, 500);
   }, 5000);
