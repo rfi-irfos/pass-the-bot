@@ -8,9 +8,18 @@ from passthebot.matcher import MatchResult
 
 
 def get_graph_version(repo_root: Path) -> str:
-    """Return the current HEAD commit hash of repo_root, or 'unknown' if
-    repo_root is not inside a git repository (e.g. a fresh checkout without
-    history, or a non-git deployment)."""
+    """Return the current HEAD commit hash of the entire repository.
+
+    This returns the repository-wide HEAD commit, not a hash scoped to any
+    specific subdirectory (e.g. data/skills/). This is intentional: it captures
+    both the skill data AND the matching-code version together for full
+    reproducibility and auditability. Two reports with identical skill data but
+    different matcher-code logic will have different graph_version values,
+    preserving audit trail integrity.
+
+    Returns 'unknown' if repo_root is not inside a git repository (e.g. a fresh
+    checkout without history, or a non-git deployment) or if the git binary is
+    not available."""
     try:
         result = subprocess.run(
             ["git", "rev-parse", "HEAD"],

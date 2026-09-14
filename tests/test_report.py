@@ -37,8 +37,18 @@ def test_get_graph_version_returns_a_git_hash_in_a_repo(tmp_path):
         ["git", "-c", "user.email=t@t.com", "-c", "user.name=t", "commit", "-m", "x"],
         cwd=tmp_path, check=True, capture_output=True,
     )
+    # Get the expected hash via git rev-parse HEAD
+    expected_hash = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+
     version = get_graph_version(tmp_path)
     assert len(version) == 40  # full git SHA
+    assert version == expected_hash  # verify it matches the actual HEAD commit
 
 
 def test_get_graph_version_returns_unknown_outside_git_repo(tmp_path):
