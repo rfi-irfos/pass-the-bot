@@ -1,6 +1,4 @@
-// Placeholder: fill in with the deployed Fly.io backend URL once that
-// deploy happens (deliberately out of scope for this implementation step).
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "https://passthebot-api.fly.dev";
 
 const form = document.getElementById("check-form");
 const submitBtn = document.getElementById("submit-btn");
