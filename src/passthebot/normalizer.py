@@ -37,3 +37,24 @@ def extract_discrete_keywords(text: str, entries: list[SkillEntry]) -> list[Extr
                 )
                 break
     return list(found.values())
+
+
+def extract_soft_skills(
+    text: str, entries: list[SkillEntry], embedder
+) -> list[ExtractedKeyword]:
+    """Match soft_skills entries by embedding similarity against anchor_phrases.
+    An entry is included if the best-matching anchor phrase clears its own
+    embedding_threshold.
+    """
+    found: list[ExtractedKeyword] = []
+    for entry in entries:
+        if not entry.anchor_phrases:
+            continue
+        phrase, score = embedder.best_match(text, entry.anchor_phrases)
+        if score >= (entry.embedding_threshold or 0.75):
+            found.append(
+                ExtractedKeyword(
+                    id=entry.id, category=entry.category, matched_text=phrase, confidence=score
+                )
+            )
+    return found
