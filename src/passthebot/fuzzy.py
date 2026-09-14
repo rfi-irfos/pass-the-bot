@@ -1,3 +1,5 @@
+"""Fuzzy string similarity helper for near-miss alias matching (not yet wired into extraction)."""
+
 from __future__ import annotations
 
 from rapidfuzz import fuzz

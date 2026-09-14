@@ -1,3 +1,5 @@
+"""Compares posting keywords against resume keywords by canonical id and scores coverage."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
