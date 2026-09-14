@@ -2,10 +2,11 @@ from pathlib import Path
 
 import pytest
 
+from passthebot.graph import DEFAULT_DATA_DIR
 from passthebot.pipeline import PipelineInputError, run_pipeline
 
 REPO_ROOT = Path(__file__).parent.parent
-DATA_DIR = REPO_ROOT / "data" / "skills"
+DATA_DIR = DEFAULT_DATA_DIR
 
 
 def test_run_pipeline_rejects_empty_posting_text():
@@ -29,5 +30,16 @@ def test_run_pipeline_returns_valid_report_shape():
     )
     assert "engine_version" in report
     assert "graph_version" in report
+    assert "model_version" in report
     assert "results" in report
     assert "score" in report
+
+
+def test_run_pipeline_uses_default_data_dir_and_repo_root_when_omitted():
+    """data_dir and repo_root are optional; omitting them should use the
+    package's bundled data and the real repo root, and still produce a
+    valid report."""
+    report = run_pipeline("Requires Python.", "Experienced Python developer.", {"python"})
+    assert "engine_version" in report
+    assert "model_version" in report
+    assert report["graph_version"] != "unknown"

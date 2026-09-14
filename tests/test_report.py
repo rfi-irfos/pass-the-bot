@@ -17,7 +17,13 @@ def test_build_report_shape():
     report = build_report(RESULTS, graph_version="abc123")
     assert report["engine_version"] == "0.1.0"
     assert report["graph_version"] == "abc123"
+    assert report["model_version"] == "unknown"
     assert len(report["results"]) == 3
+
+
+def test_build_report_includes_provided_model_version():
+    report = build_report(RESULTS, graph_version="abc123", model_version="all-MiniLM-L6-v2")
+    assert report["model_version"] == "all-MiniLM-L6-v2"
 
 
 def test_build_report_score_counts_only_required():

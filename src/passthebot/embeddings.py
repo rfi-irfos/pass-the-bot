@@ -10,6 +10,7 @@ class Embedder:
     """
 
     def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
+        self.model_name = model_name
         self._model = SentenceTransformer(model_name)
 
     def best_match(self, text: str, phrases: list[str]) -> tuple[str, float]:

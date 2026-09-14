@@ -1,9 +1,10 @@
 from pathlib import Path
 
+from passthebot.graph import DEFAULT_DATA_DIR
 from passthebot.pipeline import run_pipeline
 
 REPO_ROOT = Path(__file__).parent.parent
-DATA_DIR = REPO_ROOT / "data" / "skills"
+DATA_DIR = DEFAULT_DATA_DIR
 GOLDEN_DIR = Path(__file__).parent / "golden"
 
 

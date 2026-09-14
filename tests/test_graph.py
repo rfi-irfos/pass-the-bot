@@ -2,9 +2,9 @@ from pathlib import Path
 import tempfile
 import pytest
 
-from passthebot.graph import active_entries, load_skill_graph
+from passthebot.graph import DEFAULT_DATA_DIR, active_entries, load_skill_graph
 
-DATA_DIR = Path(__file__).parent.parent / "data" / "skills"
+DATA_DIR = DEFAULT_DATA_DIR
 
 
 def test_load_skill_graph_finds_seed_entries():
@@ -76,3 +76,26 @@ def test_load_skill_graph_raises_on_missing_id():
         assert "no_id.yaml" in error_msg
         assert "index 0" in error_msg
         assert "'id'" in error_msg
+
+
+def test_load_skill_graph_raises_on_non_list_top_level():
+    """A YAML file whose top level is a mapping (not a list) must raise a clear
+    ValueError naming the file, instead of a TypeError leaking out of the
+    per-item iteration (item["id"] on a string key)."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_path = Path(tmpdir)
+
+        malformed_yaml = tmp_path / "mapping.yaml"
+        malformed_yaml.write_text(
+            """id: test_skill
+category: languages
+status: curated
+"""
+        )
+
+        with pytest.raises(ValueError) as exc_info:
+            load_skill_graph(tmp_path)
+
+        error_msg = str(exc_info.value)
+        assert "mapping.yaml" in error_msg
+        assert "list" in error_msg.lower()

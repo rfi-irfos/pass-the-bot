@@ -1,3 +1,5 @@
+"""Skill-graph data model: SkillEntry dataclass and YAML loading/filtering."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -5,6 +7,8 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
+
+DEFAULT_DATA_DIR = Path(__file__).parent / "data" / "skills"
 
 Category = Literal[
     "languages", "frameworks", "tools", "certifications",
@@ -35,6 +39,11 @@ def load_skill_graph(data_dir: Path) -> list[SkillEntry]:
     entries: list[SkillEntry] = []
     for yaml_file in sorted(data_dir.glob("*.yaml")):
         raw = yaml.safe_load(yaml_file.read_text(encoding="utf-8")) or []
+        if not isinstance(raw, list):
+            raise ValueError(
+                f"{yaml_file.name}: expected a top-level YAML list of entries, "
+                f"got {type(raw).__name__}"
+            )
         for entry_idx, item in enumerate(raw):
             try:
                 entries.append(

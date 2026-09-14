@@ -34,7 +34,10 @@ def get_graph_version(repo_root: Path) -> str:
 
 
 def build_report(
-    results: list[MatchResult], graph_version: str, engine_version: str = "0.1.0"
+    results: list[MatchResult],
+    graph_version: str,
+    engine_version: str = "0.1.0",
+    model_version: str = "unknown",
 ) -> dict:
     required_results = [r for r in results if r.required]
     required_total = len(required_results)
@@ -45,6 +48,7 @@ def build_report(
     return {
         "engine_version": engine_version,
         "graph_version": graph_version,
+        "model_version": model_version,
         "results": [asdict(r) for r in results],
         "score": {
             "required_matched": required_matched,

@@ -1,10 +1,11 @@
+"""CLI + validation rules for the skill graph: category/status/alias-collision checks."""
+
 from __future__ import annotations
 
 import re
 import sys
-from pathlib import Path
 
-from passthebot.graph import DISCRETE_CATEGORIES, SkillEntry, load_skill_graph
+from passthebot.graph import DEFAULT_DATA_DIR, DISCRETE_CATEGORIES, SkillEntry, load_skill_graph
 
 VALID_CATEGORIES = DISCRETE_CATEGORIES | {"soft_skills"}
 VALID_STATUSES = {"curated", "ai-suggested-pending", "ai-suggested-approved"}
@@ -55,8 +56,7 @@ def validate_graph(entries: list[SkillEntry]) -> None:
 
 
 def main() -> int:
-    data_dir = Path(__file__).parent.parent.parent / "data" / "skills"
-    entries = load_skill_graph(data_dir)
+    entries = load_skill_graph(DEFAULT_DATA_DIR)
     try:
         validate_graph(entries)
     except GraphValidationError as exc:
