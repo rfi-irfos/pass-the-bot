@@ -38,10 +38,10 @@
   body {
     background-color: #f8fafc;
     background-image:
-      radial-gradient(circle at 8% 15%, rgba(251, 146, 60, 0.16), transparent 42%),
-      radial-gradient(circle at 85% 8%, rgba(45, 212, 191, 0.18), transparent 45%),
-      radial-gradient(circle at 75% 85%, rgba(45, 212, 191, 0.14), transparent 40%),
-      radial-gradient(circle at 15% 90%, rgba(251, 146, 60, 0.14), transparent 40%);
+      radial-gradient(circle at 8% 15%, rgba(251, 146, 60, 0.32), transparent 45%),
+      radial-gradient(circle at 85% 8%, rgba(45, 212, 191, 0.36), transparent 48%),
+      radial-gradient(circle at 75% 85%, rgba(45, 212, 191, 0.28), transparent 45%),
+      radial-gradient(circle at 15% 90%, rgba(251, 146, 60, 0.28), transparent 45%);
     background-attachment: fixed;
   }
 </style>
@@ -49,7 +49,7 @@
 <body class="text-gray-900 min-h-screen">
 
   <!-- Hero: full-width landing section -->
-  <header class="w-full bg-white/50 backdrop-blur-md border-b border-white/60 relative">
+  <header class="w-full bg-white/70 relative">
     <div class="absolute top-6 right-6 flex items-center gap-3">
       <a href="https://github.com/rfi-irfos/pass-the-bot" target="_blank" rel="noopener noreferrer"
          class="text-gray-500 hover:text-gray-900 transition" aria-label="GitHub repository">
@@ -63,7 +63,7 @@
       </div>
     </div>
 
-    <div class="max-w-5xl mx-auto px-6 py-16 md:py-24">
+    <div class="max-w-5xl mx-auto px-6 py-10 md:py-14">
       <div class="grid md:grid-cols-2 gap-10 items-center">
         <div class="text-center md:text-left">
           <h1 class="text-6xl md:text-7xl font-extrabold mb-4 tracking-tight">
@@ -110,8 +110,9 @@
 
   <main class="w-full max-w-4xl mx-auto px-6 py-12">
 
-    <!-- Input form -->
-    <form id="check-form" class="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm mb-8">
+    <!-- Single expanding app card: form on top, results grow in below -->
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm mb-8 overflow-hidden">
+    <form id="check-form" class="p-8">
       <div class="grid md:grid-cols-2 gap-6">
         <div>
           <label for="posting_text" class="block text-center text-lg font-semibold mb-3" data-i18n="labelPosting"></label>
@@ -157,8 +158,8 @@
       <div id="error-box" class="hidden mt-4 p-4 rounded-lg bg-red-50 text-red-800 border border-red-200"></div>
     </form>
 
-    <!-- Result card (skeleton until real data loads) -->
-    <div id="results-card" class="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm opacity-40">
+    <!-- Results grow inside the same card (skeleton until real data loads) -->
+    <div id="results-card" class="border-t border-gray-100 p-8 opacity-40">
       <div class="flex flex-col md:flex-row items-center gap-8 mb-8">
         <svg width="140" height="140" viewBox="0 0 140 140" class="shrink-0">
           <circle cx="70" cy="70" r="60" fill="none" stroke="#e5e7eb" stroke-width="12"></circle>

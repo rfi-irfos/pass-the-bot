@@ -19,11 +19,12 @@ const TRANSLATIONS = {
     analyzing: "Analysiere...",
     progressText: "Dein Lebenslauf wird analysiert...",
     progressSteps: [
-      "Lese Lebenslauf-Datei ein (PDF/DOCX)...",
-      "Extrahiere Skills und Keywords aus der Anzeige...",
-      "Gleiche Begriffe mit dem Skill-Graph ab...",
-      "Suche nach Tippfehlern und Beinahe-Treffern...",
-      "Berechne Pflicht-/Kür-Abdeckung und Score...",
+      "Dein Lebenslauf wird eingelesen und der Text daraus extrahiert.",
+      "Parallel dazu wird die Stellenanzeige nach Skills und Keywords durchsucht.",
+      "Anschließend wird geprüft, welche Anforderungen als Pflicht und welche nur als Kür gelten.",
+      "Jetzt vergleicht das System, welche dieser Skills tatsächlich in deinem Lebenslauf auftauchen.",
+      "Auch Tippfehler werden erkannt — so zählt \"Dockr\" trotzdem als \"Docker\".",
+      "Am Ende steht dein persönlicher ATS-Score.",
     ],
     errorBoth: "Bitte sowohl den Anzeigentext als auch eine Lebenslauf-Datei angeben.",
     errorUnreachable: "Backend nicht erreichbar. Läuft es gerade?",
@@ -67,11 +68,12 @@ const TRANSLATIONS = {
     analyzing: "Analyzing...",
     progressText: "Analyzing your resume...",
     progressSteps: [
-      "Reading resume file (PDF/DOCX)...",
-      "Extracting skills and keywords from the posting...",
-      "Matching terms against the skill graph...",
-      "Checking for typos and near-misses...",
-      "Calculating required/optional coverage and score...",
+      "Your resume is opened and the text is extracted from it.",
+      "At the same time, the job posting is scanned for skills and keywords.",
+      "Next, the system checks which requirements are mandatory and which are just nice-to-have.",
+      "Now it compares which of those skills actually show up in your resume.",
+      "Typos get caught too — so \"Dockr\" still counts as \"Docker\".",
+      "Finally, your personal ATS score is calculated.",
     ],
     errorBoth: "Please provide both the job posting text and a resume file.",
     errorUnreachable: "Could not reach the backend. Is it running?",
@@ -383,7 +385,7 @@ form.addEventListener("submit", async (event) => {
       progressStepEl.textContent = steps[stepIndex];
       progressStepEl.classList.remove("fading");
     }, 500);
-  }, 4000);
+  }, 5000);
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/check`, {
