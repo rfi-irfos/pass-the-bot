@@ -21,21 +21,45 @@ def extract_discrete_keywords(text: str, entries: list[SkillEntry]) -> list[Extr
     Matching is on normalized substrings (see normalize_string): case-insensitive,
     punctuation/whitespace-collapsed. Each skill id is reported at most once, even
     if multiple of its aliases (or the same alias multiple times) appear in the text.
+
+    Uses longest-alias-first matching with span-claiming: normalization turns
+    punctuation like "." into a space (e.g. "Node.js" -> "node js"), which means
+    a short alias belonging to a *different* entry (e.g. "js" for javascript) can
+    accidentally match as a standalone token inside a longer alias's normalized
+    text ("node js"). To avoid this, all (alias, entry) pairs are tried longest-
+    normalized-alias-first, and once a span of the normalized text is claimed by
+    a match, no shorter alias is allowed to match inside that span. This is the
+    same failure class as the Java/JavaScript regression case (design spec
+    section 8), just reached via punctuation normalization instead of a raw
+    substring collision.
     """
     normalized_text = normalize_string(text)
-    found: dict[str, ExtractedKeyword] = {}
+    claimed = [False] * len(normalized_text)
+
+    pairs: list[tuple[str, str, SkillEntry]] = []
     for entry in entries:
-        if entry.id in found:
-            continue
         for alias in entry.aliases:
             needle = normalize_string(alias)
-            if needle and re.search(
-                rf"(?<![a-z0-9]){re.escape(needle)}(?![a-z0-9])", normalized_text
-            ):
-                found[entry.id] = ExtractedKeyword(
-                    id=entry.id, category=entry.category, matched_text=alias, confidence=1.0
-                )
-                break
+            if needle:
+                pairs.append((needle, alias, entry))
+    pairs.sort(key=lambda p: len(p[0]), reverse=True)
+
+    found: dict[str, ExtractedKeyword] = {}
+    for needle, alias, entry in pairs:
+        if entry.id in found:
+            continue
+        for m in re.finditer(
+            rf"(?<![a-z0-9]){re.escape(needle)}(?![a-z0-9])", normalized_text
+        ):
+            start, end = m.start(), m.end()
+            if any(claimed[start:end]):
+                continue
+            for i in range(start, end):
+                claimed[i] = True
+            found[entry.id] = ExtractedKeyword(
+                id=entry.id, category=entry.category, matched_text=alias, confidence=1.0
+            )
+            break
     return list(found.values())
 
 
