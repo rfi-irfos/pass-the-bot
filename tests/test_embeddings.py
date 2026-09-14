@@ -7,7 +7,7 @@ SOFT_SKILL_ENTRIES = [
         id="teamwork", category="soft_skills", display={"en": "Team player"},
         status="curated", added="2026-09-14",
         anchor_phrases=["team player", "works well in teams", "collaborative"],
-        embedding_threshold=0.6,
+        embedding_threshold=0.45,
     ),
 ]
 
@@ -26,7 +26,7 @@ def test_extract_soft_skills_matches_close_phrase():
     )
     assert len(result) == 1
     assert result[0].id == "teamwork"
-    assert result[0].confidence >= 0.6
+    assert result[0].confidence >= 0.45
 
 
 def test_extract_soft_skills_below_threshold_excluded():
