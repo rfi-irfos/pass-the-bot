@@ -6,36 +6,60 @@
 <title data-i18n="pageTitle">Pass The Bot! — sieh deinen Lebenslauf wie ein ATS</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; font-size: 125%; }
 
   @keyframes progress-sweep {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(300%); }
   }
-  #progress-bar { animation: progress-sweep 1.2s ease-in-out infinite; }
+  #progress-bar { animation: progress-sweep 2.4s ease-in-out infinite; }
 
-  @keyframes gauge-loading-spin {
-    0% { stroke-dashoffset: 377; }
-    50% { stroke-dashoffset: 94; }
-    100% { stroke-dashoffset: 377; }
+  #progress-step {
+    transition: opacity 0.5s ease;
   }
+  #progress-step.fading {
+    opacity: 0;
+  }
+
   #gauge-circle.gauge-loading {
-    animation: gauge-loading-spin 2.2s ease-in-out infinite;
     transition: none;
   }
   #gauge-circle {
     transition: stroke-dashoffset 1.8s cubic-bezier(0.22, 1.12, 0.4, 1);
   }
+
+  [data-i18n], [data-i18n-placeholder] {
+    transition: opacity 0.25s ease;
+  }
+  .lang-fading {
+    opacity: 0;
+  }
+
+  body {
+    background-color: #f8fafc;
+    background-image:
+      radial-gradient(circle at 8% 15%, rgba(251, 146, 60, 0.16), transparent 42%),
+      radial-gradient(circle at 85% 8%, rgba(45, 212, 191, 0.18), transparent 45%),
+      radial-gradient(circle at 75% 85%, rgba(45, 212, 191, 0.14), transparent 40%),
+      radial-gradient(circle at 15% 90%, rgba(251, 146, 60, 0.14), transparent 40%);
+    background-attachment: fixed;
+  }
 </style>
 </head>
-<body class="bg-slate-50 text-gray-900 min-h-screen">
+<body class="text-gray-900 min-h-screen">
 
   <!-- Hero: full-width landing section -->
-  <header class="w-full bg-white border-b border-gray-200 relative">
-    <div class="absolute top-6 right-6">
-      <div class="inline-flex bg-white border border-gray-200 rounded-full p-1 shadow-sm text-sm">
-        <button type="button" id="lang-de" class="px-3 py-1 rounded-full font-medium">DE</button>
-        <button type="button" id="lang-en" class="px-3 py-1 rounded-full font-medium text-gray-400">EN</button>
+  <header class="w-full bg-white/50 backdrop-blur-md border-b border-white/60 relative">
+    <div class="absolute top-6 right-6 flex items-center gap-3">
+      <a href="https://github.com/rfi-irfos/pass-the-bot" target="_blank" rel="noopener noreferrer"
+         class="text-gray-500 hover:text-gray-900 transition" aria-label="GitHub repository">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.207 11.387.6.113.793-.26.793-.577 0-.285-.01-1.04-.016-2.04-3.338.725-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.729.083-.729 1.205.084 1.84 1.237 1.84 1.237 1.07 1.834 2.809 1.304 3.495.997.108-.775.42-1.305.762-1.605-2.665-.303-5.467-1.332-5.467-5.93 0-1.31.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.3 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.29-1.552 3.297-1.23 3.297-1.23.653 1.652.242 2.873.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.61-2.807 5.624-5.48 5.921.43.372.823 1.102.823 2.222 0 1.604-.014 2.896-.014 3.29 0 .32.192.694.801.576C20.565 21.795 24 17.298 24 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+      </a>
+      <div class="inline-flex bg-white border border-gray-200 rounded-full p-1 shadow-sm text-base">
+        <button type="button" id="lang-de" class="px-4 py-1.5 rounded-full font-medium transition-colors duration-300">DE</button>
+        <button type="button" id="lang-en" class="px-4 py-1.5 rounded-full font-medium text-gray-400 transition-colors duration-300">EN</button>
       </div>
     </div>
 
@@ -47,10 +71,19 @@
           </h1>
           <p class="text-xl font-semibold mb-4" data-i18n="tagline"></p>
           <p class="text-gray-500 max-w-md mx-auto md:mx-0 mb-8" data-i18n="desc1"></p>
-          <div class="flex justify-center md:justify-start gap-3 text-sm">
-            <span class="bg-green-50 text-green-700 rounded-full px-4 py-1.5" data-i18n="badgeFree"></span>
-            <span class="bg-blue-50 text-blue-700 rounded-full px-4 py-1.5" data-i18n="badgeNoAccount"></span>
-            <span class="bg-purple-50 text-purple-700 rounded-full px-4 py-1.5" data-i18n="badgeOpenSource"></span>
+          <div class="flex flex-nowrap justify-center md:justify-start gap-2 text-sm">
+            <span class="badge-pill bg-white border-2 border-green-600 text-green-700 rounded-full pl-2.5 pr-4 py-1.5 inline-flex items-center gap-1.5 font-medium whitespace-nowrap">
+              <svg width="16" height="16" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#15803d"></circle><path d="M5 9.5 L7.5 12 L13 6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              <span data-i18n="badgeFree"></span>
+            </span>
+            <span class="badge-pill bg-white border-2 border-blue-600 text-blue-700 rounded-full pl-2.5 pr-4 py-1.5 inline-flex items-center gap-1.5 font-medium whitespace-nowrap">
+              <svg width="16" height="16" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#15803d"></circle><path d="M5 9.5 L7.5 12 L13 6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              <span data-i18n="badgeNoAccount"></span>
+            </span>
+            <span class="badge-pill bg-white border-2 border-purple-600 text-purple-700 rounded-full pl-2.5 pr-4 py-1.5 inline-flex items-center gap-1.5 font-medium whitespace-nowrap">
+              <svg width="16" height="16" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#15803d"></circle><path d="M5 9.5 L7.5 12 L13 6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              <span data-i18n="badgeOpenSource"></span>
+            </span>
           </div>
         </div>
 
@@ -81,17 +114,21 @@
     <form id="check-form" class="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm mb-8">
       <div class="grid md:grid-cols-2 gap-6">
         <div>
-          <label for="posting_text" class="block text-sm font-medium mb-2" data-i18n="labelPosting"></label>
-          <textarea id="posting_text" name="posting_text" rows="8" required
-            class="w-full border border-gray-300 rounded-lg p-4 text-base focus:outline-none focus:ring-2 focus:ring-black"
+          <label for="posting_text" class="block text-center text-lg font-semibold mb-3" data-i18n="labelPosting"></label>
+          <textarea id="posting_text" name="posting_text" required
+            class="w-full h-32 border border-gray-300 rounded-lg p-4 text-base focus:outline-none focus:ring-2 focus:ring-black resize-none"
             data-i18n-placeholder="placeholderPosting"></textarea>
         </div>
 
         <div>
-          <label for="resume_file" class="block text-sm font-medium mb-2" data-i18n="labelCv"></label>
-          <div class="relative border-2 border-dashed border-gray-300 rounded-lg h-[calc(100%-1.75rem)] min-h-[164px] flex flex-col items-center justify-center text-center p-4">
-            <div id="file-name-display" class="text-sm text-gray-600 px-2 truncate max-w-full">
-              <span data-i18n="fileHint"></span><br>
+          <label for="resume_file" class="block text-center text-lg font-semibold mb-3" data-i18n="labelCv"></label>
+          <div class="relative border-2 border-dashed border-gray-300 rounded-lg h-32 flex flex-col items-center justify-center text-center p-4">
+            <div id="file-name-display" class="text-sm text-gray-600 px-2 truncate max-w-full flex flex-col items-center gap-1">
+              <svg width="28" height="28" viewBox="0 0 28 28" class="mb-1">
+                <circle cx="14" cy="14" r="13" fill="none" stroke="#9ca3af" stroke-width="1.5"></circle>
+                <path d="M14 8 V20 M8 14 H20" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"></path>
+              </svg>
+              <span data-i18n="fileHint"></span>
               <span class="text-gray-400" data-i18n="fileTypes"></span>
             </div>
             <input type="file" id="resume_file" name="resume_file" accept=".pdf,.docx" required
@@ -101,14 +138,20 @@
       </div>
 
       <button type="submit" id="submit-btn"
-        class="w-full mt-6 bg-green-800 text-white rounded-lg py-4 text-lg font-semibold hover:bg-green-900 transition"
-        data-i18n="analyzeBtn"></button>
+        class="w-full mt-6 bg-green-800 hover:bg-green-900 text-white rounded-lg py-4 text-lg font-semibold transition flex items-center justify-center gap-2">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <circle cx="8.5" cy="8.5" r="6" stroke="#ffffff" stroke-width="2"></circle>
+          <path d="M13.5 13.5 L18 18" stroke="#ffffff" stroke-width="2" stroke-linecap="round"></path>
+        </svg>
+        <span id="submit-btn-label" data-i18n="analyzeBtn"></span>
+      </button>
 
       <div id="progress-wrap" class="hidden mt-4">
         <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
           <div id="progress-bar" class="bg-green-700 h-2 rounded-full w-1/3"></div>
         </div>
         <p class="text-sm text-gray-500 mt-2 text-center" data-i18n="progressText"></p>
+        <p id="progress-step" class="text-sm text-gray-900 font-medium mt-2 text-center"></p>
       </div>
 
       <div id="error-box" class="hidden mt-4 p-4 rounded-lg bg-red-50 text-red-800 border border-red-200"></div>

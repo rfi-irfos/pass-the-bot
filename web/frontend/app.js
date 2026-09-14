@@ -18,6 +18,13 @@ const TRANSLATIONS = {
     analyzeBtn: "Lebenslauf analysieren",
     analyzing: "Analysiere...",
     progressText: "Dein Lebenslauf wird analysiert...",
+    progressSteps: [
+      "Lese Lebenslauf-Datei ein (PDF/DOCX)...",
+      "Extrahiere Skills und Keywords aus der Anzeige...",
+      "Gleiche Begriffe mit dem Skill-Graph ab...",
+      "Suche nach Tippfehlern und Beinahe-Treffern...",
+      "Berechne Pflicht-/Kür-Abdeckung und Score...",
+    ],
     errorBoth: "Bitte sowohl den Anzeigentext als auch eine Lebenslauf-Datei angeben.",
     errorUnreachable: "Backend nicht erreichbar. Läuft es gerade?",
     atsResultHeading: "ATS-Ergebnis",
@@ -59,6 +66,13 @@ const TRANSLATIONS = {
     analyzeBtn: "Analyze Resume",
     analyzing: "Analyzing...",
     progressText: "Analyzing your resume...",
+    progressSteps: [
+      "Reading resume file (PDF/DOCX)...",
+      "Extracting skills and keywords from the posting...",
+      "Matching terms against the skill graph...",
+      "Checking for typos and near-misses...",
+      "Calculating required/optional coverage and score...",
+    ],
     errorBoth: "Please provide both the job posting text and a resume file.",
     errorUnreachable: "Could not reach the backend. Is it running?",
     atsResultHeading: "ATS Result",
@@ -91,7 +105,9 @@ let lastReport = null;
 
 const form = document.getElementById("check-form");
 const submitBtn = document.getElementById("submit-btn");
+const submitBtnLabel = document.getElementById("submit-btn-label");
 const progressWrap = document.getElementById("progress-wrap");
+const progressStepEl = document.getElementById("progress-step");
 const errorBox = document.getElementById("error-box");
 const resultsCard = document.getElementById("results-card");
 const fileInput = document.getElementById("resume_file");
@@ -132,22 +148,37 @@ function applyStaticTranslations() {
 }
 
 function setLang(lang) {
-  currentLang = lang;
-  applyStaticTranslations();
-  if (lastReport) {
-    renderResults(lastReport, { scroll: false });
-  }
+  if (lang === currentLang) return;
+  const fadeTargets = document.querySelectorAll("[data-i18n], [data-i18n-placeholder]");
+  fadeTargets.forEach((el) => el.classList.add("lang-fading"));
+  setTimeout(() => {
+    currentLang = lang;
+    applyStaticTranslations();
+    if (lastReport) {
+      renderResults(lastReport, { scroll: false });
+    }
+    fadeTargets.forEach((el) => el.classList.remove("lang-fading"));
+  }, 250);
 }
 
 langDeBtn.addEventListener("click", () => setLang("de"));
 langEnBtn.addEventListener("click", () => setLang("en"));
+
+const FILE_UPLOAD_ICON = `<svg width="28" height="28" viewBox="0 0 28 28" class="mb-1">
+  <circle cx="14" cy="14" r="13" fill="none" stroke="#9ca3af" stroke-width="1.5"></circle>
+  <path d="M14 8 V20 M8 14 H20" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"></path>
+</svg>`;
+
+function resetFileNameDisplay() {
+  fileNameDisplay.innerHTML = `${FILE_UPLOAD_ICON}<span>${t("fileHint")}</span><span class="text-gray-400">${t("fileTypes")}</span>`;
+}
 
 fileInput.addEventListener("change", () => {
   const file = fileInput.files[0];
   if (file) {
     fileNameDisplay.textContent = file.name;
   } else {
-    fileNameDisplay.innerHTML = `<span>${t("fileHint")}</span><br><span class="text-gray-400">${t("fileTypes")}</span>`;
+    resetFileNameDisplay();
   }
 });
 
@@ -228,8 +259,31 @@ function gaugeColorFor(pct) {
   return `rgb(${last.join(",")})`;
 }
 
-function animateGaugeTo(pct) {
+let loadingAnimationActive = false;
+
+function startGaugeLoadingAnimation() {
+  loadingAnimationActive = true;
+  gaugeCircle.classList.add("gauge-loading");
+  const start = performance.now();
+  function loop(now) {
+    if (!loadingAnimationActive) return;
+    const elapsed = (now - start) / 1000;
+    const fakePct = 50 + 45 * Math.sin(elapsed * 1.4);
+    const offset = GAUGE_CIRCUMFERENCE * (1 - fakePct / 100);
+    gaugeCircle.setAttribute("stroke-dashoffset", offset);
+    gaugeCircle.setAttribute("stroke", gaugeColorFor(fakePct));
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+}
+
+function stopGaugeLoadingAnimation() {
+  loadingAnimationActive = false;
   gaugeCircle.classList.remove("gauge-loading");
+}
+
+function animateGaugeTo(pct) {
+  stopGaugeLoadingAnimation();
   const offset = GAUGE_CIRCUMFERENCE * (1 - pct / 100);
   gaugeCircle.setAttribute("stroke-dashoffset", offset);
 
@@ -310,10 +364,26 @@ form.addEventListener("submit", async (event) => {
   formData.append("lang", currentLang);
 
   submitBtn.disabled = true;
-  submitBtn.textContent = t("analyzing");
+  submitBtnLabel.textContent = t("analyzing");
   progressWrap.classList.remove("hidden");
-  gaugeCircle.classList.add("gauge-loading");
   gaugeText.textContent = "…";
+  startGaugeLoadingAnimation();
+
+  let stepIndex = 0;
+  const steps = t("progressSteps");
+  progressStepEl.textContent = steps[0];
+  const stepInterval = setInterval(() => {
+    if (stepIndex >= steps.length - 1) {
+      clearInterval(stepInterval);
+      return;
+    }
+    stepIndex += 1;
+    progressStepEl.classList.add("fading");
+    setTimeout(() => {
+      progressStepEl.textContent = steps[stepIndex];
+      progressStepEl.classList.remove("fading");
+    }, 500);
+  }, 4000);
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/check`, {
@@ -332,9 +402,10 @@ form.addEventListener("submit", async (event) => {
   } catch (err) {
     showError(t("errorUnreachable"));
   } finally {
-    gaugeCircle.classList.remove("gauge-loading");
+    clearInterval(stepInterval);
+    stopGaugeLoadingAnimation();
     submitBtn.disabled = false;
-    submitBtn.textContent = t("analyzeBtn");
+    submitBtnLabel.textContent = t("analyzeBtn");
     progressWrap.classList.add("hidden");
   }
 });
