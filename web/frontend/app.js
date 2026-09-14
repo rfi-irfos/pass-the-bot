@@ -6,7 +6,6 @@ const TRANSLATIONS = {
     pageTitle: "Pass The Bot! — sieh deinen Lebenslauf wie ein ATS",
     tagline: "Sieh deinen Lebenslauf so, wie ihn ein Bewerbermanagementsystem (ATS) sieht.",
     desc1: 'Anzeige einfügen, Lebenslauf hochladen und sofort eine transparente Auswertung bekommen: welche geforderten Skills erkannt wurden, welche knapp danebenlagen (Tippfehler wie "Dockr" statt "Docker"), und welche wirklich fehlen.',
-    desc2: "Keine KI-Blackbox, kein automatisches Umschreiben deines Lebenslaufs — nur eine deterministische, nachvollziehbare Diagnose, damit du genau weißt, warum ein Keyword-Filter dich durchlässt oder aussortiert, bevor ein Mensch deine Bewerbung überhaupt sieht.",
     badgeFree: "Kostenlos",
     badgeNoAccount: "Kein Account",
     badgeOpenSource: "Open Source",
@@ -49,13 +48,12 @@ const TRANSLATIONS = {
     tipRequired: (name) => `Ergänze Belege für ${name} — das ist laut Anzeige ein Pflicht-Skill.`,
     tipOptional: (name) => `Erwähne ${name}, falls vorhanden — laut Anzeige von Vorteil.`,
     privacyNote:
-      "Wir speichern deine Daten nicht. Nichts wird gespeichert oder zum Trainieren eines Modells verwendet, diese Seite setzt keine Cookies — dein Lebenslauf und der Anzeigentext bleiben in deinem Browser und werden nur für diese eine Prüfung an die Analyse-Engine geschickt.",
+      "Diagnose statt KI-Blackbox: Das System entscheidet deterministisch und nachvollziehbar, warum ein Keyword-Filter dich durchlässt oder aussortiert — ohne deinen Lebenslauf umzuschreiben. Deine Daten werden dabei nicht gespeichert, nicht zum Trainieren eines Modells verwendet, und diese Seite setzt keine Cookies: alles bleibt in deinem Browser und wird nur für diese eine Prüfung an die Analyse-Engine geschickt.",
   },
   en: {
     pageTitle: "Pass The Bot! — see your CV the way the machine sees it",
     tagline: "See your resume the way an Applicant Tracking System (ATS) sees it.",
     desc1: 'Paste a job posting, upload your CV, and get an instant, transparent breakdown: which required skills matched, which were near-misses caught by typos or phrasing (like "Dockr" vs "Docker"), and which are genuinely missing.',
-    desc2: "No AI black box, no rewriting your resume for you — just a deterministic, explainable diagnostic so you know exactly why a keyword filter would pass or reject you, before a recruiter ever sees it.",
     badgeFree: "Free",
     badgeNoAccount: "No account",
     badgeOpenSource: "Open source",
@@ -98,7 +96,7 @@ const TRANSLATIONS = {
     tipRequired: (name) => `Add evidence of ${name} — this is listed as a required skill in the posting.`,
     tipOptional: (name) => `Consider mentioning ${name} if you have it — it's listed as a nice-to-have.`,
     privacyNote:
-      "We don't keep your data. Nothing is stored, nothing is used to train any model, this page sets no cookies — your resume and the posting text stay in your browser and are only sent to the analysis engine for this one check.",
+      "A diagnosis, not an AI black box: the system decides deterministically and transparently why a keyword filter would pass or reject you — without rewriting your resume for you. None of your data is stored or used to train anything, and this page sets no cookies: everything stays in your browser and is sent to the analysis engine only for this one check.",
   },
 };
 
