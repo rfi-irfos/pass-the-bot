@@ -71,7 +71,7 @@ def extract_discrete_keywords(text: str, entries: list[SkillEntry]) -> list[Extr
     return list(found.values())
 
 
-def _split_sentences(text: str) -> list[str]:
+def split_sentences(text: str) -> list[str]:
     """Split text into sentences on . ! ? boundaries and newlines, dropping
     empty fragments.
 
@@ -83,6 +83,11 @@ def _split_sentences(text: str) -> list[str]:
     with no terminal punctuation per line (e.g. "- Python\\n- Teamfaehigkeit"),
     which would otherwise collapse into one large fragment and reintroduce the
     same dilution problem.
+
+    Public (no leading underscore) because passthebot.requirement reuses this
+    exact sentence-scoping logic for its own proximity heuristic, instead of
+    re-deriving a second sentence splitter with potentially different edge-case
+    behavior.
     """
     sentences = re.split(r"(?<=[.!?])\s+|\n+", text)
     return [s.strip() for s in sentences if s.strip()]
@@ -103,7 +108,7 @@ def extract_soft_skills(
     An entry is included if the best-matching anchor phrase (across all
     sentences) clears its own embedding_threshold.
     """
-    sentences = _split_sentences(text)
+    sentences = split_sentences(text)
     if not sentences:
         sentences = [text]
 

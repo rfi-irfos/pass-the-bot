@@ -92,7 +92,7 @@ def test_extract_soft_skills_finds_signal_diluted_in_multi_sentence_document():
 
 def test_extract_soft_skills_finds_signal_in_bullet_list_without_terminal_punctuation():
     """Regression test: real job postings are commonly bullet lists with no
-    terminal punctuation per line. _split_sentences must split on newlines too,
+    terminal punctuation per line. split_sentences must split on newlines too,
     not just on . ! ? , or the whole bullet list collapses into one fragment
     and reintroduces the whole-document dilution bug (Task 8) for this format.
     """

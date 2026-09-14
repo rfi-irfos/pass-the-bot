@@ -53,6 +53,35 @@ class _StubEmbedderWithoutModelName:
         return phrases[0], 0.0
 
 
+def test_run_pipeline_auto_detects_required_ids_when_omitted():
+    """When required_ids is omitted, the posting's own required/optional
+    signal phrases decide it, per passthebot.requirement.detect_required_ids."""
+    report = run_pipeline(
+        "Python is required for this role. Docker experience is nice to have.",
+        "Experienced Python developer, no Docker experience.",
+        data_dir=DATA_DIR,
+        repo_root=REPO_ROOT,
+    )
+    by_id = {r["id"]: r for r in report["results"]}
+    assert by_id["python"]["required"] is True
+    assert by_id["docker"]["required"] is False
+
+
+def test_run_pipeline_produces_near_miss_for_typo_in_resume():
+    """A misspelled skill in the resume should surface as NEAR_MISS, not a
+    silent MISSING, now that enrich_near_misses is wired in."""
+    report = run_pipeline(
+        "Docker is required for this role.",
+        "Comfortable with dockr and other containerization tools.",
+        {"docker"},
+        DATA_DIR,
+        REPO_ROOT,
+    )
+    docker_result = next(r for r in report["results"] if r["id"] == "docker")
+    assert docker_result["status"] == "NEAR_MISS"
+    assert docker_result["found_text"] == "dockr"
+
+
 def test_run_pipeline_tolerates_embedder_without_model_name_attribute():
     """extract_soft_skills only requires a best_match method on embedder (it's
     duck-typed), but the pipeline used to read embedder.model_name directly,
