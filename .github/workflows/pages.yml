@@ -26,6 +26,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - name: Cache-bust app.js
+        run: sed -i "s/app\.js\"/app.js?v=${{ github.sha }}\"/" web/frontend/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web/frontend
