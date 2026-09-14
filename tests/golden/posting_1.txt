@@ -1,0 +1,3 @@
+We are looking for a backend engineer.
+Required: Python, Docker experience.
+Nice to have: React, and someone who is a strong team player.
