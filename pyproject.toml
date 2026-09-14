@@ -20,3 +20,9 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 passthebot = ["data/skills/*.yaml"]
+
+[tool.pytest.ini_options]
+# web/backend has its own pyproject.toml, venv, and CI job -- without this,
+# a root-level `pytest` recurses into web/backend/tests and fails to import
+# fastapi (not a dependency of this package).
+testpaths = ["tests"]

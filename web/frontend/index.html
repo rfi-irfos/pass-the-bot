@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>passthebot — see your CV the way the machine sees it</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-gray-900 min-h-screen flex flex-col items-center px-6 py-16">
+
+  <main class="w-full max-w-2xl">
+    <h1 class="text-4xl font-bold mb-3">passthebot</h1>
+    <p class="text-lg text-gray-600 mb-10">
+      See how the matching engine reads your CV against a job posting.
+      Free, no account, no résumé rewriting — just an honest diagnostic.
+    </p>
+
+    <form id="check-form" class="space-y-6">
+      <div>
+        <label for="posting_text" class="block text-sm font-medium mb-2">Job posting text</label>
+        <textarea id="posting_text" name="posting_text" rows="8" required
+          class="w-full border border-gray-300 rounded-lg p-4 text-base focus:outline-none focus:ring-2 focus:ring-black"
+          placeholder="Paste the full job posting here..."></textarea>
+      </div>
+
+      <div>
+        <label for="resume_file" class="block text-sm font-medium mb-2">Your resume (PDF or DOCX)</label>
+        <input type="file" id="resume_file" name="resume_file" accept=".pdf,.docx" required
+          class="w-full border border-gray-300 rounded-lg p-3 text-base">
+      </div>
+
+      <button type="submit" id="submit-btn"
+        class="w-full bg-black text-white rounded-lg py-4 text-lg font-semibold hover:bg-gray-800 transition">
+        Check my CV
+      </button>
+    </form>
+
+    <div id="error-box" class="hidden mt-6 p-4 rounded-lg bg-red-50 text-red-800 border border-red-200"></div>
+
+    <div id="results" class="hidden mt-10">
+      <div class="text-center mb-8">
+        <div id="score-headline" class="text-3xl font-bold"></div>
+      </div>
+
+      <div class="space-y-8">
+        <section>
+          <h2 class="text-lg font-semibold text-green-700 mb-2">Matched</h2>
+          <ul id="matched-list" class="space-y-1"></ul>
+        </section>
+        <section>
+          <h2 class="text-lg font-semibold text-amber-700 mb-2">Near-Miss</h2>
+          <ul id="nearmiss-list" class="space-y-1"></ul>
+        </section>
+        <section>
+          <h2 class="text-lg font-semibold text-red-700 mb-2">Missing</h2>
+          <ul id="missing-list" class="space-y-1"></ul>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
