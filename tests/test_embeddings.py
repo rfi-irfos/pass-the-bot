@@ -56,3 +56,27 @@ def test_extract_soft_skills_uses_0_45_default_when_threshold_not_set():
     assert len(result) == 1
     assert result[0].id == "leadership"
     assert result[0].confidence >= 0.45
+
+
+def test_extract_soft_skills_finds_signal_diluted_in_multi_sentence_document():
+    """Regression test for the whole-document embedding dilution bug (Task 8).
+
+    Embedding the entire multi-sentence text as a single vector dilutes a strong
+    soft-skill mention down below threshold once it's surrounded by unrelated
+    filler sentences (observed: 0.20-0.26 vs. 0.56-0.72 for the sentence alone).
+    extract_soft_skills must score each sentence independently and keep the max,
+    so the "teamwork" mention is still found even buried in a realistic
+    multi-sentence posting/resume.
+    """
+    embedder = Embedder()
+    text = (
+        "Our company builds industrial sensors for the automotive sector. "
+        "We are headquartered in Linz and have offices across Europe. "
+        "The ideal candidate works well in teams and communicates clearly. "
+        "Benefits include a company car and flexible working hours. "
+        "Applications close at the end of the month."
+    )
+    result = extract_soft_skills(text, SOFT_SKILL_ENTRIES, embedder)
+    assert len(result) == 1
+    assert result[0].id == "teamwork"
+    assert result[0].confidence >= 0.45
