@@ -58,5 +58,5 @@ def run_pipeline(
     return build_report(
         results,
         graph_version=get_graph_version(repo_root),
-        model_version=embedder.model_name,
+        model_version=getattr(embedder, "model_name", "unknown"),
     )

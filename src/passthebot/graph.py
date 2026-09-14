@@ -38,7 +38,9 @@ def load_skill_graph(data_dir: Path) -> list[SkillEntry]:
     """Load every *.yaml file directly under data_dir into a flat list of SkillEntry."""
     entries: list[SkillEntry] = []
     for yaml_file in sorted(data_dir.glob("*.yaml")):
-        raw = yaml.safe_load(yaml_file.read_text(encoding="utf-8")) or []
+        raw = yaml.safe_load(yaml_file.read_text(encoding="utf-8"))
+        if raw is None:
+            raw = []
         if not isinstance(raw, list):
             raise ValueError(
                 f"{yaml_file.name}: expected a top-level YAML list of entries, "

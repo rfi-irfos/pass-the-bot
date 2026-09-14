@@ -99,3 +99,34 @@ status: curated
         error_msg = str(exc_info.value)
         assert "mapping.yaml" in error_msg
         assert "list" in error_msg.lower()
+
+
+def test_load_skill_graph_raises_on_empty_mapping_top_level():
+    """A YAML file whose top level is an empty mapping ('{}') must still raise
+    the non-list ValueError, not silently pass through as zero entries. Before
+    the fix, `yaml.safe_load(...) or []` ran before the isinstance check, so
+    an empty dict (falsy) was coerced to [] and the guard never fired."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_path = Path(tmpdir)
+
+        malformed_yaml = tmp_path / "empty_mapping.yaml"
+        malformed_yaml.write_text("{}\n")
+
+        with pytest.raises(ValueError) as exc_info:
+            load_skill_graph(tmp_path)
+
+        error_msg = str(exc_info.value)
+        assert "empty_mapping.yaml" in error_msg
+        assert "list" in error_msg.lower()
+
+
+def test_load_skill_graph_empty_file_yields_no_entries():
+    """A genuinely empty YAML file (safe_load returns None) is not a malformed
+    top level - it should load as zero entries, not raise."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_path = Path(tmpdir)
+
+        empty_yaml = tmp_path / "empty.yaml"
+        empty_yaml.write_text("")
+
+        assert load_skill_graph(tmp_path) == []

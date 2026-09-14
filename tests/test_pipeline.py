@@ -43,3 +43,27 @@ def test_run_pipeline_uses_default_data_dir_and_repo_root_when_omitted():
     assert "engine_version" in report
     assert "model_version" in report
     assert report["graph_version"] != "unknown"
+
+
+class _StubEmbedderWithoutModelName:
+    """Duck-typed embedder stub deliberately without a model_name attribute,
+    mirroring what a caller's test double might pass in."""
+
+    def best_match(self, sentence: str, phrases: list[str]):
+        return phrases[0], 0.0
+
+
+def test_run_pipeline_tolerates_embedder_without_model_name_attribute():
+    """extract_soft_skills only requires a best_match method on embedder (it's
+    duck-typed), but the pipeline used to read embedder.model_name directly,
+    which would AttributeError on a minimal stub. It must fall back to a
+    placeholder instead of crashing."""
+    report = run_pipeline(
+        "Requires Python.",
+        "Experienced Python developer.",
+        {"python"},
+        DATA_DIR,
+        REPO_ROOT,
+        embedder=_StubEmbedderWithoutModelName(),
+    )
+    assert report["model_version"] == "unknown"
