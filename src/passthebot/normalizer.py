@@ -64,14 +64,19 @@ def extract_discrete_keywords(text: str, entries: list[SkillEntry]) -> list[Extr
 
 
 def _split_sentences(text: str) -> list[str]:
-    """Split text into sentences on . ! ? boundaries, dropping empty fragments.
+    """Split text into sentences on . ! ? boundaries and newlines, dropping
+    empty fragments.
 
     A simple regex split is sufficient for V1 - no NLP library needed. Embedding
     the whole document as one vector dilutes short soft-skill mentions buried in
     a multi-sentence posting/resume, so callers should score sentence-by-sentence
-    instead of scoring the whole text at once.
+    instead of scoring the whole text at once. Splitting also on newlines is
+    required because real job postings are commonly formatted as bullet lists
+    with no terminal punctuation per line (e.g. "- Python\\n- Teamfaehigkeit"),
+    which would otherwise collapse into one large fragment and reintroduce the
+    same dilution problem.
     """
-    sentences = re.split(r"(?<=[.!?])\s+", text)
+    sentences = re.split(r"(?<=[.!?])\s+|\n+", text)
     return [s.strip() for s in sentences if s.strip()]
 
 
