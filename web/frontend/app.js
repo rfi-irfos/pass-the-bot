@@ -460,11 +460,33 @@ form.addEventListener("submit", async (event) => {
     }, 500);
   }, 5000);
 
+  // A single request occasionally hangs against an idle backend instance
+  // reconnecting on Fly's private network (a transient network-level hiccup,
+  // not a real outage). Bound each attempt with its own timeout and retry
+  // once before surfacing an error, instead of waiting on the browser's own
+  // (much longer) default timeout and showing a false "backend unreachable".
+  async function fetchCheck() {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    try {
+      return await fetch(`${API_BASE_URL}/api/check`, {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
   try {
-    const response = await fetch(`${API_BASE_URL}/api/check`, {
-      method: "POST",
-      body: formData,
-    });
+    let response;
+    try {
+      response = await fetchCheck();
+    } catch (networkErr) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      response = await fetchCheck();
+    }
 
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
