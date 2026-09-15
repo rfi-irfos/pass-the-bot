@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from passthebot.embeddings import Embedder
 from passthebot.graph import SkillEntry
 from passthebot.normalizer import extract_soft_skills
@@ -19,6 +21,23 @@ SOFT_SKILL_NO_THRESHOLD = [
         # embedding_threshold intentionally omitted to test None fallback
     ),
 ]
+
+
+def test_embedder_caches_phrase_embeddings_across_calls():
+    """Real-world perf bug: best_match re-encoded the (static, curated)
+    anchor-phrase list on every single call. With N sentences x M soft-skill
+    entries per request, that's N*M redundant model forward passes on a
+    fixed, never-changing input -- observed as 3-15s per /api/check request
+    in production. Phrase embeddings must be cached by phrase-list content."""
+    embedder = Embedder()
+    phrases = ["team player", "collaborative"]
+    with patch.object(embedder._model, "encode", wraps=embedder._model.encode) as mock_encode:
+        embedder.best_match("great team player", phrases)
+        embedder.best_match("another sentence entirely", phrases)
+        phrase_encode_calls = [
+            c for c in mock_encode.call_args_list if c.args and c.args[0] == phrases
+        ]
+        assert len(phrase_encode_calls) == 1
 
 
 def test_embedder_scores_similar_phrases_higher():
