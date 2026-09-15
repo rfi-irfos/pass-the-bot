@@ -8,6 +8,7 @@ report with human-readable display names, and returns it as-is.
 from __future__ import annotations
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 
 from passthebot.embeddings import Embedder
@@ -39,17 +40,12 @@ app.add_middleware(
 
 
 @app.post("/api/check")
-def check(
+async def check(
     resume_file: UploadFile = File(...),
     posting_text: str = Form(...),
     lang: str = Form("en"),
 ) -> dict:
-    # A plain (non-async) endpoint: FastAPI runs it in a threadpool instead
-    # of on the event loop, so the CPU-bound embedding computation in
-    # run_pipeline doesn't block other requests (e.g. the health check) for
-    # the duration of the analysis. UploadFile.read() is async-only, so read
-    # the underlying SpooledTemporaryFile directly.
-    raw = resume_file.file.read()
+    raw = await resume_file.read()
     if len(raw) > MAX_FILE_BYTES:
         raise HTTPException(status_code=413, detail="resume_file exceeds the 5MB limit.")
 
@@ -59,7 +55,11 @@ def check(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     try:
-        report = run_pipeline(posting_text, resume_text, embedder=EMBEDDER)
+        # Offload the CPU-bound embedding computation to a worker thread so
+        # it doesn't block the event loop for the request's duration -- an
+        # async endpoint that ran this inline previously starved concurrent
+        # requests (e.g. the health check) for several seconds at a time.
+        report = await run_in_threadpool(run_pipeline, posting_text, resume_text, embedder=EMBEDDER)
     except PipelineInputError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
