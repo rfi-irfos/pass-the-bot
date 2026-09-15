@@ -21,7 +21,10 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  html { scroll-behavior: smooth; font-size: 125%; }
+  html { scroll-behavior: smooth; font-size: 100%; }
+  @media (min-width: 640px) {
+    html { font-size: 125%; }
+  }
 
   @keyframes progress-sweep {
     0% { transform: translateX(-100%); }
@@ -82,12 +85,12 @@
     <div class="max-w-5xl mx-auto px-6 py-10 md:py-14">
       <div class="grid md:grid-cols-2 gap-10 items-center">
         <div class="text-center md:text-left">
-          <h1 class="text-6xl md:text-7xl font-extrabold mb-4 tracking-tight">
+          <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold mb-4 tracking-tight">
             Pass The Bot<span class="text-green-600">!</span>
           </h1>
           <p class="text-xl font-semibold mb-4" data-i18n="tagline"></p>
           <p class="text-gray-500 max-w-md mx-auto md:mx-0 mb-8" data-i18n="desc1"></p>
-          <div class="flex flex-nowrap justify-center md:justify-start gap-2 text-sm">
+          <div class="flex flex-wrap sm:flex-nowrap justify-center md:justify-start gap-2 text-sm">
             <span class="badge-pill bg-white border-2 border-green-600 text-green-700 rounded-full pl-2.5 pr-4 py-1.5 inline-flex items-center gap-1.5 font-medium whitespace-nowrap shadow-md">
               <svg width="16" height="16" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#15803d"></circle><path d="M5 9.5 L7.5 12 L13 6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
               <span data-i18n="badgeFree"></span>
@@ -201,7 +204,7 @@
         <div>
           <h2 class="text-lg font-semibold mb-1" data-i18n="atsResultHeading"></h2>
           <p id="score-summary" class="text-gray-500 mb-4" data-i18n="scorePrompt"></p>
-          <div class="flex gap-8 text-sm">
+          <div class="flex flex-wrap justify-center md:justify-start gap-4 md:gap-8 text-sm">
             <div><span id="count-matched" class="font-bold text-green-700">0</span> <span data-i18n="matchedLabel"></span></div>
             <div><span id="count-nearmiss" class="font-bold text-amber-700">0</span> <span data-i18n="nearMissLabel"></span></div>
             <div><span id="count-missing" class="font-bold text-red-700">0</span> <span data-i18n="missingLabel"></span></div>
@@ -235,7 +238,7 @@
   <!-- Info modal: what is an ATS and why this tool exists -->
   <div id="info-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
     <div id="info-modal-backdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-    <div class="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto p-10">
+    <div class="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto p-6 md:p-10">
       <button type="button" id="info-modal-close" aria-label="Close"
         class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
