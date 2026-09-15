@@ -39,12 +39,17 @@ app.add_middleware(
 
 
 @app.post("/api/check")
-async def check(
+def check(
     resume_file: UploadFile = File(...),
     posting_text: str = Form(...),
     lang: str = Form("en"),
 ) -> dict:
-    raw = await resume_file.read()
+    # A plain (non-async) endpoint: FastAPI runs it in a threadpool instead
+    # of on the event loop, so the CPU-bound embedding computation in
+    # run_pipeline doesn't block other requests (e.g. the health check) for
+    # the duration of the analysis. UploadFile.read() is async-only, so read
+    # the underlying SpooledTemporaryFile directly.
+    raw = resume_file.file.read()
     if len(raw) > MAX_FILE_BYTES:
         raise HTTPException(status_code=413, detail="resume_file exceeds the 5MB limit.")
 
