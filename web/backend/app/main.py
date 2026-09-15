@@ -10,6 +10,7 @@ from __future__ import annotations
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
+from passthebot.embeddings import Embedder
 from passthebot.graph import DEFAULT_DATA_DIR, active_entries, load_skill_graph
 from passthebot.pipeline import PipelineInputError, run_pipeline
 
@@ -19,6 +20,11 @@ from .extraction import ExtractionError, extract_text
 MAX_FILE_BYTES = 5 * 1024 * 1024  # 5MB, bounds memory/processing on a free public endpoint
 
 app = FastAPI(title="passthebot web backend")
+
+# Loaded once at process startup and reused across requests -- without this,
+# run_pipeline's `embedder or Embedder()` default reloads the sentence-
+# transformers model from disk on every single request (~3-15s each).
+EMBEDDER = Embedder()
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,7 +54,7 @@ async def check(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     try:
-        report = run_pipeline(posting_text, resume_text)
+        report = run_pipeline(posting_text, resume_text, embedder=EMBEDDER)
     except PipelineInputError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
