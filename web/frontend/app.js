@@ -51,6 +51,8 @@ const TRANSLATIONS = {
     tipsEmpty: "Keine Änderungen nötig: dieser Lebenslauf deckt alles ab, was die Anzeige verlangt.",
     tipFix: (found, alias, name) =>
       `Schreibe "${found}" als exakten Begriff "${alias}", damit es als ${name} erkannt wird.`,
+    tipFixOpen: (name) =>
+      `Dein Lebenslauf deckt "${name}" vielleicht schon ab, aber nicht eindeutig genug: die Anzeige verlangt das explizit und es wurde nicht sicher erkannt.`,
     tipRequired: (name) => `Ergänze Belege für ${name}: das ist laut Anzeige ein Pflicht-Skill.`,
     tipOptional: (name) => `Erwähne ${name}, falls vorhanden: laut Anzeige von Vorteil.`,
     tipMissingSection: (name) =>
@@ -137,6 +139,8 @@ const TRANSLATIONS = {
     tipsEmpty: "No changes needed: this resume covers everything the posting asks for.",
     tipFix: (found, alias, name) =>
       `Fix "${found}" to the exact term "${alias}" so it's recognized as ${name}.`,
+    tipFixOpen: (name) =>
+      `Your resume may already cover "${name}", but not clearly enough: the posting is looking for this and it wasn't confidently matched.`,
     tipRequired: (name) => `Add evidence of ${name}: this is listed as a required skill in the posting.`,
     tipOptional: (name) => `Consider mentioning ${name} if you have it: it's listed as a nice-to-have.`,
     tipMissingSection: (name) =>
@@ -366,7 +370,11 @@ function buildTips(report) {
   const missingOptional = report.results.filter((r) => r.status === "MISSING" && !r.required);
 
   for (const item of nearMiss) {
-    tips.push(t("tipFix")(item.found_text, item.suggested_alias, item.display_name));
+    if (item.origin === "open") {
+      tips.push(t("tipFixOpen")(item.display_name));
+    } else {
+      tips.push(t("tipFix")(item.found_text, item.suggested_alias, item.display_name));
+    }
   }
   for (const item of missingRequired) {
     tips.push(t("tipRequired")(item.display_name));
@@ -639,7 +647,15 @@ function renderResults(report, { scroll = true } = {}) {
     for (const tip of tips) {
       const li = document.createElement("li");
       li.className = "flex gap-2";
-      li.innerHTML = `<span>&bull;</span><span>${tip}</span>`;
+
+      const bullet = document.createElement("span");
+      bullet.textContent = "•";
+      li.appendChild(bullet);
+
+      const tipText = document.createElement("span");
+      tipText.textContent = tip;
+      li.appendChild(tipText);
+
       tipsList.appendChild(li);
     }
   }

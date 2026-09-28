@@ -90,7 +90,7 @@ class _StubEmbedder:
     def __init__(self, scores: dict[str, float]):
         self._scores = scores
 
-    def best_match(self, text: str, phrases: list[str]):
+    def best_match(self, text: str, phrases: list[str], cache_phrases: bool = True):
         return phrases[0], self._scores.get(text, 0.0)
 
 
@@ -101,6 +101,7 @@ def test_open_requirement_above_match_threshold_is_match():
     assert results[0].status == "MATCH"
     assert results[0].origin == "open"
     assert results[0].id == "Python"
+    assert results[0].required is True
 
 
 def test_open_requirement_between_thresholds_is_near_miss():
@@ -108,6 +109,7 @@ def test_open_requirement_between_thresholds_is_near_miss():
     embedder = _StubEmbedder({"Schweissen": 0.40})
     results = match_open_requirements(reqs, "Some resume text.", embedder, claimed_spans=set())
     assert results[0].status == "NEAR_MISS"
+    assert results[0].required is True
 
 
 def test_open_requirement_below_near_miss_threshold_is_missing():
@@ -116,6 +118,8 @@ def test_open_requirement_below_near_miss_threshold_is_missing():
     results = match_open_requirements(reqs, "Some resume text.", embedder, claimed_spans=set())
     assert results[0].status == "MISSING"
     assert results[0].found_text is None
+    assert results[0].required is True
+    assert results[0].confidence is None
 
 
 def test_open_requirement_already_claimed_by_curated_match_is_skipped():

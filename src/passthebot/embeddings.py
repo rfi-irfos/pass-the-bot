@@ -44,9 +44,28 @@ class Embedder:
             self._sentence_cache.popitem(last=False)
         return embedding
 
-    def best_match(self, text: str, phrases: list[str]) -> tuple[str, float]:
+    def best_match(
+        self, text: str, phrases: list[str], cache_phrases: bool = True
+    ) -> tuple[str, float]:
+        """Score `text` against every phrase in `phrases` and return the
+        best-matching (phrase, score) pair.
+
+        `cache_phrases` controls whether `phrases` is routed through the
+        unbounded `_phrase_cache`. Leave it at the default (True) for
+        curated, fixed anchor-phrase lists (e.g. extract_soft_skills),
+        where the same small set of phrases is re-submitted across many
+        calls and caching saves real work. Pass False when `phrases` is
+        arbitrary per-request text (e.g. matcher.match_open_requirements
+        passing in the resume's own sentences) -- caching that would grow
+        `_phrase_cache` unboundedly for the life of a long-lived Embedder
+        singleton, the same leak `_sentence_cache`'s bounded LRU exists to
+        avoid for the "text" side of this call.
+        """
         text_emb = self._encode_sentence(text)
-        phrase_embs = self._encode_phrases(phrases)
+        if cache_phrases:
+            phrase_embs = self._encode_phrases(phrases)
+        else:
+            phrase_embs = self._model.encode(phrases, convert_to_tensor=True)
         scores = util.cos_sim(text_emb, phrase_embs)[0]
         best_idx = int(scores.argmax())
         return phrases[best_idx], float(scores[best_idx])

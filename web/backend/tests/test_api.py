@@ -82,6 +82,30 @@ def test_check_rejects_oversized_file():
     assert response.status_code == 413
 
 
+def test_check_returns_open_origin_result_with_literal_phrase_display_name():
+    """An open-vocabulary requirement (not in the curated skill catalog) has
+    no display-name lookup entry, so add_display_names's fallback path must
+    kick in and use the literal phrase text as its own display_name -- this
+    exercises that fallback through a real API response, not just a manual
+    pipeline run."""
+    pdf_path = FIXTURES / "api_test_resume_open.pdf"
+    FIXTURES.mkdir(exist_ok=True)
+    _make_resume_pdf(pdf_path, "Five years of experience welding steel frames.")
+
+    with pdf_path.open("rb") as f:
+        response = client.post(
+            "/api/check",
+            files={"resume_file": ("resume.pdf", f, "application/pdf")},
+            data={"posting_text": "Requirements\n- Welding experience\n"},
+        )
+
+    assert response.status_code == 200
+    body = response.json()
+    welding_result = next(r for r in body["results"] if r["origin"] == "open")
+    assert welding_result["id"] == "Welding experience"
+    assert welding_result["display_name"] == "Welding experience"
+
+
 def test_check_rejects_unsupported_file_type():
     response = client.post(
         "/api/check",

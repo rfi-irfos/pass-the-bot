@@ -140,7 +140,7 @@ def _phrase_already_claimed(key: str, claimed_spans: set[str]) -> bool:
     falsely match inside "javascript".
     """
     return any(
-        re.search(rf"(?<![a-z0-9]){re.escape(span)}(?![a-z0-9])", key)
+        span and re.search(rf"(?<![a-z0-9]){re.escape(span)}(?![a-z0-9])", key)
         for span in claimed_spans
     )
 
@@ -177,6 +177,20 @@ def match_open_requirements(
     callers (report.py, the frontend) can distinguish these from
     curated, exact-alias matches without re-deriving it from confidence
     or category.
+
+    Every returned result has required=True: an open-vocabulary phrase is
+    definitionally extracted from a requirements-style heading
+    (normalizer.extract_open_requirements only looks under
+    REQUIREMENT_HEADING_KEYWORDS), so it represents an actual stated
+    requirement, not an optional extra -- unlike curated matches, there is
+    no separate signal-phrase pass (passthebot.requirement) distinguishing
+    required vs. nice-to-have for open phrases, so all of them count
+    toward required coverage.
+
+    MISSING results carry confidence=None, not the raw sub-threshold
+    score, matching the convention used elsewhere in this module (match()
+    and enrich_near_misses) that confidence is only populated when
+    something was actually found.
     """
     sentences = split_sentences(resume_text)
     if not sentences:
@@ -190,7 +204,9 @@ def match_open_requirements(
             continue
         seen.add(key)
 
-        best_sentence, score = embedder.best_match(req.phrase, sentences)
+        best_sentence, score = embedder.best_match(
+            req.phrase, sentences, cache_phrases=False
+        )
         if score >= match_threshold:
             status: Status = "MATCH"
         elif score >= near_miss_threshold:
@@ -203,9 +219,9 @@ def match_open_requirements(
                 id=req.phrase,
                 category="open_requirements",
                 status=status,
-                required=False,
+                required=True,
                 found_text=best_sentence if status != "MISSING" else None,
-                confidence=score,
+                confidence=score if status != "MISSING" else None,
                 origin="open",
             )
         )

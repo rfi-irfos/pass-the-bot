@@ -235,3 +235,39 @@ def test_german_heading_with_english_requirement_items_detected():
     result = extract_open_requirements(text)
     phrases = [r.phrase for r in result]
     assert phrases == ["Strong communication skills", "Project management experience"]
+
+
+def test_requirements_section_stops_at_a_non_requirement_heading():
+    text = (
+        "Anforderungen\n"
+        "- Schweisskenntnisse\n"
+        "- Fuehrerschein Klasse B\n"
+        "\n"
+        "Wir bieten\n"
+        "- Firmenwagen\n"
+        "- 30 Urlaubstage\n"
+    )
+    result = extract_open_requirements(text)
+    phrases = [r.phrase for r in result]
+    assert phrases == ["Schweisskenntnisse", "Fuehrerschein Klasse B"]
+
+
+def test_bullet_line_containing_a_heading_keyword_is_not_treated_as_a_heading():
+    text = (
+        "Ihr Profil\n"
+        "- Requirements Engineering Erfahrung\n"
+        "- Teamfaehigkeit\n"
+    )
+    result = extract_open_requirements(text)
+    phrases = [r.phrase for r in result]
+    assert phrases == ["Requirements Engineering Erfahrung", "Teamfaehigkeit"]
+
+
+def test_prose_sentence_with_a_comma_is_not_shredded_into_fake_requirements():
+    text = (
+        "Requirements\n"
+        "We are looking for someone with strong accounting experience, "
+        "ideally with Excel, who can work independently.\n"
+    )
+    result = extract_open_requirements(text)
+    assert result == []

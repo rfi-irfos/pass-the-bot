@@ -109,6 +109,32 @@ def test_extract_soft_skills_finds_signal_diluted_in_multi_sentence_document():
     assert result[0].confidence >= 0.45
 
 
+def test_best_match_with_cache_phrases_false_does_not_grow_phrase_cache():
+    """match_open_requirements routes arbitrary per-request resume sentences
+    through best_match's phrase argument. Unlike extract_soft_skills's fixed,
+    curated anchor-phrase lists, that text must never be cached in the
+    unbounded _phrase_cache on the long-lived Embedder singleton, or memory
+    leaks for the life of the process (see embeddings.py's own module
+    comment about _phrase_cache vs. the bounded _sentence_cache)."""
+    embedder = Embedder()
+    phrases = ["A resume sentence that should never be cached as a phrase list."]
+
+    before = len(embedder._phrase_cache)
+    embedder.best_match("Welding experience", phrases, cache_phrases=False)
+    assert len(embedder._phrase_cache) == before
+    assert tuple(phrases) not in embedder._phrase_cache
+
+
+def test_best_match_default_still_caches_phrases():
+    embedder = Embedder()
+    phrases = ["team player", "collaborative"]
+
+    before = len(embedder._phrase_cache)
+    embedder.best_match("great team player", phrases)
+    assert len(embedder._phrase_cache) == before + 1
+    assert tuple(phrases) in embedder._phrase_cache
+
+
 def test_extract_soft_skills_finds_signal_in_bullet_list_without_terminal_punctuation():
     """Regression test: real job postings are commonly bullet lists with no
     terminal punctuation per line. split_sentences must split on newlines too,

@@ -35,8 +35,27 @@ def _normalize_heading_line(line: str) -> str:
     return line.strip().strip(":-–—").strip().lower()
 
 
-def _is_requirement_heading(normalized: str) -> bool:
+def _is_heading_shaped(line: str, normalized: str) -> bool:
+    """True if `line` looks like a standalone heading: short (<=6 words
+    after normalization) and not itself a bullet line. A bullet line whose
+    text happens to contain a heading keyword (e.g. "- Requirements
+    Engineering Erfahrung") must never qualify -- it's a list item, not a
+    section boundary."""
     if not normalized or len(normalized.split()) > 6:
+        return False
+    if _BULLET_PREFIX.match(line):
+        return False
+    if "," in normalized:
+        # A comma-separated line is list content (e.g. "Python, SQL, Excel"),
+        # never a section heading -- without this, a short comma-list body
+        # line would itself get misclassified as the next section boundary,
+        # truncating its own section to nothing.
+        return False
+    return True
+
+
+def _is_requirement_heading(line: str, normalized: str) -> bool:
+    if not _is_heading_shaped(line, normalized):
         return False
     return any(
         re.search(rf"(?<![a-zäöü]){re.escape(kw)}(?![a-zäöü])", normalized)
@@ -58,29 +77,48 @@ def extract_open_requirements(posting_text: str) -> list[OpenRequirement]:
 
     Once a requirement heading is found, every following bulleted line
     (leading -, *, •, or "1." / "1)") up to the next heading is one
-    candidate phrase. If a heading's body has no bullets but a line
-    contains commas, that line is split on commas into one candidate
-    phrase per item instead.
+    candidate phrase. A section's body ends at the next line that LOOKS
+    like a heading at all (short, standalone, non-bullet line) -- not
+    only at the next *requirement-keyword* heading -- so a following
+    non-requirement section (e.g. "Wir bieten" / "We offer" benefits)
+    is never swallowed into the requirements section just because it
+    isn't itself a recognized requirement keyword.
+
+    If a heading's body has no bullets but a line contains commas, that
+    line is split on commas into one candidate phrase per item instead,
+    but only when every resulting fragment is short (<=8 words): a full
+    prose sentence that merely happens to contain a comma (e.g. "...
+    experience, ideally with Excel, who can work independently.") is not
+    list structure and must not be shredded into fake requirements.
 
     Known V1 limitation: a requirements section written as ordinary
-    prose sentences (no bullets, no comma anywhere in the body) yields
-    no candidate phrases. Free-text extraction (e.g. via NLP/POS
-    tagging) is deferred to a future spec, not silently attempted here
-    -- matching this project's existing pattern of documenting V1
-    heuristic limits (see matcher.py's near-miss docstring, sections.py's
+    prose sentences (no bullets, no comma anywhere in the body, or a
+    comma-bearing line whose fragments are not all short) yields no
+    candidate phrases. Free-text extraction (e.g. via NLP/POS tagging)
+    is deferred to a future spec, not silently attempted here -- matching
+    this project's existing pattern of documenting V1 heuristic limits
+    (see matcher.py's near-miss docstring, sections.py's
     heading-only-on-own-line limitation).
     """
     lines = posting_text.splitlines()
+    normalized_lines = [_normalize_heading_line(line) for line in lines]
     heading_indices = [
-        idx for idx, line in enumerate(lines)
-        if _is_requirement_heading(_normalize_heading_line(line))
+        idx for idx, (line, normalized) in enumerate(zip(lines, normalized_lines))
+        if _is_requirement_heading(line, normalized)
     ]
     if not heading_indices:
         return []
 
+    any_heading_indices = [
+        idx for idx, (line, normalized) in enumerate(zip(lines, normalized_lines))
+        if _is_heading_shaped(line, normalized)
+    ]
+
     requirements: list[OpenRequirement] = []
-    for i, start_idx in enumerate(heading_indices):
-        end_idx = heading_indices[i + 1] if i + 1 < len(heading_indices) else len(lines)
+    for start_idx in heading_indices:
+        end_idx = next(
+            (idx for idx in any_heading_indices if idx > start_idx), len(lines)
+        )
         section_lines = [
             (idx, lines[idx]) for idx in range(start_idx + 1, end_idx) if lines[idx].strip()
         ]
@@ -100,10 +138,15 @@ def extract_open_requirements(posting_text: str) -> list[OpenRequirement]:
 
         for idx, line in section_lines:
             if "," in line:
+                fragments = [
+                    item.strip().strip(".") for item in line.split(",")
+                ]
+                fragments = [f for f in fragments if f]
+                if not fragments or any(len(f.split()) > 8 for f in fragments):
+                    continue
                 requirements.extend(
-                    OpenRequirement(phrase=item.strip().strip("."), source_line=idx)
-                    for item in line.split(",")
-                    if item.strip().strip(".")
+                    OpenRequirement(phrase=fragment, source_line=idx)
+                    for fragment in fragments
                 )
     return requirements
 

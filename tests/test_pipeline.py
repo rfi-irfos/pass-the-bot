@@ -163,3 +163,20 @@ def test_run_pipeline_open_requirement_already_curated_is_not_duplicated():
     python_results = [r for r in report["results"] if r["id"].lower() == "python"]
     assert len(python_results) == 1
     assert python_results[0]["origin"] == "curated"
+
+
+def test_run_pipeline_open_missing_requirement_counts_toward_required_coverage():
+    """A posting requirement the curated catalog doesn't recognize at all
+    (e.g. a skilled-trades posting) must count toward required_total, and
+    when unmatched, must pull coverage_pct below 100 -- otherwise a
+    posting like this silently reports 100% required-skill coverage on a
+    0/0 basis, hiding exactly the blind spot open-vocabulary matching
+    exists to fix."""
+    posting = "Requirements\n- Welding experience\n"
+    resume = "Certified public accountant with ten years in corporate tax preparation."
+    report = run_pipeline(posting, resume, data_dir=DATA_DIR, repo_root=REPO_ROOT)
+    welding = next(r for r in report["results"] if r["id"] == "Welding experience")
+    assert welding["required"] is True
+    assert welding["status"] == "MISSING"
+    assert report["score"]["required_total"] >= 1
+    assert report["score"]["coverage_pct"] < 100
