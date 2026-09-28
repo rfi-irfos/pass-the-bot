@@ -15,8 +15,7 @@ const TRANSLATIONS = {
     fileHint: "Datei auswählen oder hineinziehen",
     fileTypes: "PDF oder DOCX (max. 5MB)",
     analyzeBtn: "Lebenslauf analysieren",
-    analyzing: "Analysiere...",
-    progressText: "Dein Lebenslauf wird analysiert...",
+    analyzing: "Dein Lebenslauf wird analysiert",
     progressSteps: [
       { title: "Lebenslauf-Datei geöffnet", subtitle: "PDF oder DOCX wird eingelesen" },
       { title: "Text extrahiert", subtitle: "Rohtext aus der Datei gewonnen" },
@@ -81,8 +80,7 @@ const TRANSLATIONS = {
     fileHint: "Choose a file or drag and drop",
     fileTypes: "PDF or DOCX (max 5MB)",
     analyzeBtn: "Analyze Resume",
-    analyzing: "Analyzing...",
-    progressText: "Analyzing your resume...",
+    analyzing: "Analyzing your resume",
     progressSteps: [
       { title: "Resume file opened", subtitle: "Reading the PDF or DOCX" },
       { title: "Text extracted", subtitle: "Raw text pulled from the file" },
@@ -142,7 +140,9 @@ let lastReport = null;
 const form = document.getElementById("check-form");
 const submitBtn = document.getElementById("submit-btn");
 const submitBtnLabel = document.getElementById("submit-btn-label");
+const submitBtnDots = document.getElementById("submit-btn-dots");
 const progressWrap = document.getElementById("progress-wrap");
+const progressBarEl = document.getElementById("progress-bar");
 const progressStepEl = document.getElementById("progress-step");
 const progressStepTitleEl = document.getElementById("progress-step-title");
 const progressStepSubtitleEl = document.getElementById("progress-step-subtitle");
@@ -432,43 +432,62 @@ form.addEventListener("submit", async (event) => {
 
   submitBtn.disabled = true;
   submitBtnLabel.textContent = t("analyzing");
+  submitBtnDots.classList.remove("hidden");
   progressWrap.classList.remove("hidden");
   gaugeText.textContent = "…";
   startGaugeLoadingAnimation();
 
-  let stepIndex = 0;
+  let groupIndex = 0;
   const steps = t("progressSteps");
+
+  function chunk(array, size) {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
+  }
 
   // The backend now answers in well under a second (see the perf fix in
   // embeddings.py), far faster than a human can read even one of these
-  // step labels. Without a floor, the whole step list flashes by as a
-  // single frame change. MIN_ANIMATE_MS paces the steps evenly across a
-  // fixed minimum window instead of the old fixed 5s/step interval (which
-  // assumed a slow backend and, worse, just got cut off anyway once a
-  // response landed).
-  const MIN_ANIMATE_MS = 4500;
+  // step labels. Pairing steps into groups and holding each group for a
+  // fixed duration keeps the full sequence readable and visibly fills the
+  // progress bar left-to-right, instead of either flashing by in one frame
+  // or crawling through 13 separate single-line steps.
+  const STEP_GROUP_MS = 3000;
+  const stepGroups = chunk(steps, 2);
+  const MIN_ANIMATE_MS = stepGroups.length * STEP_GROUP_MS;
   const startedAt = performance.now();
 
-  function renderStep(index) {
-    const step = steps[index];
-    const number = String(index + 1).padStart(2, "0");
-    progressStepTitleEl.textContent = `${number} · ${step.title}`;
-    progressStepSubtitleEl.textContent = step.subtitle;
+  function renderStepGroup(index) {
+    const group = stepGroups[index];
+    const [first, second] = group;
+    const number = String(index * 2 + 1).padStart(2, "0");
+
+    if (second) {
+      progressStepTitleEl.textContent = `${number} · ${first.title} & ${second.title}`;
+      progressStepSubtitleEl.textContent = `${first.subtitle} · ${second.subtitle}`;
+    } else {
+      progressStepTitleEl.textContent = `${number} · ${first.title}`;
+      progressStepSubtitleEl.textContent = first.subtitle;
+    }
+
+    progressBarEl.style.width = `${((index + 1) / stepGroups.length) * 100}%`;
   }
 
-  renderStep(0);
+  renderStepGroup(0);
   const stepInterval = setInterval(() => {
-    if (stepIndex >= steps.length - 1) {
+    if (groupIndex >= stepGroups.length - 1) {
       clearInterval(stepInterval);
       return;
     }
-    stepIndex += 1;
+    groupIndex += 1;
     progressStepEl.classList.add("fading");
     setTimeout(() => {
-      renderStep(stepIndex);
+      renderStepGroup(groupIndex);
       progressStepEl.classList.remove("fading");
-    }, Math.min(150, MIN_ANIMATE_MS / steps.length / 2));
-  }, MIN_ANIMATE_MS / steps.length);
+    }, 150);
+  }, STEP_GROUP_MS);
 
   // /api/check runs CPU-bound sentence-embedding inference on a small
   // shared-cpu-1x Fly machine; a realistic multi-paragraph resume can take
@@ -521,6 +540,7 @@ form.addEventListener("submit", async (event) => {
     stopGaugeLoadingAnimation();
     submitBtn.disabled = false;
     submitBtnLabel.textContent = t("analyzeBtn");
+    submitBtnDots.classList.add("hidden");
     progressWrap.classList.add("hidden");
   }
 });
