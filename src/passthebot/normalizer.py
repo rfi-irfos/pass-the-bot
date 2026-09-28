@@ -7,12 +7,105 @@ from passthebot.graph import SkillEntry
 from passthebot.validate_graph import normalize_string
 
 
+REQUIREMENT_HEADING_KEYWORDS: set[str] = {
+    "anforderungen", "ihr profil", "profil", "qualifikationen",
+    "voraussetzungen", "must-have", "must haves", "nice-to-have",
+    "requirements", "qualifications", "what you'll need",
+    "what we're looking for", "your profile",
+}
+
+_BULLET_PREFIX = re.compile(r"^\s*(?:[-*•]|\d+[.)])\s+")
+
+
+@dataclass
+class OpenRequirement:
+    phrase: str
+    source_line: int
+
+
 @dataclass
 class ExtractedKeyword:
     id: str
     category: str
     matched_text: str
     confidence: float
+
+
+def _normalize_heading_line(line: str) -> str:
+    return line.strip().strip(":-–—").strip().lower()
+
+
+def _is_requirement_heading(normalized: str) -> bool:
+    if not normalized or len(normalized.split()) > 6:
+        return False
+    return any(
+        re.search(rf"(?<![a-zäöü]){re.escape(kw)}(?![a-zäöü])", normalized)
+        for kw in REQUIREMENT_HEADING_KEYWORDS
+    )
+
+
+def extract_open_requirements(posting_text: str) -> list[OpenRequirement]:
+    """Find requirement-list items under a requirement-style heading in a
+    job posting, independent of any curated skill catalog.
+
+    Heading detection follows the same whole-word substring approach as
+    sections.py's resume-heading detection (a short standalone line
+    containing a known keyword as a whole word), but against
+    REQUIREMENT_HEADING_KEYWORDS instead of resume-section names --
+    postings and resumes use different vocabularies for structurally
+    similar things, so this is a separate, independently-evolving
+    keyword set, not a shared import from sections.py.
+
+    Once a requirement heading is found, every following bulleted line
+    (leading -, *, •, or "1." / "1)") up to the next heading is one
+    candidate phrase. If a heading's body has no bullets but a line
+    contains commas, that line is split on commas into one candidate
+    phrase per item instead.
+
+    Known V1 limitation: a requirements section written as ordinary
+    prose sentences (no bullets, no comma anywhere in the body) yields
+    no candidate phrases. Free-text extraction (e.g. via NLP/POS
+    tagging) is deferred to a future spec, not silently attempted here
+    -- matching this project's existing pattern of documenting V1
+    heuristic limits (see matcher.py's near-miss docstring, sections.py's
+    heading-only-on-own-line limitation).
+    """
+    lines = posting_text.splitlines()
+    heading_indices = [
+        idx for idx, line in enumerate(lines)
+        if _is_requirement_heading(_normalize_heading_line(line))
+    ]
+    if not heading_indices:
+        return []
+
+    requirements: list[OpenRequirement] = []
+    for i, start_idx in enumerate(heading_indices):
+        end_idx = heading_indices[i + 1] if i + 1 < len(heading_indices) else len(lines)
+        section_lines = [
+            (idx, lines[idx]) for idx in range(start_idx + 1, end_idx) if lines[idx].strip()
+        ]
+
+        bullet_items = [
+            (idx, _BULLET_PREFIX.sub("", line).strip())
+            for idx, line in section_lines
+            if _BULLET_PREFIX.match(line)
+        ]
+        if bullet_items:
+            requirements.extend(
+                OpenRequirement(phrase=phrase, source_line=idx)
+                for idx, phrase in bullet_items
+                if phrase
+            )
+            continue
+
+        for idx, line in section_lines:
+            if "," in line:
+                requirements.extend(
+                    OpenRequirement(phrase=item.strip().strip("."), source_line=idx)
+                    for item in line.split(",")
+                    if item.strip().strip(".")
+                )
+    return requirements
 
 
 def extract_discrete_keywords(text: str, entries: list[SkillEntry]) -> list[ExtractedKeyword]:

@@ -1,5 +1,5 @@
 from passthebot.graph import SkillEntry
-from passthebot.normalizer import extract_discrete_keywords
+from passthebot.normalizer import extract_discrete_keywords, extract_open_requirements
 
 ENTRIES = [
     SkillEntry(
@@ -148,3 +148,90 @@ def test_shorter_alias_fully_contained_in_longer_claimed_span_is_suppressed():
     result = extract_discrete_keywords("We use FooBar here.", FOO_FOOBAR_ENTRIES)
     ids = {r.id for r in result}
     assert ids == {"foobar"}
+
+
+def test_extracts_bullet_requirements_under_german_heading():
+    text = (
+        "Anforderungen\n"
+        "- Schweisskenntnisse (MIG/MAG)\n"
+        "- Fuehrerschein Klasse B\n"
+        "- Teamfaehigkeit\n"
+    )
+    result = extract_open_requirements(text)
+    phrases = [r.phrase for r in result]
+    assert phrases == ["Schweisskenntnisse (MIG/MAG)", "Fuehrerschein Klasse B", "Teamfaehigkeit"]
+
+
+def test_extracts_bullet_requirements_under_english_heading():
+    text = (
+        "Requirements\n"
+        "* 3+ years of accounting experience\n"
+        "* Proficiency in Excel\n"
+    )
+    result = extract_open_requirements(text)
+    phrases = [r.phrase for r in result]
+    assert phrases == ["3+ years of accounting experience", "Proficiency in Excel"]
+
+
+def test_extracts_comma_separated_requirements_without_bullets():
+    text = "Requirements\nPython, SQL, Excel"
+    result = extract_open_requirements(text)
+    phrases = [r.phrase for r in result]
+    assert phrases == ["Python", "SQL", "Excel"]
+
+
+def test_returns_empty_list_when_no_requirement_heading_present():
+    text = "We are a great company that values people and growth."
+    result = extract_open_requirements(text)
+    assert result == []
+
+
+def test_returns_empty_list_for_prose_only_requirements_section():
+    text = (
+        "Requirements\n"
+        "We are looking for someone with strong accounting experience "
+        "and a good command of Excel who can work independently."
+    )
+    result = extract_open_requirements(text)
+    assert result == []
+
+
+def test_multiple_requirement_headings_each_contribute_items():
+    text = (
+        "Must-have\n"
+        "- Python\n"
+        "- SQL\n"
+        "\n"
+        "Nice-to-have\n"
+        "- Docker\n"
+    )
+    result = extract_open_requirements(text)
+    phrases = [r.phrase for r in result]
+    assert phrases == ["Python", "SQL", "Docker"]
+
+
+def test_non_tech_industry_posting_bullets_extracted():
+    text = (
+        "Ihr Profil\n"
+        "- Abgeschlossene Ausbildung als Elektriker\n"
+        "- Erfahrung mit Schaltschrankbau\n"
+        "- Fuehrerschein Klasse B\n"
+    )
+    result = extract_open_requirements(text)
+    phrases = [r.phrase for r in result]
+    assert phrases == [
+        "Abgeschlossene Ausbildung als Elektriker",
+        "Erfahrung mit Schaltschrankbau",
+        "Fuehrerschein Klasse B",
+    ]
+
+
+def test_german_heading_with_english_requirement_items_detected():
+    text = (
+        "Ihr Profil\n"
+        "- Strong communication skills\n"
+        "- Project management experience\n"
+    )
+    result = extract_open_requirements(text)
+    phrases = [r.phrase for r in result]
+    assert phrases == ["Strong communication skills", "Project management experience"]
