@@ -460,14 +460,16 @@ form.addEventListener("submit", async (event) => {
     }, 500);
   }, 5000);
 
-  // A single request occasionally hangs against an idle backend instance
-  // reconnecting on Fly's private network (a transient network-level hiccup,
-  // not a real outage). Bound each attempt with its own timeout and retry
+  // /api/check runs CPU-bound sentence-embedding inference on a small
+  // shared-cpu-1x Fly machine; a realistic multi-paragraph resume can take
+  // 10-20s+ to process, not just a transient network hiccup. The timeout
+  // must comfortably clear that, or every real (non-toy) resume aborts
+  // before the backend ever gets to respond. Bound each attempt and retry
   // once before surfacing an error, instead of waiting on the browser's own
   // (much longer) default timeout and showing a false "backend unreachable".
   async function fetchCheck() {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
     try {
       return await fetch(`${API_BASE_URL}/api/check`, {
         method: "POST",
