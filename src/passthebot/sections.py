@@ -33,9 +33,40 @@ CONTACT_SCAN_LINES = 10
 SECTION_ORDER = ["contact", "experience", "education", "skills"]
 
 SECTION_KEYWORDS: dict[str, set[str]] = {
-    "contact": {"kontakt", "contact"},
-    "experience": {"erfahrung", "berufserfahrung", "experience", "work experience"},
-    "education": {"ausbildung", "bildung", "education"},
+    "contact": {
+        "kontakt",
+        "contact",
+        "contact information",
+        "contact details",
+        "personal details",
+        "get in touch",
+        "kontaktdaten",
+    },
+    "experience": {
+        "erfahrung",
+        "berufserfahrung",
+        "beruflicher werdegang",
+        "werdegang",
+        "praxiserfahrung",
+        "experience",
+        "work experience",
+        "work history",
+        "employment history",
+        "employment",
+        "professional experience",
+        "career history",
+    },
+    "education": {
+        "ausbildung",
+        "bildung",
+        "bildungsweg",
+        "schulbildung",
+        "akademischer werdegang",
+        "education",
+        "qualifications",
+        "academic background",
+        "academic qualifications",
+    },
     "skills": {
         "skills",
         "kenntnisse",
@@ -43,6 +74,13 @@ SECTION_KEYWORDS: dict[str, set[str]] = {
         "fertigkeiten",
         "kernkompetenzen",
         "kompetenzen",
+        "qualifikationen",
+        "technical skills",
+        "technical proficiencies",
+        "core competencies",
+        "areas of expertise",
+        "proficiencies",
+        "expertise",
     },
 }
 

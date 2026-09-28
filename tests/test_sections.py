@@ -146,3 +146,28 @@ def test_contact_stays_not_found_when_no_email_appears_near_the_top():
     results = detect_sections(text)
     contact = next(r for r in results if r.id == "contact")
     assert contact.found is False
+
+
+def test_common_english_heading_synonyms_are_detected():
+    # Found via real-world audit testing: English resumes commonly use
+    # synonyms other than the original "Experience"/"Education"/"Skills"
+    # for these sections, and each was silently reported as missing.
+    text = (
+        "Work History\n"
+        "Senior Software Engineer, Northwind Labs, 2020-Present. Led development "
+        "of a microservices platform using Node.js and TypeScript, migrated a "
+        "legacy monolith to containers, and mentored a team of engineers.\n"
+        "\n"
+        "Qualifications\n"
+        "Bachelor of Engineering in Computer Science, Technical University of "
+        "Munich, 2013-2017, graduated with distinction.\n"
+        "\n"
+        "Technical Proficiencies\n"
+        "Python, JavaScript, TypeScript, Node.js, Docker, Kubernetes, AWS, "
+        "PostgreSQL, MongoDB, Redis, Jenkins, GitHub Actions, Terraform."
+    )
+    results = detect_sections(text)
+    by_id = {r.id: r for r in results}
+    assert by_id["experience"].found is True
+    assert by_id["education"].found is True
+    assert by_id["skills"].found is True
