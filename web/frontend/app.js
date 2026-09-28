@@ -677,7 +677,19 @@ form.addEventListener("submit", async (event) => {
 });
 
 downloadReportBtn.addEventListener("click", () => {
-  html2pdf().from(resultsCard).save("pass-the-bot-report.pdf");
+  // html2canvas (bundled inside html2pdf.js) mis-locates the target element
+  // inside its offscreen clone when the real page is scrolled away from the
+  // top, producing a blank capture. Passing scrollX/scrollY compensation to
+  // html2canvas alone does not reliably fix this in the bundled version, so
+  // scroll the real window to the top before capture and restore the user's
+  // scroll position afterward (including on failure).
+  const { scrollX, scrollY } = window;
+  window.scrollTo(0, 0);
+  html2pdf()
+    .from(resultsCard)
+    .save("pass-the-bot-report.pdf")
+    .then(() => window.scrollTo(scrollX, scrollY))
+    .catch(() => window.scrollTo(scrollX, scrollY));
 });
 
 applyStaticTranslations();
