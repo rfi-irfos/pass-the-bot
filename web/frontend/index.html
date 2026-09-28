@@ -205,7 +205,7 @@
 
     <!-- Results grow inside the same card (skeleton until real data loads) -->
     <div id="results-card" class="border-t border-gray-100 p-8 opacity-40">
-      <div class="flex flex-col md:flex-row items-center gap-8 mb-8" data-reveal>
+      <div class="flex flex-col md:flex-row items-center gap-8 mb-8 revealed" data-reveal>
         <svg width="140" height="140" viewBox="0 0 140 140" class="shrink-0">
           <circle cx="70" cy="70" r="60" fill="none" stroke="#e5e7eb" stroke-width="12"></circle>
           <circle id="gauge-circle" cx="70" cy="70" r="60" fill="none" stroke="#16a34a" stroke-width="12"
@@ -224,7 +224,7 @@
         </div>
       </div>
 
-      <div class="grid md:grid-cols-3 gap-4 mb-8" data-reveal>
+      <div class="grid md:grid-cols-3 gap-4 mb-8 revealed" data-reveal>
         <section class="bg-green-50 border border-green-100 rounded-xl p-4">
           <h3 class="font-semibold text-green-800 mb-3" data-i18n="matchedHeading"></h3>
           <ul id="matched-list" class="space-y-1 text-sm"></ul>
@@ -239,7 +239,7 @@
         </section>
       </div>
 
-      <div class="grid md:grid-cols-3 gap-4 mb-8" data-reveal>
+      <div class="grid md:grid-cols-3 gap-4 mb-8 revealed" data-reveal>
         <section class="bg-white border border-gray-200 rounded-xl p-4">
           <h3 class="font-semibold mb-3" data-i18n="keywordCoverageHeading"></h3>
           <div class="space-y-3 text-sm">
@@ -279,12 +279,12 @@
         </section>
       </div>
 
-      <div id="tips-section" data-reveal>
+      <div id="tips-section" class="revealed" data-reveal>
         <h3 class="font-semibold mb-3" data-i18n="tipsHeading"></h3>
         <ul id="tips-list" class="space-y-2 text-sm"></ul>
       </div>
 
-      <div class="flex justify-end mt-6" data-reveal>
+      <div class="flex justify-end mt-6 revealed" data-reveal>
         <button type="button" id="download-report-btn"
           class="hidden shrink-0 bg-green-700 hover:bg-green-800 text-white text-sm font-semibold rounded-lg px-4 py-2.5 items-center gap-2 shadow-sm transition">
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
