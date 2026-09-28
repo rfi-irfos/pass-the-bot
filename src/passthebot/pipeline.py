@@ -67,6 +67,7 @@ def run_pipeline(
     results = enrich_near_misses(results, resume_text, entries)
     return build_report(
         results,
+        resume_text,
         graph_version=get_graph_version(repo_root),
         model_version=getattr(embedder, "model_name", "unknown"),
     )
