@@ -3,7 +3,7 @@ const GAUGE_CIRCUMFERENCE = 2 * Math.PI * 60;
 
 const TRANSLATIONS = {
   de: {
-    pageTitle: "Pass The Bot! Sieh deinen Lebenslauf wie ein ATS",
+    pageTitle: "Pass The Bot! Sieh deinen Lebenslauf wie ein Bewerbermanagementsystem (ATS)",
     tagline: "Sieh deinen Lebenslauf so, wie ihn ein Bewerbermanagementsystem (ATS) sieht.",
     desc1: 'Anzeige einfügen, Lebenslauf hochladen und sofort eine transparente Auswertung bekommen: welche geforderten Skills erkannt wurden, welche knapp danebenlagen (Tippfehler wie "Dockr" statt "Docker"), und welche wirklich fehlen.',
     badgeFree: "Kostenlos",
@@ -69,7 +69,7 @@ const TRANSLATIONS = {
       "Diagnose statt KI-Blackbox: Das System entscheidet deterministisch und nachvollziehbar, warum ein Keyword-Filter dich durchlässt oder aussortiert, ohne deinen Lebenslauf umzuschreiben. Deine Daten werden dabei nicht gespeichert, nicht zum Trainieren eines Modells verwendet, und diese Seite setzt keine Cookies: alles bleibt in deinem Browser und wird nur für diese eine Prüfung an die Analyse-Engine geschickt.",
   },
   en: {
-    pageTitle: "Pass The Bot! See your CV the way the machine sees it",
+    pageTitle: "Pass The Bot! See your CV the way an Applicant Tracking System (ATS) sees it",
     tagline: "See your resume the way an Applicant Tracking System (ATS) sees it.",
     desc1: 'Paste a job posting, upload your CV, and get an instant, transparent breakdown: which required skills matched, which were near-misses caught by typos or phrasing (like "Dockr" vs "Docker"), and which are genuinely missing.',
     badgeFree: "Free",

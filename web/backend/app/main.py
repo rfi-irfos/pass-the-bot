@@ -7,6 +7,8 @@ report with human-readable display names, and returns it as-is.
 
 from __future__ import annotations
 
+import asyncio
+
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,6 +28,15 @@ app = FastAPI(title="passthebot web backend")
 # run_pipeline's `embedder or Embedder()` default reloads the sentence-
 # transformers model from disk on every single request (~3-15s each).
 EMBEDDER = Embedder()
+
+# The Fly machine backing this service has exactly one vCPU. Two concurrent
+# /api/check calls each spend real wall-clock time in CPU-bound embedding
+# inference; run together they starve the event loop's own thread of CPU for
+# long enough that the health check GET times out, and Fly's edge proxy then
+# rejects incoming connections -- including unrelated ones -- until the
+# machine reports healthy again. Serializing pipeline runs keeps each request
+# queued cheaply in asyncio rather than competing for the single core.
+PIPELINE_CONCURRENCY = asyncio.Semaphore(1)
 
 app.add_middleware(
     CORSMiddleware,
@@ -59,7 +70,8 @@ async def check(
         # it doesn't block the event loop for the request's duration -- an
         # async endpoint that ran this inline previously starved concurrent
         # requests (e.g. the health check) for several seconds at a time.
-        report = await run_in_threadpool(run_pipeline, posting_text, resume_text, embedder=EMBEDDER)
+        async with PIPELINE_CONCURRENCY:
+            report = await run_in_threadpool(run_pipeline, posting_text, resume_text, embedder=EMBEDDER)
     except PipelineInputError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
