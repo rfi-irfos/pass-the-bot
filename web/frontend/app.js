@@ -462,6 +462,14 @@ function renderRadar(radar) {
   });
 }
 
+function revealResultSections() {
+  const sections = resultsCard.querySelectorAll("[data-reveal]");
+  sections.forEach((el) => el.classList.remove("revealed"));
+  sections.forEach((el, i) => {
+    setTimeout(() => el.classList.add("revealed"), i * 90);
+  });
+}
+
 function renderResults(report, { scroll = true } = {}) {
   lastReport = report;
   const pct = report.score.coverage_pct;
@@ -532,6 +540,8 @@ function renderResults(report, { scroll = true } = {}) {
 
   downloadReportBtn.classList.remove("hidden");
   downloadReportBtn.classList.add("flex");
+
+  revealResultSections();
 }
 
 form.addEventListener("submit", async (event) => {
