@@ -439,6 +439,16 @@ form.addEventListener("submit", async (event) => {
   let stepIndex = 0;
   const steps = t("progressSteps");
 
+  // The backend now answers in well under a second (see the perf fix in
+  // embeddings.py), far faster than a human can read even one of these
+  // step labels. Without a floor, the whole step list flashes by as a
+  // single frame change. MIN_ANIMATE_MS paces the steps evenly across a
+  // fixed minimum window instead of the old fixed 5s/step interval (which
+  // assumed a slow backend and, worse, just got cut off anyway once a
+  // response landed).
+  const MIN_ANIMATE_MS = 4500;
+  const startedAt = performance.now();
+
   function renderStep(index) {
     const step = steps[index];
     const number = String(index + 1).padStart(2, "0");
@@ -457,8 +467,8 @@ form.addEventListener("submit", async (event) => {
     setTimeout(() => {
       renderStep(stepIndex);
       progressStepEl.classList.remove("fading");
-    }, 500);
-  }, 5000);
+    }, Math.min(150, MIN_ANIMATE_MS / steps.length / 2));
+  }, MIN_ANIMATE_MS / steps.length);
 
   // /api/check runs CPU-bound sentence-embedding inference on a small
   // shared-cpu-1x Fly machine; a realistic multi-paragraph resume can take
@@ -497,6 +507,12 @@ form.addEventListener("submit", async (event) => {
     }
 
     const report = await response.json();
+
+    const elapsed = performance.now() - startedAt;
+    if (elapsed < MIN_ANIMATE_MS) {
+      await new Promise((resolve) => setTimeout(resolve, MIN_ANIMATE_MS - elapsed));
+    }
+
     renderResults(report);
   } catch (err) {
     showError(t("errorUnreachable"));
