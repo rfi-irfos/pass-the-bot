@@ -33,6 +33,7 @@ const TRANSLATIONS = {
     ],
     errorBoth: "Bitte sowohl den Anzeigentext als auch eine Lebenslauf-Datei angeben.",
     errorUnreachable: "Backend nicht erreichbar. Läuft es gerade?",
+    downloadFailed: "Der Bericht konnte nicht erstellt werden. Bitte versuche es erneut.",
     atsResultHeading: "ATS-Ergebnis",
     downloadReportBtn: "Bericht herunterladen",
     scorePrompt: "Starte oben eine Prüfung, um hier dein Ergebnis zu sehen.",
@@ -117,6 +118,7 @@ const TRANSLATIONS = {
     ],
     errorBoth: "Please provide both the job posting text and a resume file.",
     errorUnreachable: "Could not reach the backend. Is it running?",
+    downloadFailed: "Could not generate the report. Please try again.",
     atsResultHeading: "ATS Result",
     downloadReportBtn: "Download Report",
     scorePrompt: "Run a check above to see your results here.",
@@ -684,6 +686,15 @@ form.addEventListener("submit", async (event) => {
 });
 
 downloadReportBtn.addEventListener("click", () => {
+  // If the html2pdf CDN script failed to load (blocked by an ad-blocker or
+  // corporate proxy), html2pdf() would throw synchronously with zero
+  // feedback to the user. Check for it up front and surface an error
+  // instead of silently doing nothing.
+  if (typeof html2pdf === "undefined") {
+    showError(t("downloadFailed"));
+    return;
+  }
+
   // html2canvas (bundled inside html2pdf.js) mis-locates the target element
   // inside its offscreen clone when the real page is scrolled away from the
   // top, producing a blank capture. Passing scrollX/scrollY compensation to
@@ -696,7 +707,10 @@ downloadReportBtn.addEventListener("click", () => {
     .from(resultsCard)
     .save("pass-the-bot-report.pdf")
     .then(() => window.scrollTo(scrollX, scrollY))
-    .catch(() => window.scrollTo(scrollX, scrollY));
+    .catch(() => {
+      window.scrollTo(scrollX, scrollY);
+      showError(t("downloadFailed"));
+    });
 });
 
 applyStaticTranslations();
