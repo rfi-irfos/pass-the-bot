@@ -69,6 +69,15 @@ const TRANSLATIONS = {
     keywordCoverageHeading: "Keyword-Abdeckung",
     exactMatchLabel: "Exakte Treffer",
     semanticMatchLabel: "Sinngemäße Treffer",
+    sectionAnalysisHeading: "Abschnitts-Analyse",
+    sectionNames: {
+      contact: "Kontakt",
+      experience: "Erfahrung",
+      education: "Ausbildung",
+      skills: "Skills",
+    },
+    sectionFound: "vorhanden",
+    sectionMissing: "nicht gefunden",
   },
   en: {
     pageTitle: "Pass The Bot! See your CV the way an Applicant Tracking System (ATS) sees it",
@@ -137,6 +146,15 @@ const TRANSLATIONS = {
     keywordCoverageHeading: "Keyword Coverage",
     exactMatchLabel: "Exact Matches",
     semanticMatchLabel: "Semantic Matches",
+    sectionAnalysisHeading: "Resume Section Analysis",
+    sectionNames: {
+      contact: "Contact",
+      experience: "Experience",
+      education: "Education",
+      skills: "Skills",
+    },
+    sectionFound: "found",
+    sectionMissing: "not found",
   },
 };
 
@@ -173,6 +191,7 @@ const exactMatchCount = document.getElementById("exact-match-count");
 const exactMatchBar = document.getElementById("exact-match-bar");
 const semanticMatchCount = document.getElementById("semantic-match-count");
 const semanticMatchBar = document.getElementById("semantic-match-bar");
+const sectionAnalysisList = document.getElementById("section-analysis-list");
 
 function t(key) {
   return TRANSLATIONS[currentLang][key];
@@ -404,6 +423,24 @@ function renderResults(report, { scroll = true } = {}) {
   exactMatchBar.style.width = `${exactPct}%`;
   semanticMatchCount.textContent = `${breakdown.semantic_matched} / ${breakdown.semantic_total}`;
   semanticMatchBar.style.width = `${semanticPct}%`;
+
+  sectionAnalysisList.innerHTML = "";
+  for (const section of report.metrics.sections) {
+    const li = document.createElement("li");
+    const name = t("sectionNames")[section.id] || section.id;
+    if (!section.found) {
+      li.className = "flex justify-between text-gray-400";
+      li.innerHTML = `<span>${name}</span><span>${t("sectionMissing")}</span>`;
+    } else {
+      const pct = Math.min(100, Math.round((section.word_count / 15) * 100));
+      li.className = "space-y-1";
+      li.innerHTML = `
+        <div class="flex justify-between"><span>${name}</span><span>${section.word_count} ${section.filled ? "✓" : ""}</span></div>
+        <div class="w-full bg-gray-100 rounded-full h-1.5"><div class="bg-green-600 h-1.5 rounded-full" style="width: ${pct}%"></div></div>
+      `;
+    }
+    sectionAnalysisList.appendChild(li);
+  }
 
   renderList(matchedList, matched, t("emptyMatched"));
   renderList(nearMissList, nearMiss, t("emptyNearMiss"));
