@@ -34,6 +34,7 @@ const TRANSLATIONS = {
     errorBoth: "Bitte sowohl den Anzeigentext als auch eine Lebenslauf-Datei angeben.",
     errorUnreachable: "Backend nicht erreichbar. Läuft es gerade?",
     atsResultHeading: "ATS-Ergebnis",
+    downloadReportBtn: "Bericht herunterladen",
     scorePrompt: "Starte oben eine Prüfung, um hier dein Ergebnis zu sehen.",
     scoreSummary: (pct, matched, total) =>
       `Dein Lebenslauf erfüllt ${pct}% der geforderten Skills und Keywords aus dieser Anzeige (${matched}/${total} Pflicht-Skills).`,
@@ -117,6 +118,7 @@ const TRANSLATIONS = {
     errorBoth: "Please provide both the job posting text and a resume file.",
     errorUnreachable: "Could not reach the backend. Is it running?",
     atsResultHeading: "ATS Result",
+    downloadReportBtn: "Download Report",
     scorePrompt: "Run a check above to see your results here.",
     scoreSummary: (pct, matched, total) =>
       `Your resume matches ${pct}% of the required skills and keywords from this job posting (${matched}/${total} required).`,
@@ -184,6 +186,7 @@ const progressStepTitleEl = document.getElementById("progress-step-title");
 const progressStepSubtitleEl = document.getElementById("progress-step-subtitle");
 const errorBox = document.getElementById("error-box");
 const resultsCard = document.getElementById("results-card");
+const downloadReportBtn = document.getElementById("download-report-btn");
 const fileInput = document.getElementById("resume_file");
 const fileNameDisplay = document.getElementById("file-name-display");
 const langDeBtn = document.getElementById("lang-de");
@@ -526,6 +529,9 @@ function renderResults(report, { scroll = true } = {}) {
   if (scroll) {
     resultsCard.scrollIntoView({ behavior: "smooth", block: "start" });
   }
+
+  downloadReportBtn.classList.remove("hidden");
+  downloadReportBtn.classList.add("flex");
 }
 
 form.addEventListener("submit", async (event) => {
@@ -658,6 +664,10 @@ form.addEventListener("submit", async (event) => {
     submitBtnDots.classList.add("hidden");
     progressWrap.classList.add("hidden");
   }
+});
+
+downloadReportBtn.addEventListener("click", () => {
+  html2pdf().from(resultsCard).save("pass-the-bot-report.pdf");
 });
 
 applyStaticTranslations();
