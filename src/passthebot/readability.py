@@ -42,9 +42,14 @@ def _word_length(word: str) -> int:
 
 def compute_readability(text: str) -> ReadabilityResult:
     sentences = split_sentences(text)
-    words = text.split()
-    word_count = len(words)
+    raw_words = text.split()
     sentence_count = len(sentences)
+
+    # Filter out tokens that are pure punctuation (strip to zero length).
+    # This prevents bullets and dashes alone from inflating word counts
+    # and deflating average word length metrics in bulleted resumes.
+    words = [w for w in raw_words if _word_length(w) > 0]
+    word_count = len(words)
 
     avg_words_per_sentence = round(word_count / sentence_count, 1) if sentence_count else 0.0
     char_count = sum(_word_length(w) for w in words)
