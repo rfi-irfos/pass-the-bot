@@ -128,7 +128,11 @@
     </div>
   </header>
 
-  <main class="w-full max-w-4xl mx-auto px-6 py-12">
+  <div class="relative w-full" style="background-color: #fefbf6;">
+    <div class="absolute inset-x-0 top-0 w-full bg-no-repeat pointer-events-none"
+      style="background-image: url('bg-lower.png'); background-size: 100% 100%; background-position: top center; aspect-ratio: 1672 / 941;"></div>
+
+    <main class="relative w-full max-w-4xl mx-auto px-6 py-12">
 
     <!-- Single expanding app card: form on top, results grow in below -->
     <div class="relative bg-white border border-gray-200 rounded-2xl shadow-xl mb-8 overflow-hidden">
@@ -236,7 +240,8 @@
       </div>
     </div>
 
-  </main>
+    </main>
+  </div>
 
   <!-- Info modal: what is an ATS and why this tool exists -->
   <div id="info-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
