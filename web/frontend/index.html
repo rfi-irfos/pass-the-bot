@@ -212,16 +212,7 @@
           <text id="gauge-text" x="70" y="75" text-anchor="middle" font-size="26" font-weight="bold" fill="#111827">·</text>
         </svg>
         <div>
-          <div class="flex items-center justify-between gap-3 mb-1">
-            <h2 class="text-lg font-semibold" data-i18n="atsResultHeading"></h2>
-            <button type="button" id="download-report-btn"
-              class="hidden shrink-0 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg px-3 py-1.5 items-center gap-1.5">
-              <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
-                <path d="M10 3v10m0 0l-4-4m4 4l4-4M4 16h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span data-i18n="downloadReportBtn"></span>
-            </button>
-          </div>
+          <h2 class="text-lg font-semibold mb-1" data-i18n="atsResultHeading"></h2>
           <p id="score-summary" class="text-gray-500 mb-4" data-i18n="scorePrompt"></p>
           <div class="flex flex-wrap justify-center md:justify-start gap-4 md:gap-8 text-sm">
             <div><span id="count-matched" class="font-bold text-green-700">0</span> <span data-i18n="matchedLabel"></span></div>
@@ -289,6 +280,16 @@
       <div id="tips-section" data-reveal>
         <h3 class="font-semibold mb-3" data-i18n="tipsHeading"></h3>
         <ul id="tips-list" class="space-y-2 text-sm"></ul>
+      </div>
+
+      <div class="flex justify-end mt-6" data-reveal>
+        <button type="button" id="download-report-btn"
+          class="hidden shrink-0 bg-green-700 hover:bg-green-800 text-white text-sm font-semibold rounded-lg px-4 py-2.5 items-center gap-2 shadow-sm transition">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+            <path d="M10 3v9m0 0l-3.5-3.5M10 12l3.5-3.5M4 15v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span data-i18n="downloadReportBtn"></span>
+        </button>
       </div>
     </div>
 
