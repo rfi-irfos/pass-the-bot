@@ -128,3 +128,38 @@ def test_run_pipeline_includes_metrics_with_all_sections_detected():
         "readability_pct",
         "section_completeness_pct",
     }
+
+
+def test_run_pipeline_matches_open_requirements_outside_curated_catalog():
+    """A posting requirement with no curated catalog entry (e.g. a skilled-
+    trades skill) should still surface as a result via the open-vocabulary
+    layer, not silently vanish."""
+    posting = (
+        "We need a skilled tradesperson.\n"
+        "\n"
+        "Requirements\n"
+        "- Welding experience\n"
+        "- Electrical wiring knowledge\n"
+    )
+    resume = "Five years of experience welding steel frames in an industrial workshop."
+    report = run_pipeline(posting, resume, data_dir=DATA_DIR, repo_root=REPO_ROOT)
+    open_results = {r["id"]: r for r in report["results"] if r["origin"] == "open"}
+    assert set(open_results) == {"Welding experience", "Electrical wiring knowledge"}
+    assert open_results["Welding experience"]["status"] in ("MATCH", "NEAR_MISS")
+
+
+def test_run_pipeline_reports_open_requirement_as_missing_when_resume_is_unrelated():
+    posting = "Requirements\n- Welding experience\n"
+    resume = "Certified public accountant with ten years in corporate tax preparation."
+    report = run_pipeline(posting, resume, data_dir=DATA_DIR, repo_root=REPO_ROOT)
+    welding = next(r for r in report["results"] if r["id"] == "Welding experience")
+    assert welding["status"] == "MISSING"
+
+
+def test_run_pipeline_open_requirement_already_curated_is_not_duplicated():
+    posting = "Requirements\n- Python\n- SQL\n"
+    resume = "Experienced Python developer."
+    report = run_pipeline(posting, resume, {"python"}, DATA_DIR, REPO_ROOT)
+    python_results = [r for r in report["results"] if r["id"].lower() == "python"]
+    assert len(python_results) == 1
+    assert python_results[0]["origin"] == "curated"

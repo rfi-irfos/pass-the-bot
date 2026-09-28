@@ -4,11 +4,11 @@ from pathlib import Path
 
 from passthebot.embeddings import Embedder
 from passthebot.graph import DEFAULT_DATA_DIR, active_entries, load_skill_graph
-from passthebot.matcher import enrich_near_misses, match
-from passthebot.normalizer import extract_discrete_keywords, extract_soft_skills
+from passthebot.matcher import enrich_near_misses, match, match_open_requirements
+from passthebot.normalizer import extract_discrete_keywords, extract_open_requirements, extract_soft_skills
 from passthebot.report import build_report, get_graph_version
 from passthebot.requirement import detect_required_ids
-from passthebot.validate_graph import validate_graph
+from passthebot.validate_graph import normalize_string, validate_graph
 
 
 class PipelineInputError(Exception):
@@ -65,6 +65,11 @@ def run_pipeline(
 
     results = match(posting_kw, resume_kw, required_ids)
     results = enrich_near_misses(results, resume_text, entries)
+
+    open_requirements = extract_open_requirements(posting_text)
+    claimed_spans = {normalize_string(kw.matched_text) for kw in posting_kw}
+    results = results + match_open_requirements(open_requirements, resume_text, embedder, claimed_spans)
+
     return build_report(
         results,
         resume_text,

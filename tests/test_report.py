@@ -118,3 +118,17 @@ def test_get_graph_version_returns_a_git_hash_in_a_repo(tmp_path):
 def test_get_graph_version_returns_unknown_outside_git_repo(tmp_path):
     version = get_graph_version(tmp_path)
     assert version == "unknown"
+
+
+def test_build_report_open_origin_results_count_as_semantic_not_exact():
+    results_with_open = RESULTS + [
+        MatchResult(
+            id="Welding experience", category="open_requirements", status="MATCH",
+            required=False, origin="open",
+        ),
+    ]
+    report = build_report(results_with_open, RESUME_TEXT, graph_version="abc123")
+    breakdown = report["metrics"]["match_breakdown"]
+    assert breakdown["exact_total"] == 3
+    assert breakdown["semantic_total"] == 1
+    assert breakdown["semantic_matched"] == 1

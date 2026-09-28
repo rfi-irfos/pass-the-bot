@@ -36,11 +36,13 @@ def get_graph_version(repo_root: Path) -> str:
 
 
 def _match_breakdown(results: list[MatchResult]) -> dict:
-    """Split matched results into exact (discrete alias match) vs semantic
-    (soft_skills embedding match). MatchResult.category already carries this
-    distinction; this is pure aggregation, no new computation."""
-    exact = [r for r in results if r.category != "soft_skills"]
-    semantic = [r for r in results if r.category == "soft_skills"]
+    """Split matched results into exact (curated discrete alias match) vs
+    semantic (curated soft_skills embedding match, or any open-vocabulary
+    match -- both are similarity-based, not exact-alias, matches).
+    MatchResult.category/origin already carry this distinction; this is
+    pure aggregation, no new computation."""
+    exact = [r for r in results if r.category != "soft_skills" and r.origin != "open"]
+    semantic = [r for r in results if r.category == "soft_skills" or r.origin == "open"]
     return {
         "exact_matched": sum(1 for r in exact if r.status == "MATCH"),
         "exact_total": len(exact),
