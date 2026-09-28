@@ -1,6 +1,6 @@
 from passthebot.graph import SkillEntry
-from passthebot.matcher import enrich_near_misses, match
-from passthebot.normalizer import ExtractedKeyword
+from passthebot.matcher import enrich_near_misses, match, match_open_requirements
+from passthebot.normalizer import ExtractedKeyword, OpenRequirement
 
 POSTING = [
     ExtractedKeyword(id="python", category="languages", matched_text="Python", confidence=1.0),
@@ -80,3 +80,63 @@ def test_soft_skill_category_is_never_enriched():
     enriched = enrich_near_misses(results, "teemwork is important to us", [TEAMWORK_ENTRY])
     teamwork_result = next(r for r in enriched if r.id == "teamwork")
     assert teamwork_result.status == "MISSING"
+
+
+class _StubEmbedder:
+    """Returns a fixed score per requirement phrase, looked up by the
+    phrase's own text, so tests can pin exact MATCH/NEAR_MISS/MISSING
+    classification without loading the real sentence-transformers model."""
+
+    def __init__(self, scores: dict[str, float]):
+        self._scores = scores
+
+    def best_match(self, text: str, phrases: list[str]):
+        return phrases[0], self._scores.get(text, 0.0)
+
+
+def test_open_requirement_above_match_threshold_is_match():
+    reqs = [OpenRequirement(phrase="Python", source_line=1)]
+    embedder = _StubEmbedder({"Python": 0.9})
+    results = match_open_requirements(reqs, "Experienced Python developer.", embedder, claimed_spans=set())
+    assert results[0].status == "MATCH"
+    assert results[0].origin == "open"
+    assert results[0].id == "Python"
+
+
+def test_open_requirement_between_thresholds_is_near_miss():
+    reqs = [OpenRequirement(phrase="Schweissen", source_line=1)]
+    embedder = _StubEmbedder({"Schweissen": 0.40})
+    results = match_open_requirements(reqs, "Some resume text.", embedder, claimed_spans=set())
+    assert results[0].status == "NEAR_MISS"
+
+
+def test_open_requirement_below_near_miss_threshold_is_missing():
+    reqs = [OpenRequirement(phrase="Schweissen", source_line=1)]
+    embedder = _StubEmbedder({"Schweissen": 0.1})
+    results = match_open_requirements(reqs, "Some resume text.", embedder, claimed_spans=set())
+    assert results[0].status == "MISSING"
+    assert results[0].found_text is None
+
+
+def test_open_requirement_already_claimed_by_curated_match_is_skipped():
+    reqs = [OpenRequirement(phrase="Python", source_line=1)]
+    embedder = _StubEmbedder({"Python": 0.9})
+    results = match_open_requirements(
+        reqs, "Experienced Python developer.", embedder, claimed_spans={"python"}
+    )
+    assert results == []
+
+
+def test_duplicate_open_requirement_phrases_collapse_to_one_result():
+    reqs = [
+        OpenRequirement(phrase="Python", source_line=1),
+        OpenRequirement(phrase="python", source_line=5),
+    ]
+    embedder = _StubEmbedder({"Python": 0.9, "python": 0.9})
+    results = match_open_requirements(reqs, "Experienced Python developer.", embedder, claimed_spans=set())
+    assert len(results) == 1
+
+
+def test_default_origin_is_curated_for_existing_call_sites():
+    results = match(POSTING, [], required_ids={"python"})
+    assert all(r.origin == "curated" for r in results)

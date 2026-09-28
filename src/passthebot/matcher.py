@@ -8,7 +8,8 @@ from typing import Literal
 
 from passthebot.fuzzy import fuzzy_best_match
 from passthebot.graph import DISCRETE_CATEGORIES, SkillEntry
-from passthebot.normalizer import ExtractedKeyword
+from passthebot.normalizer import ExtractedKeyword, OpenRequirement, split_sentences
+from passthebot.validate_graph import normalize_string
 
 Status = Literal["MATCH", "NEAR_MISS", "MISSING"]
 
@@ -22,6 +23,7 @@ class MatchResult:
     found_text: str | None = None
     suggested_alias: str | None = None
     confidence: float | None = None
+    origin: Literal["curated", "open"] = "curated"
 
 
 def match(
@@ -123,3 +125,70 @@ def enrich_near_misses(
         else:
             enriched.append(result)
     return enriched
+
+
+def match_open_requirements(
+    open_requirements: list[OpenRequirement],
+    resume_text: str,
+    embedder,
+    claimed_spans: set[str],
+    match_threshold: float = 0.48,
+    near_miss_threshold: float = 0.35,
+) -> list[MatchResult]:
+    """Classify each open-vocabulary requirement phrase (from
+    normalizer.extract_open_requirements, independent of any curated
+    skill catalog) against the resume text by embedding similarity,
+    using the same Embedder.best_match mechanism as
+    normalizer.extract_soft_skills -- here with the roles reversed: the
+    open requirement phrase plays the role of the "text being scored"
+    and the resume's own sentences play the role of the candidate
+    phrases it's compared against, so the returned best match is the
+    single resume sentence closest to this requirement.
+
+    claimed_spans holds the normalized (via validate_graph.normalize_string)
+    matched_text of every curated posting-side match already found for
+    this posting; an open phrase whose normalized text is already in
+    claimed_spans is skipped entirely, so a skill covered by both the
+    curated catalog and an open requirements bullet in the same posting
+    is reported exactly once (the curated match wins). Duplicate open
+    phrases within the same posting collapse to a single result the
+    same way.
+
+    Returned MatchResult.id is the requirement phrase's own literal text
+    (there is no canonical id for an open phrase); origin is "open" so
+    callers (report.py, the frontend) can distinguish these from
+    curated, exact-alias matches without re-deriving it from confidence
+    or category.
+    """
+    sentences = split_sentences(resume_text)
+    if not sentences:
+        sentences = [resume_text]
+
+    results: list[MatchResult] = []
+    seen: set[str] = set()
+    for req in open_requirements:
+        key = normalize_string(req.phrase)
+        if not key or key in claimed_spans or key in seen:
+            continue
+        seen.add(key)
+
+        best_sentence, score = embedder.best_match(req.phrase, sentences)
+        if score >= match_threshold:
+            status: Status = "MATCH"
+        elif score >= near_miss_threshold:
+            status = "NEAR_MISS"
+        else:
+            status = "MISSING"
+
+        results.append(
+            MatchResult(
+                id=req.phrase,
+                category="open_requirements",
+                status=status,
+                required=False,
+                found_text=best_sentence if status != "MISSING" else None,
+                confidence=score,
+                origin="open",
+            )
+        )
+    return results
