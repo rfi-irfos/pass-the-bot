@@ -217,25 +217,29 @@
         <div>
           <h2 class="text-lg font-semibold mb-1" data-i18n="atsResultHeading"></h2>
           <p id="score-summary" class="text-gray-500 mb-4" data-i18n="scorePrompt"></p>
-          <div class="flex flex-wrap justify-center md:justify-start gap-4 md:gap-8 text-sm">
-            <div><span id="count-matched" class="font-bold text-green-700">0</span> <span data-i18n="matchedLabel"></span></div>
-            <div><span id="count-nearmiss" class="font-bold text-amber-700">0</span> <span data-i18n="nearMissLabel"></span></div>
-            <div><span id="count-missing" class="font-bold text-red-700">0</span> <span data-i18n="missingLabel"></span></div>
-          </div>
         </div>
       </div>
 
       <div class="grid md:grid-cols-3 gap-4 mb-8 revealed" data-reveal>
         <section class="bg-green-50 border border-green-100 rounded-xl p-4">
-          <h3 class="font-semibold text-green-800 mb-3" data-i18n="matchedHeading"></h3>
+          <h3 class="font-semibold text-green-800 mb-3 flex items-center justify-between">
+            <span data-i18n="matchedHeading"></span>
+            <span id="count-matched" class="text-xs font-bold bg-green-600 text-white rounded-full min-w-[1.5rem] text-center px-2 py-0.5">0</span>
+          </h3>
           <ul id="matched-list" class="space-y-1 text-sm"></ul>
         </section>
         <section class="bg-amber-50 border border-amber-100 rounded-xl p-4">
-          <h3 class="font-semibold text-amber-800 mb-3" data-i18n="nearMissHeading"></h3>
+          <h3 class="font-semibold text-amber-800 mb-3 flex items-center justify-between">
+            <span data-i18n="nearMissHeading"></span>
+            <span id="count-nearmiss" class="text-xs font-bold bg-amber-500 text-white rounded-full min-w-[1.5rem] text-center px-2 py-0.5">0</span>
+          </h3>
           <ul id="nearmiss-list" class="space-y-1 text-sm"></ul>
         </section>
         <section class="bg-red-50 border border-red-100 rounded-xl p-4">
-          <h3 class="font-semibold text-red-800 mb-3" data-i18n="missingHeading"></h3>
+          <h3 class="font-semibold text-red-800 mb-3 flex items-center justify-between">
+            <span data-i18n="missingHeading"></span>
+            <span id="count-missing" class="text-xs font-bold bg-red-600 text-white rounded-full min-w-[1.5rem] text-center px-2 py-0.5">0</span>
+          </h3>
           <ul id="missing-list" class="space-y-1 text-sm"></ul>
         </section>
       </div>
@@ -274,7 +278,7 @@
             <svg viewBox="0 0 230 230" width="230" height="230">
               <g id="radar-rings"></g>
               <g id="radar-spokes"></g>
-              <polygon id="radar-polygon" points="" fill="rgba(22,163,74,0.32)" stroke="#16a34a" stroke-width="2.5" stroke-linejoin="round"></polygon>
+              <polygon id="radar-polygon" points="" fill="rgba(22,163,74,0.55)" stroke="#15803d" stroke-width="3" stroke-linejoin="round"></polygon>
               <g id="radar-dots"></g>
             </svg>
             <div id="radar-labels" class="absolute inset-0 pointer-events-none"></div>

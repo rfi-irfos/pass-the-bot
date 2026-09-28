@@ -39,9 +39,6 @@ const TRANSLATIONS = {
     scorePrompt: "Starte oben eine Prüfung, um hier dein Ergebnis zu sehen.",
     scoreSummary: (pct, matched, total) =>
       `Dein Lebenslauf erfüllt ${pct}% der geforderten Skills und Keywords aus dieser Anzeige (${matched}/${total} Pflicht-Skills).`,
-    matchedLabel: "Gefunden",
-    nearMissLabel: "Knapp daneben",
-    missingLabel: "Fehlend",
     matchedHeading: "Gefundene Skills",
     nearMissHeading: "Knapp daneben",
     missingHeading: "Fehlende Skills",
@@ -55,6 +52,8 @@ const TRANSLATIONS = {
       `Schreibe "${found}" als exakten Begriff "${alias}", damit es als ${name} erkannt wird.`,
     tipRequired: (name) => `Ergänze Belege für ${name}: das ist laut Anzeige ein Pflicht-Skill.`,
     tipOptional: (name) => `Erwähne ${name}, falls vorhanden: laut Anzeige von Vorteil.`,
+    tipMissingSection: (name) =>
+      `Ergänze einen "${name}"-Abschnitt: dein Lebenslauf enthält aktuell keine erkennbare "${name}"-Überschrift.`,
     infoTitle: "Was ist ein ATS, und warum gibt's Pass The Bot?",
     infoBody1:
       "Ein Applicant Tracking System (ATS) ist die Software, die heute fast jede große Firma vor die eigentliche Bewerbung schaltet. Bevor ein Mensch deinen Lebenslauf überhaupt sieht, durchsucht das System ihn nach Keywords aus der Stellenanzeige: automatisiert, in Sekunden, für hunderte Bewerbungen gleichzeitig.",
@@ -125,9 +124,6 @@ const TRANSLATIONS = {
     scorePrompt: "Run a check above to see your results here.",
     scoreSummary: (pct, matched, total) =>
       `Your resume matches ${pct}% of the required skills and keywords from this job posting (${matched}/${total} required).`,
-    matchedLabel: "Matched",
-    nearMissLabel: "Near Misses",
-    missingLabel: "Missing",
     matchedHeading: "Matched Skills",
     nearMissHeading: "Near Misses",
     missingHeading: "Missing Skills",
@@ -141,6 +137,8 @@ const TRANSLATIONS = {
       `Fix "${found}" to the exact term "${alias}" so it's recognized as ${name}.`,
     tipRequired: (name) => `Add evidence of ${name}: this is listed as a required skill in the posting.`,
     tipOptional: (name) => `Consider mentioning ${name} if you have it: it's listed as a nice-to-have.`,
+    tipMissingSection: (name) =>
+      `Add a "${name}" section: your resume doesn't have a recognizable "${name}" heading right now.`,
     infoTitle: "What is an ATS, and why does Pass The Bot exist?",
     infoBody1:
       "An Applicant Tracking System (ATS) is the software almost every large company runs your application through before a human ever sees it. It scans your resume for keywords from the job posting: automatically, in seconds, across hundreds of applications at once.",
@@ -357,6 +355,14 @@ function buildTips(report) {
   for (const item of missingOptional) {
     tips.push(t("tipOptional")(item.display_name));
   }
+  if (report.metrics && report.metrics.sections) {
+    for (const section of report.metrics.sections) {
+      if (!section.found) {
+        const name = t("sectionNames")[section.id] || section.id;
+        tips.push(t("tipMissingSection")(name));
+      }
+    }
+  }
   return tips;
 }
 
@@ -456,17 +462,19 @@ function renderRadar(radar) {
     return [centerX + r * Math.cos(angle), centerY + r * Math.sin(angle)];
   }
 
-  // Concentric rings at 25/50/75/100% give the chart real depth instead of
-  // a single flat backdrop polygon.
+  // Concentric rings at 100/75/50/25% give the chart real depth instead of
+  // a single flat backdrop polygon. Drawn outer-to-inner so each smaller
+  // polygon paints over the larger one beneath it, leaving a visible
+  // alternating band between each pair of levels.
   radarRingsEl.innerHTML = "";
-  [25, 50, 75, 100].forEach((ringPct, ringIndex) => {
+  [100, 75, 50, 25].forEach((ringPct, ringIndex) => {
     const ring = document.createElementNS(SVG_NS, "polygon");
     ring.setAttribute(
       "points",
       axes.map((axis, i) => pointAt(i, ringPct, maxRadius).join(",")).join(" ")
     );
-    ring.setAttribute("fill", ringIndex === 3 ? "none" : "#f8fafc");
-    ring.setAttribute("stroke", "#e2e8f0");
+    ring.setAttribute("fill", ringIndex % 2 === 0 ? "#eef2f7" : "#ffffff");
+    ring.setAttribute("stroke", "#cbd5e1");
     ring.setAttribute("stroke-width", "1");
     radarRingsEl.appendChild(ring);
   });
@@ -480,7 +488,7 @@ function renderRadar(radar) {
     spoke.setAttribute("y1", centerY);
     spoke.setAttribute("x2", x);
     spoke.setAttribute("y2", y);
-    spoke.setAttribute("stroke", "#e2e8f0");
+    spoke.setAttribute("stroke", "#cbd5e1");
     spoke.setAttribute("stroke-width", "1");
     radarSpokesEl.appendChild(spoke);
   });

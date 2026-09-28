@@ -105,3 +105,44 @@ def test_resume_with_no_recognizable_headings_returns_all_not_found():
     assert all(not r.found for r in results)
     assert all(r.word_count == 0 for r in results)
     assert all(not r.filled for r in results)
+
+
+def test_compound_heading_combining_two_synonyms_is_detected():
+    # Real resumes often combine synonyms into one heading line, e.g.
+    # "Kernkompetenzen / Skills" -- a strict full-line match would miss
+    # this since neither "kernkompetenzen / skills" alone matches any
+    # known keyword exactly.
+    text = (
+        "Kernkompetenzen / Skills\n"
+        "Python, Docker, Kubernetes, AWS, PostgreSQL, Git, CI/CD, Teamarbeit, "
+        "Kommunikation, Problemloesung, Zeitmanagement, Flexibilitaet, "
+        "Lernbereitschaft, Eigeninitiative, Zuverlaessigkeit"
+    )
+    results = detect_sections(text)
+    skills = next(r for r in results if r.id == "skills")
+    assert skills.found is True
+    assert skills.filled is True
+
+
+def test_contact_without_a_heading_is_detected_via_email_in_header():
+    # Many single-page/ATS-style resumes put contact details directly
+    # under the name with no "Kontakt"/"Contact" heading at all.
+    text = (
+        "Jane Doe\n"
+        "Senior Backend Engineer\n"
+        "Graz, Austria | jane.doe@example.com | linkedin.com/in/janedoe\n"
+        "\n"
+        "Erfahrung\n"
+        "Fünf Jahre Erfahrung als Backend-Entwickler bei einer großen Firma mit Fokus auf Python."
+    )
+    results = detect_sections(text)
+    contact = next(r for r in results if r.id == "contact")
+    assert contact.found is True
+    assert contact.word_count > 0
+
+
+def test_contact_stays_not_found_when_no_email_appears_near_the_top():
+    text = "Just a paragraph of text with no section headings and no email address anywhere."
+    results = detect_sections(text)
+    contact = next(r for r in results if r.id == "contact")
+    assert contact.found is False
