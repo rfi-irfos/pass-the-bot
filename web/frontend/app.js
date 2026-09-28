@@ -80,6 +80,7 @@ const TRANSLATIONS = {
     },
     sectionFound: "vorhanden",
     sectionMissing: "nicht gefunden",
+    sectionWordsUnit: "Wörter",
     radarHeading: "ATS-Radar",
     radarRequiredSkills: "Pflicht-Skills",
     radarSoftSkills: "Soft Skills",
@@ -165,6 +166,7 @@ const TRANSLATIONS = {
     },
     sectionFound: "found",
     sectionMissing: "not found",
+    sectionWordsUnit: "words",
     radarHeading: "ATS Radar",
     radarRequiredSkills: "Required Skills",
     radarSoftSkills: "Soft Skills",
@@ -211,15 +213,17 @@ const semanticMatchBar = document.getElementById("semantic-match-bar");
 const sectionAnalysisList = document.getElementById("section-analysis-list");
 
 const radarPolygon = document.getElementById("radar-polygon");
-const radarGrid = document.getElementById("radar-grid");
+const radarRingsEl = document.getElementById("radar-rings");
+const radarSpokesEl = document.getElementById("radar-spokes");
+const radarDotsEl = document.getElementById("radar-dots");
 const radarLabelsEl = document.getElementById("radar-labels");
 
 const RADAR_AXES = [
-  { key: "required_skills_pct", labelKey: "radarRequiredSkills" },
-  { key: "soft_skills_pct", labelKey: "radarSoftSkills" },
-  { key: "wording_accuracy_pct", labelKey: "radarWordingAccuracy" },
-  { key: "readability_pct", labelKey: "radarReadability" },
-  { key: "section_completeness_pct", labelKey: "radarSectionCompleteness" },
+  { key: "required_skills_pct", labelKey: "radarRequiredSkills", color: "#16a34a" },
+  { key: "soft_skills_pct", labelKey: "radarSoftSkills", color: "#2563eb" },
+  { key: "wording_accuracy_pct", labelKey: "radarWordingAccuracy", color: "#9333ea" },
+  { key: "readability_pct", labelKey: "radarReadability", color: "#f59e0b" },
+  { key: "section_completeness_pct", labelKey: "radarSectionCompleteness", color: "#0891b2" },
 ];
 
 function t(key) {
@@ -430,36 +434,96 @@ function animateGaugeTo(pct) {
   requestAnimationFrame(tick);
 }
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function radarValueColor(pct) {
+  if (pct >= 80) return "#16a34a";
+  if (pct >= 50) return "#f59e0b";
+  return "#dc2626";
+}
+
 function renderRadar(radar) {
   const axes = RADAR_AXES.filter((a) => radar[a.key] !== null && radar[a.key] !== undefined);
-  const centerX = 100;
-  const centerY = 100;
-  const maxRadius = 70;
+  const centerX = 115;
+  const centerY = 115;
+  const maxRadius = 62;
+  const labelRadius = maxRadius + 26;
   const angleStep = (2 * Math.PI) / axes.length;
 
-  function pointFor(index, valuePct) {
+  function pointAt(index, valuePct, radius = maxRadius) {
     const angle = -Math.PI / 2 + index * angleStep;
-    const r = (valuePct / 100) * maxRadius;
+    const r = (valuePct / 100) * radius;
     return [centerX + r * Math.cos(angle), centerY + r * Math.sin(angle)];
   }
 
+  // Concentric rings at 25/50/75/100% give the chart real depth instead of
+  // a single flat backdrop polygon.
+  radarRingsEl.innerHTML = "";
+  [25, 50, 75, 100].forEach((ringPct, ringIndex) => {
+    const ring = document.createElementNS(SVG_NS, "polygon");
+    ring.setAttribute(
+      "points",
+      axes.map((axis, i) => pointAt(i, ringPct, maxRadius).join(",")).join(" ")
+    );
+    ring.setAttribute("fill", ringIndex === 3 ? "none" : "#f8fafc");
+    ring.setAttribute("stroke", "#e2e8f0");
+    ring.setAttribute("stroke-width", "1");
+    radarRingsEl.appendChild(ring);
+  });
+
+  // Spokes from center to each axis's 100% vertex.
+  radarSpokesEl.innerHTML = "";
+  axes.forEach((axis, i) => {
+    const [x, y] = pointAt(i, 100, maxRadius);
+    const spoke = document.createElementNS(SVG_NS, "line");
+    spoke.setAttribute("x1", centerX);
+    spoke.setAttribute("y1", centerY);
+    spoke.setAttribute("x2", x);
+    spoke.setAttribute("y2", y);
+    spoke.setAttribute("stroke", "#e2e8f0");
+    spoke.setAttribute("stroke-width", "1");
+    radarSpokesEl.appendChild(spoke);
+  });
+
   radarPolygon.setAttribute(
     "points",
-    axes.map((axis, i) => pointFor(i, radar[axis.key]).join(",")).join(" ")
+    axes.map((axis, i) => pointAt(i, radar[axis.key]).join(",")).join(" ")
   );
-  radarGrid.setAttribute(
-    "points",
-    axes.map((axis, i) => pointFor(i, 100).join(",")).join(" ")
-  );
+
+  // One colored dot per axis at its real data point, tinted by that axis's
+  // own value (red/amber/green) so a weak axis is visible at a glance, not
+  // just legible in the label text.
+  radarDotsEl.innerHTML = "";
+  axes.forEach((axis, i) => {
+    const [x, y] = pointAt(i, radar[axis.key]);
+    const dot = document.createElementNS(SVG_NS, "circle");
+    dot.setAttribute("cx", x);
+    dot.setAttribute("cy", y);
+    dot.setAttribute("r", "4");
+    dot.setAttribute("fill", radarValueColor(radar[axis.key]));
+    dot.setAttribute("stroke", "#ffffff");
+    dot.setAttribute("stroke-width", "1.5");
+    radarDotsEl.appendChild(dot);
+  });
 
   radarLabelsEl.innerHTML = "";
   axes.forEach((axis, i) => {
-    const [x, y] = pointFor(i, 90);
+    const [x, y] = pointAt(i, 100, labelRadius);
+    const angle = -Math.PI / 2 + i * angleStep;
+    const cos = Math.cos(angle);
+    let alignClass = "-translate-x-1/2 text-center";
+    if (cos > 0.35) alignClass = "text-left";
+    else if (cos < -0.35) alignClass = "-translate-x-full text-right";
+
     const label = document.createElement("div");
-    label.className = "absolute text-[10px] font-medium text-gray-600 -translate-x-1/2 -translate-y-1/2 text-center leading-tight w-16";
+    label.className = `absolute -translate-y-1/2 leading-tight w-16 break-words ${alignClass}`;
     label.style.left = `${x}px`;
     label.style.top = `${y}px`;
-    label.textContent = `${t(axis.labelKey)} (${Math.round(radar[axis.key])}%)`;
+    const value = Math.round(radar[axis.key]);
+    label.innerHTML = `
+      <div class="text-[10px] font-semibold text-gray-700">${t(axis.labelKey)}</div>
+      <div class="text-[10px] font-bold" style="color: ${radarValueColor(value)}">${value}%</div>
+    `;
     radarLabelsEl.appendChild(label);
   });
 }
@@ -506,14 +570,25 @@ function renderResults(report, { scroll = true } = {}) {
       const li = document.createElement("li");
       const name = t("sectionNames")[section.id] || section.id;
       if (!section.found) {
-        li.className = "flex justify-between text-gray-400";
-        li.innerHTML = `<span>${name}</span><span>${t("sectionMissing")}</span>`;
+        li.className = "flex items-center justify-between text-gray-400";
+        li.innerHTML = `
+          <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-gray-300"></span>${name}</span>
+          <span class="text-xs">${t("sectionMissing")}</span>
+        `;
       } else {
         const pct = Math.min(100, Math.round((section.word_count / 15) * 100));
+        const dotColor = section.filled ? "bg-green-500" : "bg-amber-500";
+        const barColor = section.filled ? "bg-green-500" : "bg-amber-500";
+        const badgeClass = section.filled
+          ? "bg-green-100 text-green-800"
+          : "bg-amber-100 text-amber-800";
         li.className = "space-y-1";
         li.innerHTML = `
-          <div class="flex justify-between"><span>${name}</span><span>${section.word_count} ${section.filled ? "✓" : ""}</span></div>
-          <div class="w-full bg-gray-100 rounded-full h-1.5"><div class="bg-green-600 h-1.5 rounded-full" style="width: ${pct}%"></div></div>
+          <div class="flex items-center justify-between">
+            <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full ${dotColor}"></span>${name}</span>
+            <span class="text-xs font-medium px-2 py-0.5 rounded-full ${badgeClass}">${section.word_count} ${t("sectionWordsUnit")}</span>
+          </div>
+          <div class="w-full bg-gray-100 rounded-full h-1.5"><div class="${barColor} h-1.5 rounded-full" style="width: ${pct}%"></div></div>
         `;
       }
       sectionAnalysisList.appendChild(li);
@@ -703,11 +778,25 @@ downloadReportBtn.addEventListener("click", () => {
   // scroll position afterward (including on failure).
   const { scrollX, scrollY } = window;
   window.scrollTo(0, 0);
+
+  // The button lives inside the captured element; hide it for the snapshot
+  // so it doesn't show up inside the exported PDF, then restore it.
+  downloadReportBtn.classList.add("hidden");
+  downloadReportBtn.classList.remove("flex");
+  function restoreButton() {
+    downloadReportBtn.classList.remove("hidden");
+    downloadReportBtn.classList.add("flex");
+  }
+
   html2pdf()
     .from(resultsCard)
     .save("pass-the-bot-report.pdf")
-    .then(() => window.scrollTo(scrollX, scrollY))
+    .then(() => {
+      restoreButton();
+      window.scrollTo(scrollX, scrollY);
+    })
     .catch(() => {
+      restoreButton();
       window.scrollTo(scrollX, scrollY);
       showError(t("downloadFailed"));
     });

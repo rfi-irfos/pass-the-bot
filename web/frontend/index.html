@@ -270,10 +270,12 @@
         </section>
         <section class="bg-white border border-gray-200 rounded-xl p-4" id="radar-card">
           <h3 class="font-semibold mb-3" data-i18n="radarHeading"></h3>
-          <div id="radar-container" class="relative mx-auto" style="width: 200px; height: 200px;">
-            <svg viewBox="0 0 200 200" width="200" height="200">
-              <polygon id="radar-grid" points="" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"></polygon>
-              <polygon id="radar-polygon" points="" fill="rgba(22,163,74,0.35)" stroke="#16a34a" stroke-width="2"></polygon>
+          <div id="radar-container" class="relative mx-auto" style="width: 230px; height: 230px;">
+            <svg viewBox="0 0 230 230" width="230" height="230">
+              <g id="radar-rings"></g>
+              <g id="radar-spokes"></g>
+              <polygon id="radar-polygon" points="" fill="rgba(22,163,74,0.32)" stroke="#16a34a" stroke-width="2.5" stroke-linejoin="round"></polygon>
+              <g id="radar-dots"></g>
             </svg>
             <div id="radar-labels" class="absolute inset-0 pointer-events-none"></div>
           </div>
