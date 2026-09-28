@@ -78,6 +78,12 @@ const TRANSLATIONS = {
     },
     sectionFound: "vorhanden",
     sectionMissing: "nicht gefunden",
+    radarHeading: "ATS-Radar",
+    radarRequiredSkills: "Pflicht-Skills",
+    radarSoftSkills: "Soft Skills",
+    radarWordingAccuracy: "Formulierungsgenauigkeit",
+    radarReadability: "Lesbarkeit",
+    radarSectionCompleteness: "Abschnitts-Vollständigkeit",
   },
   en: {
     pageTitle: "Pass The Bot! See your CV the way an Applicant Tracking System (ATS) sees it",
@@ -155,6 +161,12 @@ const TRANSLATIONS = {
     },
     sectionFound: "found",
     sectionMissing: "not found",
+    radarHeading: "ATS Radar",
+    radarRequiredSkills: "Required Skills",
+    radarSoftSkills: "Soft Skills",
+    radarWordingAccuracy: "Wording Accuracy",
+    radarReadability: "Readability",
+    radarSectionCompleteness: "Section Completeness",
   },
 };
 
@@ -192,6 +204,18 @@ const exactMatchBar = document.getElementById("exact-match-bar");
 const semanticMatchCount = document.getElementById("semantic-match-count");
 const semanticMatchBar = document.getElementById("semantic-match-bar");
 const sectionAnalysisList = document.getElementById("section-analysis-list");
+
+const radarPolygon = document.getElementById("radar-polygon");
+const radarGrid = document.getElementById("radar-grid");
+const radarLabelsEl = document.getElementById("radar-labels");
+
+const RADAR_AXES = [
+  { key: "required_skills_pct", labelKey: "radarRequiredSkills" },
+  { key: "soft_skills_pct", labelKey: "radarSoftSkills" },
+  { key: "wording_accuracy_pct", labelKey: "radarWordingAccuracy" },
+  { key: "readability_pct", labelKey: "radarReadability" },
+  { key: "section_completeness_pct", labelKey: "radarSectionCompleteness" },
+];
 
 function t(key) {
   return TRANSLATIONS[currentLang][key];
@@ -401,6 +425,40 @@ function animateGaugeTo(pct) {
   requestAnimationFrame(tick);
 }
 
+function renderRadar(radar) {
+  const axes = RADAR_AXES.filter((a) => radar[a.key] !== null && radar[a.key] !== undefined);
+  const centerX = 100;
+  const centerY = 100;
+  const maxRadius = 70;
+  const angleStep = (2 * Math.PI) / axes.length;
+
+  function pointFor(index, valuePct) {
+    const angle = -Math.PI / 2 + index * angleStep;
+    const r = (valuePct / 100) * maxRadius;
+    return [centerX + r * Math.cos(angle), centerY + r * Math.sin(angle)];
+  }
+
+  radarPolygon.setAttribute(
+    "points",
+    axes.map((axis, i) => pointFor(i, radar[axis.key]).join(",")).join(" ")
+  );
+  radarGrid.setAttribute(
+    "points",
+    axes.map((axis, i) => pointFor(i, 100).join(",")).join(" ")
+  );
+
+  radarLabelsEl.innerHTML = "";
+  axes.forEach((axis, i) => {
+    const [x, y] = pointFor(i, 90);
+    const label = document.createElement("div");
+    label.className = "absolute text-[10px] font-medium text-gray-600 -translate-x-1/2 -translate-y-1/2 text-center leading-tight w-16";
+    label.style.left = `${x}px`;
+    label.style.top = `${y}px`;
+    label.textContent = `${t(axis.labelKey)} (${Math.round(radar[axis.key])}%)`;
+    radarLabelsEl.appendChild(label);
+  });
+}
+
 function renderResults(report, { scroll = true } = {}) {
   lastReport = report;
   const pct = report.score.coverage_pct;
@@ -441,6 +499,8 @@ function renderResults(report, { scroll = true } = {}) {
     }
     sectionAnalysisList.appendChild(li);
   }
+
+  renderRadar(report.metrics.radar);
 
   renderList(matchedList, matched, t("emptyMatched"));
   renderList(nearMissList, nearMiss, t("emptyNearMiss"));
