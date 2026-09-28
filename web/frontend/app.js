@@ -46,6 +46,7 @@ const TRANSLATIONS = {
     emptyNearMiss: "Keine Beinahe-Treffer.",
     emptyMissing: "Nichts fehlt: passt sehr gut.",
     foundLabel: (text) => `gefunden: "${text}"`,
+    openMatchTooltip: "Ähnlichkeitsbasiert erkannt, nicht aus dem kuratierten Katalog",
     tipsHeading: "Bevor du diesen Lebenslauf abschickst",
     tipsEmpty: "Keine Änderungen nötig: dieser Lebenslauf deckt alles ab, was die Anzeige verlangt.",
     tipFix: (found, alias, name) =>
@@ -131,6 +132,7 @@ const TRANSLATIONS = {
     emptyNearMiss: "No near-misses found.",
     emptyMissing: "Nothing missing, great fit.",
     foundLabel: (text) => `found "${text}"`,
+    openMatchTooltip: "Detected by similarity, not from the curated catalog",
     tipsHeading: "Before you submit this resume",
     tipsEmpty: "No changes needed: this resume covers everything the posting asks for.",
     tipFix: (found, alias, name) =>
@@ -331,11 +333,28 @@ function renderList(listEl, items, emptyText) {
   for (const item of items) {
     const li = document.createElement("li");
     li.className = "bg-white/70 rounded px-3 py-2";
-    if (item.status === "NEAR_MISS" && item.suggested_alias) {
-      li.innerHTML = `<span class="font-medium">${item.display_name}</span><br><span class="text-gray-500">${t("foundLabel")(item.found_text)}</span>`;
-    } else {
-      li.textContent = item.display_name;
+
+    const label = document.createElement("span");
+    label.className = "font-medium";
+    label.textContent = item.display_name;
+    li.appendChild(label);
+
+    if (item.origin === "open") {
+      const marker = document.createElement("span");
+      marker.className = "text-gray-400 ml-1";
+      marker.title = t("openMatchTooltip");
+      marker.textContent = "~";
+      li.appendChild(marker);
     }
+
+    if (item.status === "NEAR_MISS" && item.suggested_alias) {
+      li.appendChild(document.createElement("br"));
+      const foundSpan = document.createElement("span");
+      foundSpan.className = "text-gray-500";
+      foundSpan.textContent = t("foundLabel")(item.found_text);
+      li.appendChild(foundSpan);
+    }
+
     listEl.appendChild(li);
   }
 }
