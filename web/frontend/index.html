@@ -234,6 +234,46 @@
         </section>
       </div>
 
+      <div class="grid md:grid-cols-3 gap-4 mb-8" data-reveal>
+        <section class="bg-white border border-gray-200 rounded-xl p-4">
+          <h3 class="font-semibold mb-3" data-i18n="keywordCoverageHeading"></h3>
+          <div class="space-y-3 text-sm">
+            <div>
+              <div class="flex justify-between mb-1">
+                <span data-i18n="exactMatchLabel"></span>
+                <span id="exact-match-count"></span>
+              </div>
+              <div class="w-full bg-gray-100 rounded-full h-2">
+                <div id="exact-match-bar" class="bg-green-600 h-2 rounded-full" style="width: 0%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1">
+                <span data-i18n="semanticMatchLabel"></span>
+                <span id="semantic-match-count"></span>
+              </div>
+              <div class="w-full bg-gray-100 rounded-full h-2">
+                <div id="semantic-match-bar" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="bg-white border border-gray-200 rounded-xl p-4" id="section-analysis-card">
+          <h3 class="font-semibold mb-3" data-i18n="sectionAnalysisHeading"></h3>
+          <ul id="section-analysis-list" class="space-y-2 text-sm"></ul>
+        </section>
+        <section class="bg-white border border-gray-200 rounded-xl p-4" id="radar-card">
+          <h3 class="font-semibold mb-3" data-i18n="radarHeading"></h3>
+          <div id="radar-container" class="relative mx-auto" style="width: 200px; height: 200px;">
+            <svg viewBox="0 0 200 200" width="200" height="200">
+              <polygon id="radar-grid" points="" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"></polygon>
+              <polygon id="radar-polygon" points="" fill="rgba(22,163,74,0.35)" stroke="#16a34a" stroke-width="2"></polygon>
+            </svg>
+            <div id="radar-labels" class="absolute inset-0 pointer-events-none"></div>
+          </div>
+        </section>
+      </div>
+
       <div id="tips-section">
         <h3 class="font-semibold mb-3" data-i18n="tipsHeading"></h3>
         <ul id="tips-list" class="space-y-2 text-sm"></ul>

@@ -66,6 +66,9 @@ const TRANSLATIONS = {
       "Pass The Bot dreht das um: Lass deine Bewerbung hier durchlaufen, bevor du sie irgendwo hochlädst, mit der gleichen nachvollziehbaren Logik, die viele echte ATS-Systeme verwenden. Schwarz auf weiß, welche Skills erkannt wurden, welche knapp danebenlagen und welche fehlen. Keine Blackbox, keine Überraschung.",
     privacyNote:
       "Diagnose statt KI-Blackbox: Das System entscheidet deterministisch und nachvollziehbar, warum ein Keyword-Filter dich durchlässt oder aussortiert, ohne deinen Lebenslauf umzuschreiben. Deine Daten werden dabei nicht gespeichert, nicht zum Trainieren eines Modells verwendet, und diese Seite setzt keine Cookies: alles bleibt in deinem Browser und wird nur für diese eine Prüfung an die Analyse-Engine geschickt.",
+    keywordCoverageHeading: "Keyword-Abdeckung",
+    exactMatchLabel: "Exakte Treffer",
+    semanticMatchLabel: "Sinngemäße Treffer",
   },
   en: {
     pageTitle: "Pass The Bot! See your CV the way an Applicant Tracking System (ATS) sees it",
@@ -131,6 +134,9 @@ const TRANSLATIONS = {
       "Pass The Bot flips that around: run your application through here before you submit it anywhere, using the same kind of deterministic, explainable logic many real ATS systems use. See in plain sight which skills were recognized, which were close misses, and which are missing. No black box, no surprises.",
     privacyNote:
       "A diagnosis, not an AI black box: the system decides deterministically and transparently why a keyword filter would pass or reject you, without rewriting your resume for you. None of your data is stored or used to train anything, and this page sets no cookies: everything stays in your browser and is sent to the analysis engine only for this one check.",
+    keywordCoverageHeading: "Keyword Coverage",
+    exactMatchLabel: "Exact Matches",
+    semanticMatchLabel: "Semantic Matches",
   },
 };
 
@@ -163,6 +169,10 @@ const matchedList = document.getElementById("matched-list");
 const nearMissList = document.getElementById("nearmiss-list");
 const missingList = document.getElementById("missing-list");
 const tipsList = document.getElementById("tips-list");
+const exactMatchCount = document.getElementById("exact-match-count");
+const exactMatchBar = document.getElementById("exact-match-bar");
+const semanticMatchCount = document.getElementById("semantic-match-count");
+const semanticMatchBar = document.getElementById("semantic-match-bar");
 
 function t(key) {
   return TRANSLATIONS[currentLang][key];
@@ -386,6 +396,14 @@ function renderResults(report, { scroll = true } = {}) {
   countMatched.textContent = matched.length;
   countNearMiss.textContent = nearMiss.length;
   countMissing.textContent = missing.length;
+
+  const breakdown = report.metrics.match_breakdown;
+  const exactPct = breakdown.exact_total ? Math.round((breakdown.exact_matched / breakdown.exact_total) * 100) : 0;
+  const semanticPct = breakdown.semantic_total ? Math.round((breakdown.semantic_matched / breakdown.semantic_total) * 100) : 0;
+  exactMatchCount.textContent = `${breakdown.exact_matched} / ${breakdown.exact_total}`;
+  exactMatchBar.style.width = `${exactPct}%`;
+  semanticMatchCount.textContent = `${breakdown.semantic_matched} / ${breakdown.semantic_total}`;
+  semanticMatchBar.style.width = `${semanticPct}%`;
 
   renderList(matchedList, matched, t("emptyMatched"));
   renderList(nearMissList, nearMiss, t("emptyNearMiss"));
