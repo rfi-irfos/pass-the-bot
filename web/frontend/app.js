@@ -485,33 +485,40 @@ function renderResults(report, { scroll = true } = {}) {
   countNearMiss.textContent = nearMiss.length;
   countMissing.textContent = missing.length;
 
-  const breakdown = report.metrics.match_breakdown;
-  const exactPct = breakdown.exact_total ? Math.round((breakdown.exact_matched / breakdown.exact_total) * 100) : 0;
-  const semanticPct = breakdown.semantic_total ? Math.round((breakdown.semantic_matched / breakdown.semantic_total) * 100) : 0;
-  exactMatchCount.textContent = `${breakdown.exact_matched} / ${breakdown.exact_total}`;
-  exactMatchBar.style.width = `${exactPct}%`;
-  semanticMatchCount.textContent = `${breakdown.semantic_matched} / ${breakdown.semantic_total}`;
-  semanticMatchBar.style.width = `${semanticPct}%`;
+  // report.metrics is a newer field the frontend may be serving ahead of a
+  // matching backend deploy (web/frontend deploys automatically on merge,
+  // the Fly backend deploys separately/manually). If it's missing, skip
+  // these three metrics-driven cards gracefully instead of throwing, so a
+  // deploy-timing mismatch doesn't get mistaken for a network failure.
+  if (report.metrics) {
+    const breakdown = report.metrics.match_breakdown;
+    const exactPct = breakdown.exact_total ? Math.round((breakdown.exact_matched / breakdown.exact_total) * 100) : 0;
+    const semanticPct = breakdown.semantic_total ? Math.round((breakdown.semantic_matched / breakdown.semantic_total) * 100) : 0;
+    exactMatchCount.textContent = `${breakdown.exact_matched} / ${breakdown.exact_total}`;
+    exactMatchBar.style.width = `${exactPct}%`;
+    semanticMatchCount.textContent = `${breakdown.semantic_matched} / ${breakdown.semantic_total}`;
+    semanticMatchBar.style.width = `${semanticPct}%`;
 
-  sectionAnalysisList.innerHTML = "";
-  for (const section of report.metrics.sections) {
-    const li = document.createElement("li");
-    const name = t("sectionNames")[section.id] || section.id;
-    if (!section.found) {
-      li.className = "flex justify-between text-gray-400";
-      li.innerHTML = `<span>${name}</span><span>${t("sectionMissing")}</span>`;
-    } else {
-      const pct = Math.min(100, Math.round((section.word_count / 15) * 100));
-      li.className = "space-y-1";
-      li.innerHTML = `
-        <div class="flex justify-between"><span>${name}</span><span>${section.word_count} ${section.filled ? "✓" : ""}</span></div>
-        <div class="w-full bg-gray-100 rounded-full h-1.5"><div class="bg-green-600 h-1.5 rounded-full" style="width: ${pct}%"></div></div>
-      `;
+    sectionAnalysisList.innerHTML = "";
+    for (const section of report.metrics.sections) {
+      const li = document.createElement("li");
+      const name = t("sectionNames")[section.id] || section.id;
+      if (!section.found) {
+        li.className = "flex justify-between text-gray-400";
+        li.innerHTML = `<span>${name}</span><span>${t("sectionMissing")}</span>`;
+      } else {
+        const pct = Math.min(100, Math.round((section.word_count / 15) * 100));
+        li.className = "space-y-1";
+        li.innerHTML = `
+          <div class="flex justify-between"><span>${name}</span><span>${section.word_count} ${section.filled ? "✓" : ""}</span></div>
+          <div class="w-full bg-gray-100 rounded-full h-1.5"><div class="bg-green-600 h-1.5 rounded-full" style="width: ${pct}%"></div></div>
+        `;
+      }
+      sectionAnalysisList.appendChild(li);
     }
-    sectionAnalysisList.appendChild(li);
-  }
 
-  renderRadar(report.metrics.radar);
+    renderRadar(report.metrics.radar);
+  }
 
   renderList(matchedList, matched, t("emptyMatched"));
   renderList(nearMissList, nearMiss, t("emptyNearMiss"));
