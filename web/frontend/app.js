@@ -33,7 +33,9 @@ const TRANSLATIONS = {
     ],
     errorBoth: "Bitte sowohl den Anzeigentext als auch eine Lebenslauf-Datei angeben.",
     errorUnreachable: "Backend nicht erreichbar. Läuft es gerade?",
+    downloadFailed: "Der Bericht konnte nicht erstellt werden. Bitte versuche es erneut.",
     atsResultHeading: "ATS-Ergebnis",
+    downloadReportBtn: "Bericht herunterladen",
     scorePrompt: "Starte oben eine Prüfung, um hier dein Ergebnis zu sehen.",
     scoreSummary: (pct, matched, total) =>
       `Dein Lebenslauf erfüllt ${pct}% der geforderten Skills und Keywords aus dieser Anzeige (${matched}/${total} Pflicht-Skills).`,
@@ -66,6 +68,24 @@ const TRANSLATIONS = {
       "Pass The Bot dreht das um: Lass deine Bewerbung hier durchlaufen, bevor du sie irgendwo hochlädst, mit der gleichen nachvollziehbaren Logik, die viele echte ATS-Systeme verwenden. Schwarz auf weiß, welche Skills erkannt wurden, welche knapp danebenlagen und welche fehlen. Keine Blackbox, keine Überraschung.",
     privacyNote:
       "Diagnose statt KI-Blackbox: Das System entscheidet deterministisch und nachvollziehbar, warum ein Keyword-Filter dich durchlässt oder aussortiert, ohne deinen Lebenslauf umzuschreiben. Deine Daten werden dabei nicht gespeichert, nicht zum Trainieren eines Modells verwendet, und diese Seite setzt keine Cookies: alles bleibt in deinem Browser und wird nur für diese eine Prüfung an die Analyse-Engine geschickt.",
+    keywordCoverageHeading: "Keyword-Abdeckung",
+    exactMatchLabel: "Exakte Treffer",
+    semanticMatchLabel: "Sinngemäße Treffer",
+    sectionAnalysisHeading: "Abschnitts-Analyse",
+    sectionNames: {
+      contact: "Kontakt",
+      experience: "Erfahrung",
+      education: "Ausbildung",
+      skills: "Skills",
+    },
+    sectionFound: "vorhanden",
+    sectionMissing: "nicht gefunden",
+    radarHeading: "ATS-Radar",
+    radarRequiredSkills: "Pflicht-Skills",
+    radarSoftSkills: "Soft Skills",
+    radarWordingAccuracy: "Formulierungsgenauigkeit",
+    radarReadability: "Lesbarkeit",
+    radarSectionCompleteness: "Abschnitts-Vollständigkeit",
   },
   en: {
     pageTitle: "Pass The Bot! See your CV the way an Applicant Tracking System (ATS) sees it",
@@ -98,7 +118,9 @@ const TRANSLATIONS = {
     ],
     errorBoth: "Please provide both the job posting text and a resume file.",
     errorUnreachable: "Could not reach the backend. Is it running?",
+    downloadFailed: "Could not generate the report. Please try again.",
     atsResultHeading: "ATS Result",
+    downloadReportBtn: "Download Report",
     scorePrompt: "Run a check above to see your results here.",
     scoreSummary: (pct, matched, total) =>
       `Your resume matches ${pct}% of the required skills and keywords from this job posting (${matched}/${total} required).`,
@@ -131,6 +153,24 @@ const TRANSLATIONS = {
       "Pass The Bot flips that around: run your application through here before you submit it anywhere, using the same kind of deterministic, explainable logic many real ATS systems use. See in plain sight which skills were recognized, which were close misses, and which are missing. No black box, no surprises.",
     privacyNote:
       "A diagnosis, not an AI black box: the system decides deterministically and transparently why a keyword filter would pass or reject you, without rewriting your resume for you. None of your data is stored or used to train anything, and this page sets no cookies: everything stays in your browser and is sent to the analysis engine only for this one check.",
+    keywordCoverageHeading: "Keyword Coverage",
+    exactMatchLabel: "Exact Matches",
+    semanticMatchLabel: "Semantic Matches",
+    sectionAnalysisHeading: "Resume Section Analysis",
+    sectionNames: {
+      contact: "Contact",
+      experience: "Experience",
+      education: "Education",
+      skills: "Skills",
+    },
+    sectionFound: "found",
+    sectionMissing: "not found",
+    radarHeading: "ATS Radar",
+    radarRequiredSkills: "Required Skills",
+    radarSoftSkills: "Soft Skills",
+    radarWordingAccuracy: "Wording Accuracy",
+    radarReadability: "Readability",
+    radarSectionCompleteness: "Section Completeness",
   },
 };
 
@@ -148,6 +188,7 @@ const progressStepTitleEl = document.getElementById("progress-step-title");
 const progressStepSubtitleEl = document.getElementById("progress-step-subtitle");
 const errorBox = document.getElementById("error-box");
 const resultsCard = document.getElementById("results-card");
+const downloadReportBtn = document.getElementById("download-report-btn");
 const fileInput = document.getElementById("resume_file");
 const fileNameDisplay = document.getElementById("file-name-display");
 const langDeBtn = document.getElementById("lang-de");
@@ -163,6 +204,23 @@ const matchedList = document.getElementById("matched-list");
 const nearMissList = document.getElementById("nearmiss-list");
 const missingList = document.getElementById("missing-list");
 const tipsList = document.getElementById("tips-list");
+const exactMatchCount = document.getElementById("exact-match-count");
+const exactMatchBar = document.getElementById("exact-match-bar");
+const semanticMatchCount = document.getElementById("semantic-match-count");
+const semanticMatchBar = document.getElementById("semantic-match-bar");
+const sectionAnalysisList = document.getElementById("section-analysis-list");
+
+const radarPolygon = document.getElementById("radar-polygon");
+const radarGrid = document.getElementById("radar-grid");
+const radarLabelsEl = document.getElementById("radar-labels");
+
+const RADAR_AXES = [
+  { key: "required_skills_pct", labelKey: "radarRequiredSkills" },
+  { key: "soft_skills_pct", labelKey: "radarSoftSkills" },
+  { key: "wording_accuracy_pct", labelKey: "radarWordingAccuracy" },
+  { key: "readability_pct", labelKey: "radarReadability" },
+  { key: "section_completeness_pct", labelKey: "radarSectionCompleteness" },
+];
 
 function t(key) {
   return TRANSLATIONS[currentLang][key];
@@ -372,6 +430,48 @@ function animateGaugeTo(pct) {
   requestAnimationFrame(tick);
 }
 
+function renderRadar(radar) {
+  const axes = RADAR_AXES.filter((a) => radar[a.key] !== null && radar[a.key] !== undefined);
+  const centerX = 100;
+  const centerY = 100;
+  const maxRadius = 70;
+  const angleStep = (2 * Math.PI) / axes.length;
+
+  function pointFor(index, valuePct) {
+    const angle = -Math.PI / 2 + index * angleStep;
+    const r = (valuePct / 100) * maxRadius;
+    return [centerX + r * Math.cos(angle), centerY + r * Math.sin(angle)];
+  }
+
+  radarPolygon.setAttribute(
+    "points",
+    axes.map((axis, i) => pointFor(i, radar[axis.key]).join(",")).join(" ")
+  );
+  radarGrid.setAttribute(
+    "points",
+    axes.map((axis, i) => pointFor(i, 100).join(",")).join(" ")
+  );
+
+  radarLabelsEl.innerHTML = "";
+  axes.forEach((axis, i) => {
+    const [x, y] = pointFor(i, 90);
+    const label = document.createElement("div");
+    label.className = "absolute text-[10px] font-medium text-gray-600 -translate-x-1/2 -translate-y-1/2 text-center leading-tight w-16";
+    label.style.left = `${x}px`;
+    label.style.top = `${y}px`;
+    label.textContent = `${t(axis.labelKey)} (${Math.round(radar[axis.key])}%)`;
+    radarLabelsEl.appendChild(label);
+  });
+}
+
+function revealResultSections() {
+  const sections = resultsCard.querySelectorAll("[data-reveal]");
+  sections.forEach((el) => el.classList.remove("revealed"));
+  sections.forEach((el, i) => {
+    setTimeout(() => el.classList.add("revealed"), i * 90);
+  });
+}
+
 function renderResults(report, { scroll = true } = {}) {
   lastReport = report;
   const pct = report.score.coverage_pct;
@@ -386,6 +486,41 @@ function renderResults(report, { scroll = true } = {}) {
   countMatched.textContent = matched.length;
   countNearMiss.textContent = nearMiss.length;
   countMissing.textContent = missing.length;
+
+  // report.metrics is a newer field the frontend may be serving ahead of a
+  // matching backend deploy (web/frontend deploys automatically on merge,
+  // the Fly backend deploys separately/manually). If it's missing, skip
+  // these three metrics-driven cards gracefully instead of throwing, so a
+  // deploy-timing mismatch doesn't get mistaken for a network failure.
+  if (report.metrics) {
+    const breakdown = report.metrics.match_breakdown;
+    const exactPct = breakdown.exact_total ? Math.round((breakdown.exact_matched / breakdown.exact_total) * 100) : 0;
+    const semanticPct = breakdown.semantic_total ? Math.round((breakdown.semantic_matched / breakdown.semantic_total) * 100) : 0;
+    exactMatchCount.textContent = `${breakdown.exact_matched} / ${breakdown.exact_total}`;
+    exactMatchBar.style.width = `${exactPct}%`;
+    semanticMatchCount.textContent = `${breakdown.semantic_matched} / ${breakdown.semantic_total}`;
+    semanticMatchBar.style.width = `${semanticPct}%`;
+
+    sectionAnalysisList.innerHTML = "";
+    for (const section of report.metrics.sections) {
+      const li = document.createElement("li");
+      const name = t("sectionNames")[section.id] || section.id;
+      if (!section.found) {
+        li.className = "flex justify-between text-gray-400";
+        li.innerHTML = `<span>${name}</span><span>${t("sectionMissing")}</span>`;
+      } else {
+        const pct = Math.min(100, Math.round((section.word_count / 15) * 100));
+        li.className = "space-y-1";
+        li.innerHTML = `
+          <div class="flex justify-between"><span>${name}</span><span>${section.word_count} ${section.filled ? "✓" : ""}</span></div>
+          <div class="w-full bg-gray-100 rounded-full h-1.5"><div class="bg-green-600 h-1.5 rounded-full" style="width: ${pct}%"></div></div>
+        `;
+      }
+      sectionAnalysisList.appendChild(li);
+    }
+
+    renderRadar(report.metrics.radar);
+  }
 
   renderList(matchedList, matched, t("emptyMatched"));
   renderList(nearMissList, nearMiss, t("emptyNearMiss"));
@@ -411,6 +546,11 @@ function renderResults(report, { scroll = true } = {}) {
   if (scroll) {
     resultsCard.scrollIntoView({ behavior: "smooth", block: "start" });
   }
+
+  downloadReportBtn.classList.remove("hidden");
+  downloadReportBtn.classList.add("flex");
+
+  revealResultSections();
 }
 
 form.addEventListener("submit", async (event) => {
@@ -543,6 +683,34 @@ form.addEventListener("submit", async (event) => {
     submitBtnDots.classList.add("hidden");
     progressWrap.classList.add("hidden");
   }
+});
+
+downloadReportBtn.addEventListener("click", () => {
+  // If the html2pdf CDN script failed to load (blocked by an ad-blocker or
+  // corporate proxy), html2pdf() would throw synchronously with zero
+  // feedback to the user. Check for it up front and surface an error
+  // instead of silently doing nothing.
+  if (typeof html2pdf === "undefined") {
+    showError(t("downloadFailed"));
+    return;
+  }
+
+  // html2canvas (bundled inside html2pdf.js) mis-locates the target element
+  // inside its offscreen clone when the real page is scrolled away from the
+  // top, producing a blank capture. Passing scrollX/scrollY compensation to
+  // html2canvas alone does not reliably fix this in the bundled version, so
+  // scroll the real window to the top before capture and restore the user's
+  // scroll position afterward (including on failure).
+  const { scrollX, scrollY } = window;
+  window.scrollTo(0, 0);
+  html2pdf()
+    .from(resultsCard)
+    .save("pass-the-bot-report.pdf")
+    .then(() => window.scrollTo(scrollX, scrollY))
+    .catch(() => {
+      window.scrollTo(scrollX, scrollY);
+      showError(t("downloadFailed"));
+    });
 });
 
 applyStaticTranslations();
