@@ -96,3 +96,35 @@ def test_run_pipeline_tolerates_embedder_without_model_name_attribute():
         embedder=_StubEmbedderWithoutModelName(),
     )
     assert report["model_version"] == "unknown"
+
+
+def test_run_pipeline_includes_metrics_with_all_sections_detected():
+    resume_text = (
+        "Contact\n"
+        "jane@example.com\n"
+        "\n"
+        "Experience\n"
+        "Five years of experience as a backend developer at a large company "
+        "focused on Python and databases and cloud infrastructure and team leadership.\n"
+        "\n"
+        "Education\n"
+        "Bachelor of Science in Computer Science from State University completed "
+        "with honors and a focus on software engineering practices.\n"
+        "\n"
+        "Skills\n"
+        "Python, Docker, Kubernetes, AWS, PostgreSQL"
+    )
+    report = run_pipeline(
+        "Requires Python and Docker.", resume_text, {"python", "docker"}, DATA_DIR, REPO_ROOT
+    )
+    section_ids = {s["id"] for s in report["metrics"]["sections"]}
+    assert section_ids == {"contact", "experience", "education", "skills"}
+    assert all(s["found"] for s in report["metrics"]["sections"])
+    assert report["metrics"]["readability"]["score"] is not None
+    assert set(report["metrics"]["radar"].keys()) == {
+        "required_skills_pct",
+        "soft_skills_pct",
+        "wording_accuracy_pct",
+        "readability_pct",
+        "section_completeness_pct",
+    }
