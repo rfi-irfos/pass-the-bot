@@ -127,6 +127,24 @@ def enrich_near_misses(
     return enriched
 
 
+def _phrase_already_claimed(key: str, claimed_spans: set[str]) -> bool:
+    """True if a normalized open-requirement phrase (`key`) contains any
+    already-claimed curated span as a whole word.
+
+    Reuses the same word-boundary containment check used elsewhere in this
+    codebase for the identical class of problem (see
+    normalizer.extract_discrete_keywords's "Java/JavaScript regression
+    case" docstring and sections.py's _heading_matches), so that a bare
+    claimed span like "python" is recognized inside a full bullet phrase
+    like "erfahrung mit python", while a span like "java" does not
+    falsely match inside "javascript".
+    """
+    return any(
+        re.search(rf"(?<![a-z0-9]){re.escape(span)}(?![a-z0-9])", key)
+        for span in claimed_spans
+    )
+
+
 def match_open_requirements(
     open_requirements: list[OpenRequirement],
     resume_text: str,
@@ -168,7 +186,7 @@ def match_open_requirements(
     seen: set[str] = set()
     for req in open_requirements:
         key = normalize_string(req.phrase)
-        if not key or key in claimed_spans or key in seen:
+        if not key or key in seen or _phrase_already_claimed(key, claimed_spans):
             continue
         seen.add(key)
 

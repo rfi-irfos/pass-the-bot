@@ -127,6 +127,29 @@ def test_open_requirement_already_claimed_by_curated_match_is_skipped():
     assert results == []
 
 
+def test_open_requirement_phrase_containing_claimed_span_as_whole_word_is_skipped():
+    """A realistic open-requirement bullet ('Erfahrung mit Python') should be
+    recognized as already covered by a curated match on the bare skill token
+    ('python'), not just an exact-string-identical phrase."""
+    reqs = [OpenRequirement(phrase="Erfahrung mit Python", source_line=1)]
+    embedder = _StubEmbedder({"Erfahrung mit Python": 0.9})
+    results = match_open_requirements(
+        reqs, "Experienced Python developer.", embedder, claimed_spans={"python"}
+    )
+    assert results == []
+
+
+def test_open_requirement_phrase_with_unrelated_substring_is_not_falsely_claimed():
+    """A claimed span must match as a whole word, not as a raw substring --
+    'java' claimed must not suppress an open phrase about 'javascript'."""
+    reqs = [OpenRequirement(phrase="JavaScript experience required", source_line=1)]
+    embedder = _StubEmbedder({"JavaScript experience required": 0.9})
+    results = match_open_requirements(
+        reqs, "Experienced JavaScript developer.", embedder, claimed_spans={"java"}
+    )
+    assert len(results) == 1
+
+
 def test_duplicate_open_requirement_phrases_collapse_to_one_result():
     reqs = [
         OpenRequirement(phrase="Python", source_line=1),
