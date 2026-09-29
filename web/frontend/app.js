@@ -66,7 +66,7 @@ const TRANSLATIONS = {
     pipelineStep3: "3. Parsing",
     pipelineStep4: "4. Keyword-Match",
     pipelineStep5: "5. Recruiter-Review",
-    pipelineStep6: "6. Interview / Entscheidung",
+    pipelineStep6: "6. Entscheidung",
     infoTitle: "Was ist ein ATS, und warum gibt's Pass The Bot?",
     infoBody1:
       "Ein <strong>Applicant Tracking System (ATS)</strong> ist die Software, die heute fast jede große Firma vor die eigentliche Bewerbung schaltet. Bevor ein Mensch deinen Lebenslauf überhaupt sieht, durchsucht das System ihn nach Keywords aus der Stellenanzeige: <strong>automatisiert, in Sekunden</strong>, für hunderte Bewerbungen gleichzeitig.",
@@ -167,7 +167,7 @@ const TRANSLATIONS = {
     pipelineStep3: "3. Parsing",
     pipelineStep4: "4. Keyword Match",
     pipelineStep5: "5. Recruiter Review",
-    pipelineStep6: "6. Interview / Decision",
+    pipelineStep6: "6. Decision",
     infoTitle: "What is an ATS, and why does Pass The Bot exist?",
     infoBody1:
       "An <strong>Applicant Tracking System (ATS)</strong> is the software almost every large company runs your application through before a human ever sees it. It scans your resume for keywords from the job posting: <strong>automatically, in seconds</strong>, across hundreds of applications at once.",
