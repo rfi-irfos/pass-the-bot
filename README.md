@@ -1,9 +1,11 @@
 # Pass The Bot!
 
-[![CI](https://github.com/rfi-irfos/pass-the-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/rfi-irfos/pass-the-bot/actions/workflows/ci.yml)
-[![Deploy frontend to GitHub Pages](https://github.com/rfi-irfos/pass-the-bot/actions/workflows/pages.yml/badge.svg)](https://github.com/rfi-irfos/pass-the-bot/actions/workflows/pages.yml)
-[![Live demo](https://img.shields.io/badge/demo-live-16a34a)](https://rfi-irfos.github.io/pass-the-bot/)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/)
+[![CI](https://img.shields.io/github/actions/workflow/status/rfi-irfos/pass-the-bot/ci.yml?branch=master&style=flat-square&label=CI&logo=github)](https://github.com/rfi-irfos/pass-the-bot/actions/workflows/ci.yml)
+[![Pages Deploy](https://img.shields.io/github/actions/workflow/status/rfi-irfos/pass-the-bot/pages.yml?branch=master&style=flat-square&label=pages&logo=githubpages&logoColor=white)](https://github.com/rfi-irfos/pass-the-bot/actions/workflows/pages.yml)
+[![Live Demo](https://img.shields.io/badge/demo-live-16a34a?style=flat-square)](https://rfi-irfos.github.io/pass-the-bot/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![Stars](https://img.shields.io/github/stars/rfi-irfos/pass-the-bot?style=flat-square&logo=github&color=yellow)](https://github.com/rfi-irfos/pass-the-bot/stargazers)
+[![Last Commit](https://img.shields.io/github/last-commit/rfi-irfos/pass-the-bot?style=flat-square&logo=git&logoColor=white)](https://github.com/rfi-irfos/pass-the-bot/commits/master)
 
 **See your resume the way an ATS reads it.**
 
