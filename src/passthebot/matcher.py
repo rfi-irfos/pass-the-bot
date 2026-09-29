@@ -152,6 +152,7 @@ def match_open_requirements(
     claimed_spans: set[str],
     match_threshold: float = 0.48,
     near_miss_threshold: float = 0.35,
+    claimed_soft_skill_entries: list[SkillEntry] | None = None,
 ) -> list[MatchResult]:
     """Classify each open-vocabulary requirement phrase (from
     normalizer.extract_open_requirements, independent of any curated
@@ -191,6 +192,19 @@ def match_open_requirements(
     score, matching the convention used elsewhere in this module (match()
     and enrich_near_misses) that confidence is only populated when
     something was actually found.
+
+    claimed_soft_skill_entries (optional) sharpens dedup for curated SOFT
+    skills specifically: a curated soft-skill's own matched_text is the
+    catalog's best-matching ANCHOR PHRASE, not the literal posting text
+    that triggered the match, so `claimed_spans`'s literal whole-word
+    containment check can miss a differently-inflected posting phrase for
+    the same concept (e.g. "Teamorientiertes Arbeiten" vs. the anchor
+    "teamorientiert arbeiten"). For every phrase that survives the
+    `_phrase_already_claimed` check, we additionally check it against each
+    claimed soft-skill entry's own anchor_phrases by embedding similarity;
+    a hit at or above that entry's embedding_threshold (default 0.48, same
+    fallback as extract_soft_skills) is treated as already claimed too, so
+    the same concept is never reported twice under two different labels.
     """
     sentences = split_sentences(resume_text)
     if not sentences:
@@ -201,6 +215,12 @@ def match_open_requirements(
     for req in open_requirements:
         key = normalize_string(req.phrase)
         if not key or key in seen or _phrase_already_claimed(key, claimed_spans):
+            continue
+        if claimed_soft_skill_entries and any(
+            embedder.best_match(req.phrase, entry.anchor_phrases)[1]
+            >= (entry.embedding_threshold if entry.embedding_threshold is not None else 0.48)
+            for entry in claimed_soft_skill_entries
+        ):
             continue
         seen.add(key)
 

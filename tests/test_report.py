@@ -132,3 +132,32 @@ def test_build_report_open_origin_results_count_as_semantic_not_exact():
     assert breakdown["exact_total"] == 3
     assert breakdown["semantic_total"] == 1
     assert breakdown["semantic_matched"] == 1
+
+
+def test_wording_accuracy_pct_excludes_open_origin_near_misses():
+    results_with_open_near_miss = RESULTS + [
+        MatchResult(
+            id="Welding experience", category="open_requirements", status="NEAR_MISS",
+            required=True, origin="open",
+        ),
+    ]
+    report = build_report(results_with_open_near_miss, RESUME_TEXT, graph_version="abc123")
+    # RESULTS already has 1 curated NEAR_MISS ("kubernetes") out of 3 curated results.
+    # Without the fix, adding the open NEAR_MISS would change the denominator to 4
+    # and count 2 near-misses; with the fix it must stay exactly what it was before
+    # this open result was added (curated-only: 1 near-miss / 3 curated results).
+    without_open = build_report(RESULTS, RESUME_TEXT, graph_version="abc123")
+    assert (
+        report["metrics"]["radar"]["wording_accuracy_pct"]
+        == without_open["metrics"]["radar"]["wording_accuracy_pct"]
+    )
+
+
+def test_build_report_posting_understood_is_false_when_nothing_extracted():
+    report = build_report([], RESUME_TEXT, graph_version="abc123")
+    assert report["metrics"]["posting_understood"] is False
+
+
+def test_build_report_posting_understood_is_true_when_anything_extracted():
+    report = build_report(RESULTS, RESUME_TEXT, graph_version="abc123")
+    assert report["metrics"]["posting_understood"] is True

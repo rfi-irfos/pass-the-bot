@@ -271,3 +271,39 @@ def test_prose_sentence_with_a_comma_is_not_shredded_into_fake_requirements():
     )
     result = extract_open_requirements(text)
     assert result == []
+
+
+def test_requirement_heading_containing_a_comma_is_still_recognized():
+    text = (
+        "Anforderungen, die du mitbringst\n"
+        "- Python\n"
+        "- SQL\n"
+    )
+    result = extract_open_requirements(text)
+    phrases = [r.phrase for r in result]
+    assert phrases == ["Python", "SQL"]
+
+
+def test_requirement_heading_with_a_comma_still_terminates_a_prior_section():
+    text = (
+        "Anforderungen\n"
+        "- Python\n"
+        "\n"
+        "Vorteile, die wir bieten\n"
+        "- Firmenwagen\n"
+    )
+    result = extract_open_requirements(text)
+    phrases = [r.phrase for r in result]
+    assert phrases == ["Python"]
+
+
+def test_short_intro_line_before_bullets_does_not_kill_the_section():
+    text = (
+        "Anforderungen\n"
+        "Du bringst mit:\n"
+        "- Python\n"
+        "- SQL\n"
+    )
+    result = extract_open_requirements(text)
+    phrases = [r.phrase for r in result]
+    assert phrases == ["Python", "SQL"]

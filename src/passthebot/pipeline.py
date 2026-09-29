@@ -68,7 +68,17 @@ def run_pipeline(
 
     open_requirements = extract_open_requirements(posting_text)
     claimed_spans = {normalize_string(kw.matched_text) for kw in posting_kw}
-    results = results + match_open_requirements(open_requirements, resume_text, embedder, claimed_spans)
+    claimed_soft_skill_ids = {kw.id for kw in posting_kw if kw.category == "soft_skills"}
+    claimed_soft_skill_entries = [
+        e for e in entries if e.category == "soft_skills" and e.id in claimed_soft_skill_ids
+    ]
+    results = results + match_open_requirements(
+        open_requirements,
+        resume_text,
+        embedder,
+        claimed_spans,
+        claimed_soft_skill_entries=claimed_soft_skill_entries,
+    )
 
     return build_report(
         results,

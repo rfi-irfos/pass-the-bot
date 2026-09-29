@@ -33,6 +33,8 @@ const TRANSLATIONS = {
     ],
     errorBoth: "Bitte sowohl den Anzeigentext als auch eine Lebenslauf-Datei angeben.",
     errorUnreachable: "Backend nicht erreichbar. Läuft es gerade?",
+    postingNotUnderstood:
+      "Wir konnten aus dieser Stellenanzeige keine klaren Anforderungen erkennen. Die Prozentzahl unten ist daher nicht aussagekräftig.",
     downloadFailed: "Der Bericht konnte nicht erstellt werden. Bitte versuche es erneut.",
     atsResultHeading: "ATS-Ergebnis",
     downloadReportBtn: "Bericht herunterladen",
@@ -121,6 +123,8 @@ const TRANSLATIONS = {
     ],
     errorBoth: "Please provide both the job posting text and a resume file.",
     errorUnreachable: "Could not reach the backend. Is it running?",
+    postingNotUnderstood:
+      "We couldn't identify any clear requirements in this job posting. The percentage below isn't meaningful as a result.",
     downloadFailed: "Could not generate the report. Please try again.",
     atsResultHeading: "ATS Result",
     downloadReportBtn: "Download Report",
@@ -576,7 +580,10 @@ function renderResults(report, { scroll = true } = {}) {
   const pct = report.score.coverage_pct;
   animateGaugeTo(pct);
 
-  scoreSummary.textContent = t("scoreSummary")(pct, report.score.required_matched, report.score.required_total);
+  const postingUnderstood = !report.metrics || report.metrics.posting_understood !== false;
+  scoreSummary.textContent = postingUnderstood
+    ? t("scoreSummary")(pct, report.score.required_matched, report.score.required_total)
+    : `${t("postingNotUnderstood")} ${t("scoreSummary")(pct, report.score.required_matched, report.score.required_total)}`;
 
   const matched = report.results.filter((r) => r.status === "MATCH");
   const nearMiss = report.results.filter((r) => r.status === "NEAR_MISS");

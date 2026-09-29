@@ -165,6 +165,33 @@ def test_run_pipeline_open_requirement_already_curated_is_not_duplicated():
     assert python_results[0]["origin"] == "curated"
 
 
+def test_run_pipeline_open_phrase_matching_curated_soft_skill_anchor_is_not_duplicated():
+    """A posting can mention a soft skill both in prose (triggering the
+    curated soft_skills embedding match, whose matched_text is the
+    catalog's own anchor phrasing) and again as an open-vocabulary-style
+    bullet under a Requirements heading with slightly different wording.
+    The literal claimed_spans whole-word check alone won't catch the
+    inflected bullet phrasing, so this must be deduped by the new
+    embedding-similarity check against the claimed entry's own
+    anchor_phrases (Fix 4) -- otherwise the same concept surfaces twice,
+    once under each layer."""
+    posting = (
+        "Wir arbeiten gerne im Team und schaetzen teamorientiert arbeiten sehr.\n"
+        "\n"
+        "Requirements\n"
+        "- Teamorientiertes Arbeiten\n"
+    )
+    resume = "Ich arbeite gerne im Team und bin teamorientiert."
+    report = run_pipeline(posting, resume, data_dir=DATA_DIR, repo_root=REPO_ROOT)
+
+    open_duplicate = [r for r in report["results"] if r["id"] == "Teamorientiertes Arbeiten"]
+    assert open_duplicate == []
+
+    curated_teamwork = [r for r in report["results"] if r["id"] == "teamwork"]
+    assert len(curated_teamwork) == 1
+    assert curated_teamwork[0]["origin"] == "curated"
+
+
 def test_run_pipeline_open_missing_requirement_counts_toward_required_coverage():
     """A posting requirement the curated catalog doesn't recognize at all
     (e.g. a skilled-trades posting) must count toward required_total, and

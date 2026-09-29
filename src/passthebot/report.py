@@ -71,9 +71,12 @@ def _build_radar(
         else 100.0
     )
 
-    near_miss_count = sum(1 for r in results if r.status == "NEAR_MISS")
+    curated_results = [r for r in results if r.origin != "open"]
+    near_miss_count = sum(1 for r in curated_results if r.status == "NEAR_MISS")
     wording_accuracy_pct = (
-        round(100.0 - 100.0 * near_miss_count / len(results), 1) if results else 100.0
+        round(100.0 - 100.0 * near_miss_count / len(curated_results), 1)
+        if curated_results
+        else 100.0
     )
 
     filled_sections = sum(1 for s in sections if s.filled)
@@ -124,5 +127,6 @@ def build_report(
             "radar": _build_radar(
                 results, required_matched, required_total, readability.score, sections
             ),
+            "posting_understood": len(results) > 0,
         },
     }

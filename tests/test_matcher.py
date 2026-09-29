@@ -85,12 +85,27 @@ def test_soft_skill_category_is_never_enriched():
 class _StubEmbedder:
     """Returns a fixed score per requirement phrase, looked up by the
     phrase's own text, so tests can pin exact MATCH/NEAR_MISS/MISSING
-    classification without loading the real sentence-transformers model."""
+    classification without loading the real sentence-transformers model.
 
-    def __init__(self, scores: dict[str, float]):
+    `best_match` is now called with two different kinds of `phrases` lists:
+    resume sentences (for the ordinary open-requirement match) and, since
+    the soft-skill dedup fix, a claimed soft-skill entry's own
+    anchor_phrases. `phrase_scores` (optional) lets a test pin a score for
+    a specific (text, phrases) pairing by phrases content, so the two call
+    sites can be distinguished precisely instead of only by phrase text."""
+
+    def __init__(
+        self,
+        scores: dict[str, float],
+        phrase_scores: dict[tuple[str, ...], float] | None = None,
+    ):
         self._scores = scores
+        self._phrase_scores = phrase_scores or {}
 
     def best_match(self, text: str, phrases: list[str], cache_phrases: bool = True):
+        key = tuple(phrases)
+        if key in self._phrase_scores:
+            return phrases[0], self._phrase_scores[key]
         return phrases[0], self._scores.get(text, 0.0)
 
 
@@ -167,3 +182,48 @@ def test_duplicate_open_requirement_phrases_collapse_to_one_result():
 def test_default_origin_is_curated_for_existing_call_sites():
     results = match(POSTING, [], required_ids={"python"})
     assert all(r.origin == "curated" for r in results)
+
+
+def test_open_phrase_matching_a_soft_skill_entrys_anchor_is_deduped():
+    """A posting phrase that differs from the curated soft-skill's own anchor
+    phrasing (so the literal whole-word claimed_spans check doesn't catch it)
+    must still be deduped via embedding similarity against that entry's
+    anchor phrases, not double-reported under the open layer."""
+    teamwork_entry = SkillEntry(
+        id="teamwork", category="soft_skills", display={"en": "Team player"},
+        status="curated", added="2026-09-14",
+        anchor_phrases=["team player", "teamorientiert arbeiten"],
+        embedding_threshold=0.48,
+    )
+    reqs = [OpenRequirement(phrase="Teamorientiertes Arbeiten", source_line=1)]
+    embedder = _StubEmbedder(
+        scores={"Teamorientiertes Arbeiten": 0.9},
+        phrase_scores={tuple(teamwork_entry.anchor_phrases): 0.9},
+    )
+    results = match_open_requirements(
+        reqs, "Some resume text.", embedder, claimed_spans=set(),
+        claimed_soft_skill_entries=[teamwork_entry],
+    )
+    assert results == []
+
+
+def test_open_phrase_not_matching_any_claimed_soft_skill_anchor_is_kept():
+    """The new soft-skill dedup check must not suppress unrelated open
+    phrases just because *some* soft-skill entry was claimed elsewhere."""
+    teamwork_entry = SkillEntry(
+        id="teamwork", category="soft_skills", display={"en": "Team player"},
+        status="curated", added="2026-09-14",
+        anchor_phrases=["team player", "teamorientiert arbeiten"],
+        embedding_threshold=0.48,
+    )
+    reqs = [OpenRequirement(phrase="Schweisskenntnisse", source_line=1)]
+    embedder = _StubEmbedder(
+        scores={"Schweisskenntnisse": 0.9},
+        phrase_scores={tuple(teamwork_entry.anchor_phrases): 0.1},
+    )
+    results = match_open_requirements(
+        reqs, "Erfahrung mit Schweisskenntnissen.", embedder, claimed_spans=set(),
+        claimed_soft_skill_entries=[teamwork_entry],
+    )
+    assert len(results) == 1
+    assert results[0].status == "MATCH"
