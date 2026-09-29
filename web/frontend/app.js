@@ -37,7 +37,7 @@ const TRANSLATIONS = {
       "Wir konnten aus dieser Stellenanzeige keine klaren Anforderungen erkennen. Die Prozentzahl unten ist daher nicht aussagekräftig.",
     downloadFailed: "Der Bericht konnte nicht erstellt werden. Bitte versuche es erneut.",
     atsResultHeading: "ATS-Ergebnis",
-    downloadReportBtn: "Bericht herunterladen",
+    downloadReportBtn: "Herunterladen",
     scorePrompt: "Starte oben eine Prüfung, um hier dein Ergebnis zu sehen.",
     scoreSummary: (pct, matched, total) =>
       `Dein Lebenslauf erfüllt ${pct}% der geforderten Skills und Keywords aus dieser Anzeige (${matched}/${total} Pflicht-Skills).`,
@@ -74,9 +74,11 @@ const TRANSLATIONS = {
       "Pass The Bot dreht das um: Lass deine Bewerbung hier durchlaufen, bevor du sie irgendwo hochlädst, mit der gleichen nachvollziehbaren Logik, die viele echte ATS-Systeme verwenden. Schwarz auf weiß, welche Skills erkannt wurden, welche knapp danebenlagen und welche fehlen. Keine Blackbox, keine Überraschung.",
     privacyNote:
       "Diagnose statt KI-Blackbox: Das System entscheidet deterministisch und nachvollziehbar, warum ein Keyword-Filter dich durchlässt oder aussortiert, ohne deinen Lebenslauf umzuschreiben. Deine Daten werden dabei nicht gespeichert, nicht zum Trainieren eines Modells verwendet, und diese Seite setzt keine Cookies: alles bleibt in deinem Browser und wird nur für diese eine Prüfung an die Analyse-Engine geschickt.",
+    coffeeLink: "Kauf uns einen Kaffee",
     keywordCoverageHeading: "Keyword-Abdeckung",
     exactMatchLabel: "Exakte Treffer",
     semanticMatchLabel: "Sinngemäße Treffer",
+    openMatchLabel: "Branchenübergreifend erkannt",
     sectionAnalysisHeading: "Abschnitts-Analyse",
     sectionNames: {
       contact: "Kontakt",
@@ -129,7 +131,7 @@ const TRANSLATIONS = {
       "We couldn't identify any clear requirements in this job posting. The percentage below isn't meaningful as a result.",
     downloadFailed: "Could not generate the report. Please try again.",
     atsResultHeading: "ATS Result",
-    downloadReportBtn: "Download Report",
+    downloadReportBtn: "Download",
     scorePrompt: "Run a check above to see your results here.",
     scoreSummary: (pct, matched, total) =>
       `Your resume matches ${pct}% of the required skills and keywords from this job posting (${matched}/${total} required).`,
@@ -166,9 +168,11 @@ const TRANSLATIONS = {
       "Pass The Bot flips that around: run your application through here before you submit it anywhere, using the same kind of deterministic, explainable logic many real ATS systems use. See in plain sight which skills were recognized, which were close misses, and which are missing. No black box, no surprises.",
     privacyNote:
       "A diagnosis, not an AI black box: the system decides deterministically and transparently why a keyword filter would pass or reject you, without rewriting your resume for you. None of your data is stored or used to train anything, and this page sets no cookies: everything stays in your browser and is sent to the analysis engine only for this one check.",
+    coffeeLink: "Buy us a coffee",
     keywordCoverageHeading: "Keyword Coverage",
     exactMatchLabel: "Exact Matches",
     semanticMatchLabel: "Semantic Matches",
+    openMatchLabel: "Detected Across Industries",
     sectionAnalysisHeading: "Resume Section Analysis",
     sectionNames: {
       contact: "Contact",
@@ -222,6 +226,9 @@ const exactMatchCount = document.getElementById("exact-match-count");
 const exactMatchBar = document.getElementById("exact-match-bar");
 const semanticMatchCount = document.getElementById("semantic-match-count");
 const semanticMatchBar = document.getElementById("semantic-match-bar");
+const openMatchRow = document.getElementById("open-match-row");
+const openMatchCount = document.getElementById("open-match-count");
+const openMatchBar = document.getElementById("open-match-bar");
 const sectionAnalysisList = document.getElementById("section-analysis-list");
 
 const radarPolygon = document.getElementById("radar-polygon");
@@ -229,6 +236,13 @@ const radarRingsEl = document.getElementById("radar-rings");
 const radarSpokesEl = document.getElementById("radar-spokes");
 const radarDotsEl = document.getElementById("radar-dots");
 const radarLabelsEl = document.getElementById("radar-labels");
+
+const SECTION_COLORS = {
+  contact: { dot: "bg-blue-500", bar: "bg-blue-500", badge: "bg-blue-100 text-blue-800" },
+  experience: { dot: "bg-purple-500", bar: "bg-purple-500", badge: "bg-purple-100 text-purple-800" },
+  education: { dot: "bg-amber-500", bar: "bg-amber-500", badge: "bg-amber-100 text-amber-800" },
+  skills: { dot: "bg-cyan-600", bar: "bg-cyan-600", badge: "bg-cyan-100 text-cyan-800" },
+};
 
 const RADAR_AXES = [
   { key: "required_skills_pct", labelKey: "radarRequiredSkills", color: "#16a34a" },
@@ -563,7 +577,7 @@ function renderRadar(radar) {
     else if (cos < -0.35) alignClass = "-translate-x-full text-right";
 
     const label = document.createElement("div");
-    label.className = `absolute -translate-y-1/2 leading-tight w-16 break-words ${alignClass}`;
+    label.className = `absolute -translate-y-1/2 leading-tight w-20 break-words ${alignClass}`;
     label.style.left = `${x}px`;
     label.style.top = `${y}px`;
     const value = Math.round(radar[axis.key]);
@@ -615,6 +629,17 @@ function renderResults(report, { scroll = true } = {}) {
     semanticMatchCount.textContent = `${breakdown.semantic_matched} / ${breakdown.semantic_total}`;
     semanticMatchBar.style.width = `${semanticPct}%`;
 
+    const openResults = report.results.filter((r) => r.origin === "open");
+    if (openResults.length > 0) {
+      const openMatched = openResults.filter((r) => r.status === "MATCH").length;
+      const openPct = Math.round((openMatched / openResults.length) * 100);
+      openMatchRow.classList.remove("hidden");
+      openMatchCount.textContent = `${openMatched} / ${openResults.length}`;
+      openMatchBar.style.width = `${openPct}%`;
+    } else {
+      openMatchRow.classList.add("hidden");
+    }
+
     sectionAnalysisList.innerHTML = "";
     for (const section of report.metrics.sections) {
       const li = document.createElement("li");
@@ -627,18 +652,15 @@ function renderResults(report, { scroll = true } = {}) {
         `;
       } else {
         const pct = Math.min(100, Math.round((section.word_count / 15) * 100));
-        const dotColor = section.filled ? "bg-green-500" : "bg-amber-500";
-        const barColor = section.filled ? "bg-green-500" : "bg-amber-500";
-        const badgeClass = section.filled
-          ? "bg-green-100 text-green-800"
-          : "bg-amber-100 text-amber-800";
+        const colors = SECTION_COLORS[section.id] || SECTION_COLORS.contact;
+        const opacityClass = section.filled ? "" : "opacity-50";
         li.className = "space-y-1";
         li.innerHTML = `
           <div class="flex items-center justify-between">
-            <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full ${dotColor}"></span>${name}</span>
-            <span class="text-xs font-medium px-2 py-0.5 rounded-full ${badgeClass}">${section.word_count} ${t("sectionWordsUnit")}</span>
+            <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full ${colors.dot} ${opacityClass}"></span>${name}</span>
+            <span class="text-xs font-medium px-2 py-0.5 rounded-full ${colors.badge} ${opacityClass}">${section.word_count} ${t("sectionWordsUnit")}</span>
           </div>
-          <div class="w-full bg-gray-100 rounded-full h-1.5"><div class="${barColor} h-1.5 rounded-full" style="width: ${pct}%"></div></div>
+          <div class="w-full bg-gray-100 rounded-full h-1.5"><div class="${colors.bar} ${opacityClass} h-1.5 rounded-full" style="width: ${pct}%"></div></div>
         `;
       }
       sectionAnalysisList.appendChild(li);

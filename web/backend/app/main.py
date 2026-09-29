@@ -29,14 +29,17 @@ app = FastAPI(title="passthebot web backend")
 # transformers model from disk on every single request (~3-15s each).
 EMBEDDER = Embedder()
 
-# The Fly machine backing this service has exactly one vCPU. Two concurrent
-# /api/check calls each spend real wall-clock time in CPU-bound embedding
-# inference; run together they starve the event loop's own thread of CPU for
-# long enough that the health check GET times out, and Fly's edge proxy then
-# rejects incoming connections -- including unrelated ones -- until the
-# machine reports healthy again. Serializing pipeline runs keeps each request
-# queued cheaply in asyncio rather than competing for the single core.
-PIPELINE_CONCURRENCY = asyncio.Semaphore(1)
+# The Fly machine backing this service has 2 vCPUs (scaled up 2026-09-29
+# after a single-vCPU machine got OOM-killed and starved under real traffic).
+# Two concurrent /api/check calls each spend real wall-clock time in
+# CPU-bound embedding inference; with only one vCPU, running them together
+# starves the event loop's own thread of CPU for long enough that the health
+# check GET times out, and Fly's edge proxy then rejects incoming
+# connections -- including unrelated ones -- until the machine reports
+# healthy again. With 2 vCPUs there's a real second core to absorb this, so
+# the limit matches the machine's own concurrency headroom instead of
+# serializing every request through a single core.
+PIPELINE_CONCURRENCY = asyncio.Semaphore(2)
 
 app.add_middleware(
     CORSMiddleware,
