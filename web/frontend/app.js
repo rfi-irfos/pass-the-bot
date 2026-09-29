@@ -79,6 +79,7 @@ const TRANSLATIONS = {
     exactMatchLabel: "Exakte Treffer",
     semanticMatchLabel: "Sinngemäße Treffer",
     openMatchLabel: "Branchenübergreifend erkannt",
+    totalKeywordsLabel: "Insgesamt abgedeckt",
     sectionAnalysisHeading: "Abschnitts-Analyse",
     sectionNames: {
       contact: "Kontakt",
@@ -173,6 +174,7 @@ const TRANSLATIONS = {
     exactMatchLabel: "Exact Matches",
     semanticMatchLabel: "Semantic Matches",
     openMatchLabel: "Detected Across Industries",
+    totalKeywordsLabel: "Total Covered",
     sectionAnalysisHeading: "Resume Section Analysis",
     sectionNames: {
       contact: "Contact",
@@ -229,6 +231,7 @@ const semanticMatchBar = document.getElementById("semantic-match-bar");
 const openMatchRow = document.getElementById("open-match-row");
 const openMatchCount = document.getElementById("open-match-count");
 const openMatchBar = document.getElementById("open-match-bar");
+const totalKeywordCount = document.getElementById("total-keyword-count");
 const sectionAnalysisList = document.getElementById("section-analysis-list");
 
 const radarPolygon = document.getElementById("radar-polygon");
@@ -640,6 +643,11 @@ function renderResults(report, { scroll = true } = {}) {
       openMatchRow.classList.add("hidden");
     }
 
+    const openMatchedForTotal = openResults.filter((r) => r.status === "MATCH").length;
+    const totalMatched = breakdown.exact_matched + breakdown.semantic_matched + openMatchedForTotal;
+    const totalCount = breakdown.exact_total + breakdown.semantic_total + openResults.length;
+    totalKeywordCount.textContent = `${totalMatched} / ${totalCount}`;
+
     sectionAnalysisList.innerHTML = "";
     for (const section of report.metrics.sections) {
       const li = document.createElement("li");
@@ -656,9 +664,9 @@ function renderResults(report, { scroll = true } = {}) {
         const opacityClass = section.filled ? "" : "opacity-50";
         li.className = "space-y-1";
         li.innerHTML = `
-          <div class="flex items-center justify-between">
-            <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full ${colors.dot} ${opacityClass}"></span>${name}</span>
-            <span class="text-xs font-medium px-2 py-0.5 rounded-full ${colors.badge} ${opacityClass}">${section.word_count} ${t("sectionWordsUnit")}</span>
+          <div class="flex items-center justify-between flex-wrap gap-x-2 gap-y-1">
+            <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full flex-shrink-0 ${colors.dot} ${opacityClass}"></span>${name}</span>
+            <span class="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${colors.badge} ${opacityClass}">${section.word_count} ${t("sectionWordsUnit")}</span>
           </div>
           <div class="w-full bg-gray-100 rounded-full h-1.5"><div class="${colors.bar} ${opacityClass} h-1.5 rounded-full" style="width: ${pct}%"></div></div>
         `;
@@ -856,8 +864,16 @@ downloadReportBtn.addEventListener("click", () => {
   // html2canvas alone does not reliably fix this in the bundled version, so
   // scroll the real window to the top before capture and restore the user's
   // scroll position afterward (including on failure).
+  //
+  // The page sets `scroll-behavior: smooth` globally (see <style> in
+  // index.html), so a plain `window.scrollTo(0, 0)` animates over several
+  // hundred ms instead of jumping instantly -- if the user had scrolled
+  // down before clicking, html2canvas could start capturing mid-animation,
+  // photographing a half-scrolled page and producing a blank/misaligned
+  // PDF. Passing `behavior: "instant"` explicitly overrides the CSS
+  // default for this one call.
   const { scrollX, scrollY } = window;
-  window.scrollTo(0, 0);
+  window.scrollTo({ top: 0, left: 0, behavior: "instant" });
 
   // The button lives inside the captured element; hide it for the snapshot
   // so it doesn't show up inside the exported PDF, then restore it.
@@ -868,18 +884,36 @@ downloadReportBtn.addEventListener("click", () => {
     downloadReportBtn.classList.add("flex");
   }
 
-  html2pdf()
-    .from(resultsCard)
-    .save("pass-the-bot-report.pdf")
-    .then(() => {
-      restoreButton();
-      window.scrollTo(scrollX, scrollY);
-    })
-    .catch(() => {
-      restoreButton();
-      window.scrollTo(scrollX, scrollY);
-      showError(t("downloadFailed"));
-    });
+  function restoreScroll() {
+    window.scrollTo({ top: scrollY, left: scrollX, behavior: "instant" });
+  }
+
+  // Wait a frame after the instant scroll before measuring/capturing, so
+  // the browser has actually applied the new scroll position and any
+  // resulting layout reflow before html2canvas reads element geometry.
+  requestAnimationFrame(() => {
+    html2pdf()
+      .set({
+        html2canvas: {
+          useCORS: true,
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: document.documentElement.clientWidth,
+          windowHeight: document.documentElement.clientHeight,
+        },
+      })
+      .from(resultsCard)
+      .save("pass-the-bot-report.pdf")
+      .then(() => {
+        restoreButton();
+        restoreScroll();
+      })
+      .catch(() => {
+        restoreButton();
+        restoreScroll();
+        showError(t("downloadFailed"));
+      });
+  });
 });
 
 applyStaticTranslations();
