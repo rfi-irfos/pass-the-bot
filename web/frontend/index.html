@@ -67,6 +67,13 @@
 
   [data-reveal] { opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
   [data-reveal].revealed { opacity: 1; transform: translateY(0); }
+
+  #hero-text, #hero-icon {
+    transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  #hero-text { transform: translateY(14px); }
+  #hero-icon { transform: translateY(14px) scale(0.94); }
+  #hero-icon.revealed { transform: translateY(0) scale(1); }
 </style>
 </head>
 <body class="text-gray-900 min-h-screen">
@@ -88,7 +95,7 @@
 
     <div class="max-w-5xl mx-auto px-6 pt-20 pb-10 md:pt-14 md:pb-14">
       <div class="grid md:grid-cols-2 gap-10 items-center">
-        <div class="text-left">
+        <div class="text-left" id="hero-text" data-reveal>
           <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold mb-4 tracking-tight">
             Pass The Bot<span class="text-green-600">!</span>
           </h1>
@@ -110,7 +117,7 @@
           </div>
         </div>
 
-        <div class="flex justify-center order-first md:order-last">
+        <div class="flex justify-center order-first md:order-last" id="hero-icon" data-reveal>
           <svg viewBox="0 0 280 280" class="w-40 h-40 sm:w-56 sm:h-56 md:w-[280px] md:h-[280px]"
             style="filter: drop-shadow(0 10px 8px rgba(0,0,0,0.18)) drop-shadow(0 20px 35px rgba(0,0,0,0.22));">
             <circle cx="140" cy="140" r="130" fill="#2563eb"></circle>
@@ -339,11 +346,11 @@
   </div>
 
   <footer class="max-w-xl mx-auto px-6 pb-16 text-center">
-    <a href="https://buy.stripe.com/4gMcN7fle8HRbil8ru7N60a" target="_blank" rel="noopener noreferrer"
-      class="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full border border-gray-200 text-sm text-gray-600 hover:border-gray-300 hover:text-gray-900 transition">
-      <span>☕</span><span data-i18n="coffeeLink"></span>
-    </a>
     <p class="text-xs text-gray-400" data-i18n="privacyNote"></p>
+    <a href="https://buy.stripe.com/4gMcN7fle8HRbil8ru7N60a" target="_blank" rel="noopener noreferrer"
+      class="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full border border-gray-200 text-sm text-gray-600 hover:border-gray-300 hover:text-gray-900 transition">
+      <span>🥠</span><span data-i18n="coffeeLink"></span>
+    </a>
   </footer>
   </div>
 

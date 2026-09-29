@@ -74,7 +74,7 @@ const TRANSLATIONS = {
       "Pass The Bot dreht das um: Lass deine Bewerbung hier durchlaufen, bevor du sie irgendwo hochlädst, mit der gleichen nachvollziehbaren Logik, die viele echte ATS-Systeme verwenden. Schwarz auf weiß, welche Skills erkannt wurden, welche knapp danebenlagen und welche fehlen. Keine Blackbox, keine Überraschung.",
     privacyNote:
       "Diagnose statt KI-Blackbox: Das System entscheidet deterministisch und nachvollziehbar, warum ein Keyword-Filter dich durchlässt oder aussortiert, ohne deinen Lebenslauf umzuschreiben. Deine Daten werden dabei nicht gespeichert, nicht zum Trainieren eines Modells verwendet, und diese Seite setzt keine Cookies: alles bleibt in deinem Browser und wird nur für diese eine Prüfung an die Analyse-Engine geschickt.",
-    coffeeLink: "Kauf uns einen Kaffee",
+    coffeeLink: "Kauf uns einen Glückskeks",
     keywordCoverageHeading: "Keyword-Abdeckung",
     exactMatchLabel: "Exakte Treffer",
     semanticMatchLabel: "Sinngemäße Treffer",
@@ -168,7 +168,7 @@ const TRANSLATIONS = {
       "Pass The Bot flips that around: run your application through here before you submit it anywhere, using the same kind of deterministic, explainable logic many real ATS systems use. See in plain sight which skills were recognized, which were close misses, and which are missing. No black box, no surprises.",
     privacyNote:
       "A diagnosis, not an AI black box: the system decides deterministically and transparently why a keyword filter would pass or reject you, without rewriting your resume for you. None of your data is stored or used to train anything, and this page sets no cookies: everything stays in your browser and is sent to the analysis engine only for this one check.",
-    coffeeLink: "Buy us a coffee",
+    coffeeLink: "Buy us a fortune cookie",
     keywordCoverageHeading: "Keyword Coverage",
     exactMatchLabel: "Exact Matches",
     semanticMatchLabel: "Semantic Matches",
@@ -883,3 +883,14 @@ downloadReportBtn.addEventListener("click", () => {
 });
 
 applyStaticTranslations();
+
+// Friendly fade/slide-in welcome on first paint, staggered so the icon
+// settles in a beat after the text instead of both popping in at once.
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    document.getElementById("hero-text")?.classList.add("revealed");
+    setTimeout(() => {
+      document.getElementById("hero-icon")?.classList.add("revealed");
+    }, 150);
+  });
+});
