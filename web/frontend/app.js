@@ -61,17 +61,23 @@ const TRANSLATIONS = {
       `Ergänze einen "${name}"-Abschnitt: dein Lebenslauf enthält aktuell keine erkennbare "${name}"-Überschrift.`,
     tipMissingContact:
       "Kein Kontaktbereich erkannt: entweder fehlt er wirklich, oder er ist im PDF nicht als durchsuchbarer Text gespeichert (z. B. wenn der Kopfbereich als Bild oder mit einer Sonderschrift ohne Textzuordnung exportiert wurde). In letzterem Fall übersehen viele echte ATS-Systeme deinen Namen, Ort oder deine E-Mail auf dieselbe Weise. Prüfe, ob du den Text im Kopfbereich deiner PDF markieren und kopieren kannst.",
+    pipelineStep1: "1. Stellenanzeige",
+    pipelineStep2: "2. Bewerbung",
+    pipelineStep3: "3. Parsing",
+    pipelineStep4: "4. Keyword-Match",
+    pipelineStep5: "5. Recruiter-Review",
+    pipelineStep6: "6. Interview / Entscheidung",
     infoTitle: "Was ist ein ATS, und warum gibt's Pass The Bot?",
     infoBody1:
-      "Ein Applicant Tracking System (ATS) ist die Software, die heute fast jede große Firma vor die eigentliche Bewerbung schaltet. Bevor ein Mensch deinen Lebenslauf überhaupt sieht, durchsucht das System ihn nach Keywords aus der Stellenanzeige: automatisiert, in Sekunden, für hunderte Bewerbungen gleichzeitig.",
+      "Ein <strong>Applicant Tracking System (ATS)</strong> ist die Software, die heute fast jede große Firma vor die eigentliche Bewerbung schaltet. Bevor ein Mensch deinen Lebenslauf überhaupt sieht, durchsucht das System ihn nach Keywords aus der Stellenanzeige: <strong>automatisiert, in Sekunden</strong>, für hunderte Bewerbungen gleichzeitig.",
     infoBodyPipeline:
-      "Auch wenn sich einzelne Systeme unterscheiden, folgen die meisten ATS-Lösungen einem ähnlichen Ablauf: Der Lebenslauf wird als Datei eingelesen und der reine Text daraus extrahiert. Das System erkennt typische Abschnitte wie Berufserfahrung, Ausbildung und Skills, normalisiert den Text (Groß-/Kleinschreibung, Sonderzeichen, Schreibvarianten) und zerlegt ihn in einzelne Begriffe. Parallel dazu werden aus der Stellenanzeige die Anforderungen extrahiert und in Pflicht- und Kür-Kriterien getrennt. Danach vergleicht das System beide Seiten Begriff für Begriff, oft ergänzt um einen Fuzzy-Abgleich für Tippfehler und Schreibvarianten. Am Ende steht ein Score oder Ranking, das mitentscheidet, ob eine Bewerbung überhaupt bei einem Menschen landet.",
+      "Auch wenn sich einzelne Systeme unterscheiden, folgen die meisten ATS-Lösungen einem ähnlichen Ablauf: Der Lebenslauf wird als Datei eingelesen und der reine Text daraus extrahiert. Das System erkennt typische Abschnitte wie Berufserfahrung, Ausbildung und Skills, normalisiert den Text (Groß-/Kleinschreibung, Sonderzeichen, Schreibvarianten) und zerlegt ihn in einzelne Begriffe. Parallel dazu werden aus der Stellenanzeige die Anforderungen extrahiert und in Pflicht- und Kür-Kriterien getrennt. Danach vergleicht das System beide Seiten Begriff für Begriff, oft ergänzt um einen Fuzzy-Abgleich für Tippfehler und Schreibvarianten. Am Ende steht ein <strong>Score oder Ranking</strong>, das mitentscheidet, ob eine Bewerbung überhaupt bei einem Menschen landet.",
     infoBody2:
-      'Das Problem: Diese Systeme sind oft gnadenlos wörtlich. Schreibst du "JS" statt "JavaScript", "Python" statt "python" oder hast einen simplen Tippfehler wie "Dockr" statt "Docker", dann zählt das für viele ATS-Filter als "nicht vorhanden". Qualifizierte Bewerber:innen fliegen raus, nicht weil ihnen die Skills fehlen, sondern weil die Formulierung nicht exakt passt.',
+      'Das Problem: Diese Systeme sind oft gnadenlos wörtlich. Schreibst du "JS" statt "JavaScript", "Python" statt "python" oder hast einen simplen Tippfehler wie "Dockr" statt "Docker", dann zählt das für viele ATS-Filter als "nicht vorhanden". Qualifizierte Bewerber:innen fliegen raus, <strong>nicht weil ihnen die Skills fehlen, sondern weil die Formulierung nicht exakt passt</strong>.',
     infoBody3:
-      "Gleichzeitig nutzen immer mehr Bewerber:innen KI, um Lebensläufe zu schreiben, und Firmen nutzen KI, um sie auszusortieren. Am Ende entscheiden zwei Blackboxen übereinander, ohne dass irgendjemand genau weiß, warum.",
+      "Gleichzeitig nutzen immer mehr Bewerber:innen KI, um Lebensläufe zu schreiben, und Firmen nutzen KI, um sie auszusortieren. Am Ende entscheiden <strong>zwei Blackboxen übereinander</strong>, ohne dass irgendjemand genau weiß, warum.",
     infoBody4:
-      "Pass The Bot dreht das um: Lass deine Bewerbung hier durchlaufen, bevor du sie irgendwo hochlädst, mit der gleichen nachvollziehbaren Logik, die viele echte ATS-Systeme verwenden. Schwarz auf weiß, welche Skills erkannt wurden, welche knapp danebenlagen und welche fehlen. Keine Blackbox, keine Überraschung.",
+      "Pass The Bot dreht das um: Lass deine Bewerbung hier durchlaufen, bevor du sie irgendwo hochlädst, mit der gleichen nachvollziehbaren Logik, die viele echte ATS-Systeme verwenden. Schwarz auf weiß, welche Skills erkannt wurden, welche knapp danebenlagen und welche fehlen. <strong>Keine Blackbox, keine Überraschung.</strong>",
     privacyNote:
       "Diagnose statt KI-Blackbox: Das System entscheidet deterministisch und nachvollziehbar, warum ein Keyword-Filter dich durchlässt oder aussortiert, ohne deinen Lebenslauf umzuschreiben. Deine Daten werden dabei nicht gespeichert, nicht zum Trainieren eines Modells verwendet, und diese Seite setzt keine Cookies: alles bleibt in deinem Browser und wird nur für diese eine Prüfung an die Analyse-Engine geschickt.",
     coffeeLink: "Kauf uns einen Glückskeks",
@@ -156,17 +162,23 @@ const TRANSLATIONS = {
       `Add a "${name}" section: your resume doesn't have a recognizable "${name}" heading right now.`,
     tipMissingContact:
       "No contact section detected: either it's genuinely missing, or it isn't stored as searchable text in the PDF (e.g. if the header was exported as an image or with a custom font that has no text mapping). In the latter case, many real ATS systems miss your name, location, or email the same way. Try selecting and copying the text in your PDF's header to check.",
+    pipelineStep1: "1. Job Posting",
+    pipelineStep2: "2. Application",
+    pipelineStep3: "3. Parsing",
+    pipelineStep4: "4. Keyword Match",
+    pipelineStep5: "5. Recruiter Review",
+    pipelineStep6: "6. Interview / Decision",
     infoTitle: "What is an ATS, and why does Pass The Bot exist?",
     infoBody1:
-      "An Applicant Tracking System (ATS) is the software almost every large company runs your application through before a human ever sees it. It scans your resume for keywords from the job posting: automatically, in seconds, across hundreds of applications at once.",
+      "An <strong>Applicant Tracking System (ATS)</strong> is the software almost every large company runs your application through before a human ever sees it. It scans your resume for keywords from the job posting: <strong>automatically, in seconds</strong>, across hundreds of applications at once.",
     infoBodyPipeline:
-      "While individual systems differ, most ATS solutions follow a similar flow: your resume is read as a file and the raw text is extracted from it. The system detects typical sections like work experience, education, and skills, normalizes the text (casing, special characters, spelling variants), and breaks it down into individual terms. In parallel, requirements are extracted from the job posting and split into required and nice-to-have criteria. It then compares both sides term by term, often with fuzzy matching for typos and spelling variants layered on top. The result is a score or ranking that helps decide whether an application ever reaches a human at all.",
+      "While individual systems differ, most ATS solutions follow a similar flow: your resume is read as a file and the raw text is extracted from it. The system detects typical sections like work experience, education, and skills, normalizes the text (casing, special characters, spelling variants), and breaks it down into individual terms. In parallel, requirements are extracted from the job posting and split into required and nice-to-have criteria. It then compares both sides term by term, often with fuzzy matching for typos and spelling variants layered on top. The result is a <strong>score or ranking</strong> that helps decide whether an application ever reaches a human at all.",
     infoBody2:
-      'The problem: these systems are often ruthlessly literal. Write "JS" instead of "JavaScript", "Python" instead of "python", or make a simple typo like "Dockr" instead of "Docker", and many ATS filters will count that skill as missing. Qualified candidates get filtered out, not because they lack the skill, but because the wording didn\'t match exactly.',
+      'The problem: these systems are often ruthlessly literal. Write "JS" instead of "JavaScript", "Python" instead of "python", or make a simple typo like "Dockr" instead of "Docker", and many ATS filters will count that skill as missing. Qualified candidates get filtered out, <strong>not because they lack the skill, but because the wording didn\'t match exactly</strong>.',
     infoBody3:
-      "Meanwhile, more and more candidates use AI to write their resumes, and more and more companies use AI to filter them out. In the end, two black boxes are deciding against each other, and nobody really knows why.",
+      "Meanwhile, more and more candidates use AI to write their resumes, and more and more companies use AI to filter them out. In the end, <strong>two black boxes are deciding against each other</strong>, and nobody really knows why.",
     infoBody4:
-      "Pass The Bot flips that around: run your application through here before you submit it anywhere, using the same kind of deterministic, explainable logic many real ATS systems use. See in plain sight which skills were recognized, which were close misses, and which are missing. No black box, no surprises.",
+      "Pass The Bot flips that around: run your application through here before you submit it anywhere, using the same kind of deterministic, explainable logic many real ATS systems use. See in plain sight which skills were recognized, which were close misses, and which are missing. <strong>No black box, no surprises.</strong>",
     privacyNote:
       "A diagnosis, not an AI black box: the system decides deterministically and transparently why a keyword filter would pass or reject you, without rewriting your resume for you. None of your data is stored or used to train anything, and this page sets no cookies: everything stays in your browser and is sent to the analysis engine only for this one check.",
     coffeeLink: "Buy us a fortune cookie",
@@ -264,6 +276,12 @@ function applyStaticTranslations() {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     el.textContent = t(el.dataset.i18n);
   });
+  // [data-i18n-html] is only used for a handful of static, hardcoded info-
+  // modal paragraphs (never user-supplied text) that need inline <strong>
+  // emphasis -- everything else stays on the safe textContent path above.
+  document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+    el.innerHTML = t(el.dataset.i18nHtml);
+  });
   document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
     el.placeholder = t(el.dataset.i18nPlaceholder);
   });
@@ -278,7 +296,7 @@ function applyStaticTranslations() {
 
 function setLang(lang) {
   if (lang === currentLang) return;
-  const fadeTargets = document.querySelectorAll("[data-i18n], [data-i18n-placeholder]");
+  const fadeTargets = document.querySelectorAll("[data-i18n], [data-i18n-html], [data-i18n-placeholder]");
   fadeTargets.forEach((el) => el.classList.add("lang-fading"));
   setTimeout(() => {
     currentLang = lang;
@@ -596,7 +614,7 @@ function revealResultSections() {
   const sections = resultsCard.querySelectorAll("[data-reveal]");
   sections.forEach((el) => el.classList.remove("revealed"));
   sections.forEach((el, i) => {
-    setTimeout(() => el.classList.add("revealed"), i * 90);
+    setTimeout(() => el.classList.add("revealed"), i * 130);
   });
 }
 
