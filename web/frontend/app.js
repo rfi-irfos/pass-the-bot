@@ -59,6 +59,8 @@ const TRANSLATIONS = {
     tipOptional: (name) => `Erwähne ${name}, falls vorhanden: laut Anzeige von Vorteil.`,
     tipMissingSection: (name) =>
       `Ergänze einen "${name}"-Abschnitt: dein Lebenslauf enthält aktuell keine erkennbare "${name}"-Überschrift.`,
+    tipMissingContact:
+      "Kein Kontaktbereich erkannt: entweder fehlt er wirklich, oder er ist im PDF nicht als durchsuchbarer Text gespeichert (z. B. wenn der Kopfbereich als Bild oder mit einer Sonderschrift ohne Textzuordnung exportiert wurde). In letzterem Fall übersehen viele echte ATS-Systeme deinen Namen, Ort oder deine E-Mail auf dieselbe Weise. Prüfe, ob du den Text im Kopfbereich deiner PDF markieren und kopieren kannst.",
     infoTitle: "Was ist ein ATS, und warum gibt's Pass The Bot?",
     infoBody1:
       "Ein Applicant Tracking System (ATS) ist die Software, die heute fast jede große Firma vor die eigentliche Bewerbung schaltet. Bevor ein Mensch deinen Lebenslauf überhaupt sieht, durchsucht das System ihn nach Keywords aus der Stellenanzeige: automatisiert, in Sekunden, für hunderte Bewerbungen gleichzeitig.",
@@ -149,6 +151,8 @@ const TRANSLATIONS = {
     tipOptional: (name) => `Consider mentioning ${name} if you have it: it's listed as a nice-to-have.`,
     tipMissingSection: (name) =>
       `Add a "${name}" section: your resume doesn't have a recognizable "${name}" heading right now.`,
+    tipMissingContact:
+      "No contact section detected: either it's genuinely missing, or it isn't stored as searchable text in the PDF (e.g. if the header was exported as an image or with a custom font that has no text mapping). In the latter case, many real ATS systems miss your name, location, or email the same way. Try selecting and copying the text in your PDF's header to check.",
     infoTitle: "What is an ATS, and why does Pass The Bot exist?",
     infoBody1:
       "An Applicant Tracking System (ATS) is the software almost every large company runs your application through before a human ever sees it. It scans your resume for keywords from the job posting: automatically, in seconds, across hundreds of applications at once.",
@@ -389,8 +393,12 @@ function buildTips(report) {
   if (report.metrics && report.metrics.sections) {
     for (const section of report.metrics.sections) {
       if (!section.found) {
-        const name = t("sectionNames")[section.id] || section.id;
-        tips.push(t("tipMissingSection")(name));
+        if (section.id === "contact") {
+          tips.push(t("tipMissingContact"));
+        } else {
+          const name = t("sectionNames")[section.id] || section.id;
+          tips.push(t("tipMissingSection")(name));
+        }
       }
     }
   }
