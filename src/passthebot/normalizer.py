@@ -14,6 +14,13 @@ REQUIREMENT_HEADING_KEYWORDS: set[str] = {
     "what we're looking for", "your profile",
 }
 
+OTHER_SECTION_HEADING_KEYWORDS: set[str] = {
+    "wir bieten", "we offer", "was wir bieten", "was wir dir bieten",
+    "benefits", "perks", "vorteile", "das bieten wir", "unser angebot",
+    "über uns", "about us", "kontakt", "contact", "bewerbung",
+    "how to apply", "jetzt bewerben",
+}
+
 _BULLET_PREFIX = re.compile(r"^\s*(?:[-*•]|\d+[.)])\s+")
 
 
@@ -35,38 +42,45 @@ def _normalize_heading_line(line: str) -> str:
     return line.strip().strip(":-–—").strip().lower()
 
 
-def _is_heading_shaped(line: str, normalized: str) -> bool:
-    """True if `line` looks like a standalone heading: short (<=6 words
-    after normalization) and not itself a bullet line.
-
-    Deliberately does NOT exclude commas: a real heading can legitimately
-    contain one (e.g. "Anforderungen, die du mitbringst" or "Vorteile, die
-    wir bieten"), and excluding every comma-bearing line here would make
-    such a heading unrecognizable both as a section opener and as the
-    boundary that ends a prior section. The risk this used to guard
-    against -- a comma-list body line like "Python, SQL, Excel"
-    misclassifying itself as its own section's boundary -- is instead
-    handled positionally in extract_open_requirements: a heading-shaped
-    line immediately following the heading that opened the current
-    section never closes that same section on its own (see its
-    docstring), which is exactly where a comma-list body line appears.
-
-    A bullet line whose text happens to contain a heading keyword (e.g.
-    "- Requirements Engineering Erfahrung") must never qualify -- it's a
-    list item, not a section boundary."""
+def _matches_keyword_set(normalized: str, keywords: set[str]) -> bool:
     if not normalized or len(normalized.split()) > 6:
-        return False
-    if _BULLET_PREFIX.match(line):
-        return False
-    return True
-
-
-def _is_requirement_heading(line: str, normalized: str) -> bool:
-    if not _is_heading_shaped(line, normalized):
         return False
     return any(
         re.search(rf"(?<![a-zäöü]){re.escape(kw)}(?![a-zäöü])", normalized)
-        for kw in REQUIREMENT_HEADING_KEYWORDS
+        for kw in keywords
+    )
+
+
+def _is_requirement_heading(line: str) -> bool:
+    if _BULLET_PREFIX.match(line):
+        return False
+    return _matches_keyword_set(_normalize_heading_line(line), REQUIREMENT_HEADING_KEYWORDS)
+
+
+def _is_any_recognized_heading(line: str) -> bool:
+    """True if `line` matches a known requirement heading OR a known
+    non-requirement section heading (benefits/company-info sections that
+    commonly follow a requirements section, e.g. "Wir bieten" / "About
+    us"). Used only to find where a requirements section's body ends.
+
+    Deliberately keyword-based, not shape-based: an earlier version of
+    this module treated any short, standalone, non-bullet line as a
+    boundary candidate ("heading-shaped"), which is the wrong property to
+    check. A blank line before a heading, a second comma-list line in the
+    same section, and an unrecognized short line right after the opening
+    heading (e.g. "Du bringst mit:") are all "heading-shaped" by that
+    definition, but none of them are actually headings -- so shape-based
+    detection either wrongly closes a section (blank line before a
+    comma-list, or a non-heading intro line) or fails to close one (a
+    second, unprotected comma-list line). Matching only a known keyword
+    set sidesteps all of that: an unrecognized line simply never matches,
+    with no positional heuristics needed."""
+    if _BULLET_PREFIX.match(line):
+        return False
+    normalized = _normalize_heading_line(line)
+    return (
+        _matches_keyword_set(normalized, REQUIREMENT_HEADING_KEYWORDS)
+        or _matches_keyword_set(normalized, OTHER_SECTION_HEADING_KEYWORDS)
     )
 
 
@@ -84,24 +98,27 @@ def extract_open_requirements(posting_text: str) -> list[OpenRequirement]:
 
     Once a requirement heading is found, every following bulleted line
     (leading -, *, •, or "1." / "1)") up to the next heading is one
-    candidate phrase. A section's body ends at the next line that LOOKS
-    like a heading at all (short, standalone, non-bullet line) -- not
-    only at the next *requirement-keyword* heading -- so a following
-    non-requirement section (e.g. "Wir bieten" / "We offer" benefits)
-    is never swallowed into the requirements section just because it
-    isn't itself a recognized requirement keyword. The one exception: a
-    heading-shaped line immediately following the opening heading never
-    closes that same section on its own (e.g. a short intro line like
-    "Du bringst mit:", or a comma-list body line like "Python, SQL,
-    Excel") -- only a heading-shaped line further down does, regardless
-    of whether items have already been collected by then.
+    candidate phrase. A section's body ends at the next line that matches
+    a KNOWN heading keyword -- either REQUIREMENT_HEADING_KEYWORDS (the
+    next requirements section) or OTHER_SECTION_HEADING_KEYWORDS (a
+    following non-requirement section, e.g. "Wir bieten" / "We offer"
+    benefits, "About us", "How to apply") -- never merely because a line
+    "looks like" a heading by shape (short, standalone, non-bullet).
+    An unrecognized short line (a blank line, a comma-list line, or a
+    plain intro sentence like "Du bringst mit:") never matches either
+    keyword set, so it's never mistaken for a boundary and never
+    prematurely closes the section.
 
     If a heading's body has no bullets but a line contains commas, that
     line is split on commas into one candidate phrase per item instead,
     but only when every resulting fragment is short (<=8 words): a full
     prose sentence that merely happens to contain a comma (e.g. "...
     experience, ideally with Excel, who can work independently.") is not
-    list structure and must not be shredded into fake requirements.
+    list structure and must not be shredded into fake requirements. Every
+    comma-bearing line in the section body is processed this way (not
+    just the first), so a section with multiple comma-list lines (e.g.
+    "Python, SQL, Excel" followed by "Deutsch, Englisch") extracts items
+    from all of them.
 
     Known V1 limitation: a requirements section written as ordinary
     prose sentences (no bullets, no comma anywhere in the body, or a
@@ -110,35 +127,24 @@ def extract_open_requirements(posting_text: str) -> list[OpenRequirement]:
     is deferred to a future spec, not silently attempted here -- matching
     this project's existing pattern of documenting V1 heuristic limits
     (see matcher.py's near-miss docstring, sections.py's
-    heading-only-on-own-line limitation).
+    heading-only-on-own-line limitation). Another known limitation: a
+    non-requirement section whose heading isn't in
+    OTHER_SECTION_HEADING_KEYWORDS (an as-yet-unseen phrasing) won't be
+    recognized as a boundary and its bullets could bleed into a
+    preceding requirements section -- this keyword set, like
+    REQUIREMENT_HEADING_KEYWORDS, is expected to grow as new postings
+    surface new phrasings.
     """
     lines = posting_text.splitlines()
-    normalized_lines = [_normalize_heading_line(line) for line in lines]
-    heading_indices = [
-        idx for idx, (line, normalized) in enumerate(zip(lines, normalized_lines))
-        if _is_requirement_heading(line, normalized)
-    ]
+    heading_indices = [idx for idx, line in enumerate(lines) if _is_requirement_heading(line)]
     if not heading_indices:
         return []
 
-    any_heading_indices = [
-        idx for idx, (line, normalized) in enumerate(zip(lines, normalized_lines))
-        if _is_heading_shaped(line, normalized)
-    ]
+    boundary_indices = [idx for idx, line in enumerate(lines) if _is_any_recognized_heading(line)]
 
     requirements: list[OpenRequirement] = []
     for start_idx in heading_indices:
-        # A heading-shaped line immediately following the opening heading
-        # never terminates this same section on its own -- a short intro
-        # line right after the heading (e.g. "Du bringst mit:"), or a
-        # comma-list body line like "Python, SQL, Excel", would otherwise
-        # end the section before its first item is ever collected. Any
-        # heading-shaped line further away always terminates the section.
-        end_idx = next(
-            (idx for idx in any_heading_indices if idx > start_idx + 1),
-            len(lines),
-        )
-
+        end_idx = next((idx for idx in boundary_indices if idx > start_idx), len(lines))
         section_lines = [
             (idx, lines[idx]) for idx in range(start_idx + 1, end_idx) if lines[idx].strip()
         ]
@@ -158,16 +164,12 @@ def extract_open_requirements(posting_text: str) -> list[OpenRequirement]:
 
         for idx, line in section_lines:
             if "," in line:
-                fragments = [
-                    item.strip().strip(".") for item in line.split(",")
-                ]
+                fragments = [item.strip().strip(".") for item in line.split(",")]
                 fragments = [f for f in fragments if f]
-                if not fragments or any(len(f.split()) > 8 for f in fragments):
-                    continue
-                requirements.extend(
-                    OpenRequirement(phrase=fragment, source_line=idx)
-                    for fragment in fragments
-                )
+                if fragments and all(len(f.split()) <= 8 for f in fragments):
+                    requirements.extend(
+                        OpenRequirement(phrase=f, source_line=idx) for f in fragments
+                    )
     return requirements
 
 
