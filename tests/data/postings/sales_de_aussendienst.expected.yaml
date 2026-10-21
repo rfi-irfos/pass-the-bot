@@ -1,0 +1,4 @@
+expected: [account_executive, customer_acquisition, account_management, key_account_management, crm, salesforce, commercial_apprenticeship, b2b_sales, negotiation, ms_office, drivers_license, english]
+forbidden: [python, devops, scrum_master]
+open_expected: ["reisebereitschaft"]
+open_forbidden: ["firmenwagen", "provision"]

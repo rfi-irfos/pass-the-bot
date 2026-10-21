@@ -1,0 +1,4 @@
+expected: [basic_care, treatment_care, medication_administration, care_documentation, nurse, german, drivers_license]
+forbidden: [python, devops, data_analysis]
+open_expected: ["einfühlungsvermögen"]
+open_forbidden: ["weiterbildung", "sinnstiftende", "vergütung"]

@@ -1,0 +1,4 @@
+expected: [electrician, electrical_installation, maintenance_repair, photovoltaics, circuit_diagrams, plc_programming, drivers_license]
+forbidden: [python, devops]
+open_expected: ["selbstständige arbeitsweise"]
+open_forbidden: ["bezahlung", "firmenfahrzeug"]

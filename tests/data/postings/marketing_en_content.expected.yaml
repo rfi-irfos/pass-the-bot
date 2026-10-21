@@ -1,0 +1,4 @@
+expected: [marketing_manager, campaign_management, email_marketing, content_marketing, canva, adobe_creative_suite, meta_ads, hubspot, english, german]
+forbidden: [python, devops]
+open_expected: ["writing skills"]
+open_forbidden: ["pension", "gym"]

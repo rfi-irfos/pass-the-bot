@@ -1,0 +1,4 @@
+expected: [marketing_manager, sea, google_ads, seo, social_media_marketing, content_marketing, google_analytics, email_marketing, german, english]
+forbidden: [python, devops]
+open_expected: ["studium im bereich marketing"]
+open_forbidden: ["urlaub", "jobrad"]

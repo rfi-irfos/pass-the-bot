@@ -1,0 +1,4 @@
+expected: [office_manager, scheduling, business_correspondence, office_management, administrative_assistant, ms_office, outlook, word, powerpoint, english, german]
+forbidden: [python, devops]
+open_expected: ["calm under pressure"]
+open_forbidden: ["lunch", "vacation", "urban sports"]

@@ -1,0 +1,4 @@
+expected: [office_manager, scheduling, business_correspondence, commercial_apprenticeship, office_management, ms_office, german]
+forbidden: [python, devops]
+open_expected: ["freundliches auftreten"]
+open_forbidden: ["gehalt", "onboarding", "firmenevents"]

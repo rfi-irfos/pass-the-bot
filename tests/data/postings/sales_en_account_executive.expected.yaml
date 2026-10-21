@@ -1,0 +1,4 @@
+expected: [account_executive, customer_acquisition, negotiation, hubspot, salesforce, crm, b2b_sales, german, english]
+forbidden: [python, devops, scrum_master, software_engineer]
+open_expected: ["consultative selling"]
+open_forbidden: ["commission", "stock options"]

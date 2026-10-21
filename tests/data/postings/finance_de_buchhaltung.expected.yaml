@@ -1,0 +1,4 @@
+expected: [bookkeeping, accounts_payable_receivable, payment_transactions, vat_returns, payroll, commercial_apprenticeship, certified_accountant, bmd, excel, local_gaap, accountant]
+forbidden: [python, devops, scrum_master, software_engineer]
+open_expected: ["kanzlei"]
+open_forbidden: ["weiterbildung", "gehalt", "homeoffice"]
