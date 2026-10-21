@@ -2,3 +2,4 @@ expected: [electrician, electrical_installation, maintenance_repair, photovoltai
 forbidden: [python, devops]
 open_expected: ["selbstständige arbeitsweise"]
 open_forbidden: ["bezahlung", "firmenfahrzeug"]
+soft_expected: [reliability]

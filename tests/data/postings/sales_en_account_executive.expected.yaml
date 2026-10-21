@@ -2,3 +2,4 @@ expected: [account_executive, customer_acquisition, negotiation, hubspot, salesf
 forbidden: [python, devops, scrum_master, software_engineer]
 open_expected: ["consultative selling"]
 open_forbidden: ["commission", "stock options"]
+soft_expected: []

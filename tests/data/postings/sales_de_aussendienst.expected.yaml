@@ -2,3 +2,4 @@ expected: [account_executive, customer_acquisition, account_management, key_acco
 forbidden: [python, devops, scrum_master]
 open_expected: ["reisebereitschaft"]
 open_forbidden: ["firmenwagen", "provision"]
+soft_expected: []

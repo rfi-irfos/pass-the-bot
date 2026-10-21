@@ -140,16 +140,50 @@ def test_extract_soft_skills_finds_signal_in_bullet_list_without_terminal_punctu
     terminal punctuation per line. split_sentences must split on newlines too,
     not just on . ! ? , or the whole bullet list collapses into one fragment
     and reintroduces the whole-document dilution bug (Task 8) for this format.
+    English text, because these entries only have English anchor phrases and
+    German text has a stricter threshold (see the test below).
     """
     embedder = Embedder()
     text = (
-        "Anforderungen:\n"
+        "Requirements:\n"
         "- Python\n"
-        "- Teamfaehigkeit und gute Kommunikation, arbeitet gut im Team\n"
+        "- Good communication, works well in a team\n"
         "- Docker\n"
-        "- Reisebereitschaft"
+        "- Willingness to travel"
     )
     result = extract_soft_skills(text, SOFT_SKILL_ENTRIES, embedder)
     assert len(result) == 1
     assert result[0].id == "teamwork"
     assert result[0].confidence >= 0.45
+
+
+class _FixedScoreEmbedder:
+    def __init__(self, score):
+        self.score = score
+
+    def best_match(self, text, phrases, cache_phrases=True):
+        return phrases[0], self.score
+
+
+def test_german_text_needs_a_higher_soft_skill_score():
+    """On German text the English embedding model scores unrelated sentences
+    around 0.50-0.60 (calibrated on tests/data/postings, issue #7)."""
+    german = "Wir suchen eine Person mit Erfahrung im Vertrieb und der Kundenbetreuung."
+    english = "We are looking for a person with experience in sales and the account."
+    embedder = _FixedScoreEmbedder(0.55)
+    assert extract_soft_skills(german, SOFT_SKILL_ENTRIES, embedder) == []
+    assert [r.id for r in extract_soft_skills(english, SOFT_SKILL_ENTRIES, embedder)] == ["teamwork"]
+    assert [r.id for r in extract_soft_skills(german, SOFT_SKILL_ENTRIES, _FixedScoreEmbedder(0.61))] == ["teamwork"]
+
+
+def test_soft_skills_in_a_short_enumeration_are_scored_one_by_one():
+    entries = [
+        SkillEntry(
+            id="reliability", category="soft_skills", display={"de": "Zuverlässigkeit"},
+            status="curated", added="2026-10-21", anchor_phrases=["zuverlässig"],
+            embedding_threshold=0.48,
+        )
+    ]
+    result = extract_soft_skills("Einfühlsam, zuverlässig und teamfähig.", entries, Embedder())
+    assert [r.id for r in result] == ["reliability"]
+    assert result[0].confidence > 0.9

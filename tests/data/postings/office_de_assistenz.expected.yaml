@@ -2,3 +2,4 @@ expected: [office_manager, scheduling, business_correspondence, commercial_appre
 forbidden: [python, devops]
 open_expected: ["freundliches auftreten"]
 open_forbidden: ["gehalt", "onboarding", "firmenevents"]
+soft_expected: [organizational_skills, customer_orientation]

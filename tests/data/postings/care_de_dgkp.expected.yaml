@@ -2,3 +2,4 @@ expected: [nursing_qualification, wound_management, medication_administration, c
 forbidden: [python, devops]
 open_expected: ["eigener pkw"]
 open_forbidden: ["dienstauto", "entlohnung"]
+soft_expected: [communication, empathy]

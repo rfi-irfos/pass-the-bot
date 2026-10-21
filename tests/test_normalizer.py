@@ -418,3 +418,10 @@ def test_german_suspended_compound_matches_both_words():
 def test_hyphen_inside_a_word_is_not_a_suspended_compound():
     result = extract_discrete_keywords("Grund-Behandlungspflege", CARE_ENTRIES)
     assert {r.id for r in result} == {"treatment_care"}
+
+
+def test_detect_language_tells_german_from_english():
+    from passthebot.normalizer import detect_language
+
+    assert detect_language("Du bringst eine kaufmännische Ausbildung und Erfahrung mit.") == "de"
+    assert detect_language("You bring a degree and experience with the tools.") == "en"

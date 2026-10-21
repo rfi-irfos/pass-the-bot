@@ -2,3 +2,4 @@ expected: [financial_closing, accounts_payable_receivable, vat_returns, commerci
 forbidden: [python, devops, scrum_master]
 open_expected: ["degree in accounting"]
 open_forbidden: ["bonus", "hybrid", "learning budget"]
+soft_expected: []

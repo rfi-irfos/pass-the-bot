@@ -2,3 +2,4 @@ expected: [marketing_manager, campaign_management, email_marketing, content_mark
 forbidden: [python, devops]
 open_expected: ["writing skills"]
 open_forbidden: ["pension", "gym"]
+soft_expected: [communication, analytical_thinking]

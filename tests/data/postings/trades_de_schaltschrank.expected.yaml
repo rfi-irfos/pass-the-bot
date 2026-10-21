@@ -2,3 +2,4 @@ expected: [electrician, control_cabinet_building, circuit_diagrams, eplan, plc_p
 forbidden: [python, devops]
 open_expected: ["htl elektrotechnik"]
 open_forbidden: ["mindestgehalt", "kantine"]
+soft_expected: []

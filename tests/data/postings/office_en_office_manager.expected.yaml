@@ -2,3 +2,4 @@ expected: [office_manager, scheduling, business_correspondence, office_managemen
 forbidden: [python, devops]
 open_expected: ["calm under pressure"]
 open_forbidden: ["lunch", "vacation", "urban sports"]
+soft_expected: [organizational_skills]

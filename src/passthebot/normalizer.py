@@ -363,6 +363,45 @@ def split_sentences(text: str) -> list[str]:
     return [s.strip() for s in sentences if s.strip()]
 
 
+GERMAN_TEXT_MIN_THRESHOLD = 0.60
+
+_GERMAN_FUNCTION_WORDS = {
+    "und", "der", "die", "das", "mit", "für", "von", "im", "in", "eine", "ein",
+    "wir", "sie", "du", "ihr", "dein", "deine", "ihre", "unsere", "oder", "zu",
+}
+_ENGLISH_FUNCTION_WORDS = {
+    "and", "the", "with", "for", "of", "in", "a", "an", "we", "you", "your",
+    "our", "or", "to", "is", "are",
+}
+
+
+def detect_language(text: str) -> str:
+    """"de" or "en", by counting common function words. Good enough to pick
+    a soft-skill threshold; not a general language detector."""
+    words = re.findall(r"[a-zäöüß]+", text.lower())
+    german = sum(w in _GERMAN_FUNCTION_WORDS for w in words)
+    english = sum(w in _ENGLISH_FUNCTION_WORDS for w in words)
+    return "de" if german > english else "en"
+
+
+_LIST_SEPARATOR = re.compile(r"\s*(?:,|;|\bund\b|\band\b|\bsowie\b|&)\s*", re.IGNORECASE)
+LIST_ITEM_MAX_WORDS = 1
+
+
+def _short_list_items(sentence: str) -> list[str]:
+    """Items of an enumeration of single words ("Einfühlsam, zuverlässig und
+    teamfähig"), scored on their own as well: as one sentence, each item's
+    similarity is diluted by the others (0.54 instead of 1.0 for
+    "zuverlässig"). Multi-word items are left alone: generic shared words
+    ("Arbeitsweise", "skills") made "selbstständige Arbeitsweise" score 0.70
+    against "strukturierte Arbeitsweise"."""
+    items = [i.strip(" .-") for i in _LIST_SEPARATOR.split(sentence)]
+    items = [i for i in items if i]
+    if len(items) < 2 or any(len(i.split()) > LIST_ITEM_MAX_WORDS for i in items):
+        return []
+    return items
+
+
 def extract_soft_skills(
     text: str, entries: list[SkillEntry], embedder
 ) -> list[ExtractedKeyword]:
@@ -376,11 +415,17 @@ def extract_soft_skills(
     detect them reliably.
 
     An entry is included if the best-matching anchor phrase (across all
-    sentences) clears its own embedding_threshold.
+    sentences) clears its own embedding_threshold. On German text the
+    threshold is at least GERMAN_TEXT_MIN_THRESHOLD: the English model
+    scores unrelated German sentences around 0.50-0.60, while German anchor
+    phrases that really occur score 0.65 and up (measured on
+    tests/data/postings with scripts/measure_soft_skills.py, issue #7).
     """
     sentences = split_sentences(text)
     if not sentences:
         sentences = [text]
+    sentences = sentences + [f for s in sentences for f in _short_list_items(s)]
+    is_german = detect_language(text) == "de"
 
     found: list[ExtractedKeyword] = []
     for entry in entries:
@@ -393,6 +438,8 @@ def extract_soft_skills(
             if score > best_score:
                 best_phrase, best_score = phrase, score
         threshold = entry.embedding_threshold if entry.embedding_threshold is not None else 0.48
+        if is_german:
+            threshold = max(threshold, GERMAN_TEXT_MIN_THRESHOLD)
         if best_score >= threshold:
             found.append(
                 ExtractedKeyword(

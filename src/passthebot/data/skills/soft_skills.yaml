@@ -1,14 +1,14 @@
 - id: teamwork
   category: soft_skills
   display: { de: "Teamfähigkeit", en: "Team player" }
-  anchor_phrases: ["Teamfähigkeit", "teamorientiert arbeiten", "team player", "works well in teams", "collaborative"]
+  anchor_phrases: ["Teamfähigkeit", "teamfähig", "teamorientiert arbeiten", "Teamgeist", "team player", "works well in teams", "collaborative", "esprit d'équipe"]
   embedding_threshold: 0.48
   status: curated
   added: "2026-09-14"
 - id: communication
   category: soft_skills
   display: { de: "Kommunikationsfähigkeit", en: "Communication" }
-  anchor_phrases: ["Kommunikationsfähigkeit", "gute Kommunikationsfähigkeiten", "good communication skills", "strong communicator"]
+  anchor_phrases: ["Kommunikationsfähigkeit", "gute Kommunikationsfähigkeiten", "Kommunikationsstärke", "kommunikativ", "good communication skills", "strong communicator", "excellent written and verbal communication"]
   embedding_threshold: 0.48
   status: curated
   added: "2026-09-14"
@@ -29,14 +29,49 @@
 - id: analytical_thinking
   category: soft_skills
   display: { de: "Analytisches Denken", en: "Analytical Thinking" }
-  anchor_phrases: ["analytisches Denken", "analytisches Denkvermögen", "analytical thinking", "strong analytical skills"]
+  anchor_phrases: ["analytisches Denken", "analytisches Denkvermögen", "analytical thinking", "strong analytical skills", "data-driven mindset"]
   embedding_threshold: 0.48
   status: curated
   added: "2026-09-14"
 - id: adaptability
   category: soft_skills
   display: { de: "Flexibilität", en: "Adaptability" }
-  anchor_phrases: ["Flexibilität", "Anpassungsfähigkeit", "adaptability", "flexible and adaptable"]
+  anchor_phrases: ["Flexibilität", "flexibel", "Anpassungsfähigkeit", "adaptability", "flexible and adaptable"]
   embedding_threshold: 0.48
   status: curated
   added: "2026-09-14"
+- id: reliability
+  category: soft_skills
+  display: { de: "Zuverlässigkeit", en: "Reliability" }
+  anchor_phrases: ["Zuverlässigkeit", "zuverlässig", "zuverlässige Arbeitsweise", "Gewissenhaftigkeit", "reliable", "dependable and conscientious"]
+  embedding_threshold: 0.48
+  status: curated
+  added: "2026-10-21"
+- id: responsibility
+  category: soft_skills
+  display: { de: "Verantwortungsbewusstsein", en: "Sense of responsibility" }
+  anchor_phrases: ["Verantwortungsbewusstsein", "verantwortungsbewusst", "verantwortungsvolles Handeln", "sense of responsibility", "responsible and accountable"]
+  embedding_threshold: 0.48
+  status: curated
+  added: "2026-10-21"
+- id: empathy
+  category: soft_skills
+  display: { de: "Einfühlungsvermögen", en: "Empathy" }
+  anchor_phrases: ["Einfühlungsvermögen", "einfühlsam", "Empathie", "einfühlsamer Umgang mit Menschen", "empathy", "empathetic and caring"]
+  embedding_threshold: 0.48
+  status: curated
+  added: "2026-10-21"
+- id: organizational_skills
+  category: soft_skills
+  display: { de: "Organisationstalent", en: "Organizational skills" }
+  anchor_phrases: ["Organisationstalent", "Organisationsfähigkeit", "gut organisiert", "strukturierte Arbeitsweise", "organizational skills", "well organized and structured"]
+  embedding_threshold: 0.48
+  status: curated
+  added: "2026-10-21"
+- id: customer_orientation
+  category: soft_skills
+  display: { de: "Kundenorientierung", en: "Customer orientation" }
+  anchor_phrases: ["Kundenorientierung", "kundenorientiert", "Serviceorientierung", "freundliches Auftreten gegenüber Kunden", "customer focus", "customer-oriented"]
+  embedding_threshold: 0.48
+  status: curated
+  added: "2026-10-21"

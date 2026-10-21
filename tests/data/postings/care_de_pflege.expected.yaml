@@ -2,3 +2,4 @@ expected: [basic_care, treatment_care, medication_administration, care_documenta
 forbidden: [python, devops, data_analysis]
 open_expected: ["einfühlungsvermögen"]
 open_forbidden: ["weiterbildung", "sinnstiftende", "vergütung"]
+soft_expected: [empathy, reliability, responsibility, teamwork]
