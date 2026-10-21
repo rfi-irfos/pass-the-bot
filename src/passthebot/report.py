@@ -105,7 +105,7 @@ def build_report(
     results: list[MatchResult],
     resume_text: str,
     graph_version: str,
-    engine_version: str = "0.3.0",
+    engine_version: str = "0.3.1",
     model_version: str = "unknown",
 ) -> dict:
     required_results = [r for r in results if r.required]

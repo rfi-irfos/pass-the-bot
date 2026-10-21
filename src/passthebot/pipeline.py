@@ -68,6 +68,17 @@ def run_pipeline(
 
     open_requirements = extract_open_requirements(posting_text)
     claimed_spans = {normalize_string(kw.matched_text) for kw in posting_kw}
+    # Every alias of a skill found in the posting counts as claimed, not only
+    # the text that matched first: "Finanzbuchhaltung" claims bookkeeping,
+    # so a later "Erfahrung in der Buchhaltung" bullet is already covered by
+    # that skill (and matched across languages via its "Bookkeeping" alias).
+    claimed_discrete_ids = {kw.id for kw in posting_kw if kw.category != "soft_skills"}
+    claimed_spans |= {
+        normalize_string(alias)
+        for e in entries
+        if e.id in claimed_discrete_ids
+        for alias in e.aliases
+    }
     claimed_soft_skill_ids = {kw.id for kw in posting_kw if kw.category == "soft_skills"}
     claimed_soft_skill_entries = [
         e for e in entries if e.category == "soft_skills" and e.id in claimed_soft_skill_ids

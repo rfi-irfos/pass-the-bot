@@ -394,12 +394,14 @@ def _short_list_items(sentence: str) -> list[str]:
     similarity is diluted by the others (0.54 instead of 1.0 for
     "zuverlässig"). Multi-word items are left alone: generic shared words
     ("Arbeitsweise", "skills") made "selbstständige Arbeitsweise" score 0.70
-    against "strukturierte Arbeitsweise"."""
+    against "strukturierte Arbeitsweise". The single words of a mixed list
+    are still used ("Empathetic, reliable and responsible team player"
+    yields "Empathetic" and "reliable")."""
     items = [i.strip(" .-") for i in _LIST_SEPARATOR.split(sentence)]
     items = [i for i in items if i]
-    if len(items) < 2 or any(len(i.split()) > LIST_ITEM_MAX_WORDS for i in items):
+    if len(items) < 2:
         return []
-    return items
+    return [i for i in items if len(i.split()) <= LIST_ITEM_MAX_WORDS]
 
 
 def extract_soft_skills(

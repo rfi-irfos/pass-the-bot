@@ -328,7 +328,7 @@
 - id: campaign_management
   category: hard_skills
   display: { de: "Kampagnenmanagement", en: "Campaign management" }
-  aliases: ["campaign management", "Kampagnenmanagement", "Kampagnenplanung"]
+  aliases: ["campaign management", "Kampagnenmanagement", "Kampagnenplanung", "Kampagnen", "campaigns"]
   status: curated
   added: "2026-10-21"
 
