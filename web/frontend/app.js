@@ -391,11 +391,17 @@ function resetFileNameDisplay() {
   fileNameDisplay.innerHTML = `${FILE_UPLOAD_ICON}<span>${t("fileHint")}</span><span class="text-gray-400">${t("fileTypes")}</span>`;
 }
 
+const dropZone = fileInput.closest(".drop-zone");
+
 fileInput.addEventListener("change", () => {
   const file = fileInput.files[0];
   if (file) {
     fileNameDisplay.textContent = file.name;
+    dropZone.classList.remove("file-ok");
+    void dropZone.offsetWidth;
+    dropZone.classList.add("file-ok");
   } else {
+    dropZone.classList.remove("file-ok");
     resetFileNameDisplay();
   }
 });
@@ -408,6 +414,46 @@ function showError(message) {
 function hideError() {
   errorBox.classList.add("hidden");
   errorBox.textContent = "";
+}
+
+const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Each row of a result list pops in a little after the one above it.
+function staggerChildren(listEl) {
+  Array.from(listEl.children).forEach((child, i) => {
+    child.classList.remove("pop-item");
+    child.style.setProperty("--i", i);
+    void child.offsetWidth; // restart the animation on re-render
+    child.classList.add("pop-item");
+  });
+}
+
+function countUp(el, target) {
+  if (REDUCED_MOTION || target === 0) {
+    el.textContent = target;
+    return;
+  }
+  const duration = 700;
+  const start = performance.now();
+  function tick(now) {
+    const t = Math.min(1, (now - start) / duration);
+    el.textContent = Math.round(target * (1 - Math.pow(1 - t, 3)));
+    if (t < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      el.classList.remove("count-bump");
+      void el.offsetWidth;
+      el.classList.add("count-bump");
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+// Bars are rendered at 0% and grow to their value on the next frame, so the
+// CSS width transition runs.
+function growBar(el, pct) {
+  el.style.width = "0%";
+  requestAnimationFrame(() => requestAnimationFrame(() => (el.style.width = `${pct}%`)));
 }
 
 function renderList(listEl, items, emptyText) {
@@ -629,6 +675,9 @@ function renderRadar(radar) {
     "points",
     axes.map((axis, i) => pointAt(i, radar[axis.key]).join(",")).join(" ")
   );
+  radarPolygon.classList.remove("radar-grow");
+  void radarPolygon.getBoundingClientRect();
+  radarPolygon.classList.add("radar-grow");
 
   // One colored dot per axis at its real data point, tinted by that axis's
   // own value (red/amber/green) so a weak axis is visible at a glance, not
@@ -643,6 +692,8 @@ function renderRadar(radar) {
     dot.setAttribute("fill", radarValueColor(radar[axis.key]));
     dot.setAttribute("stroke", "#ffffff");
     dot.setAttribute("stroke-width", "1.5");
+    dot.classList.add("dot-pop");
+    dot.style.animationDelay = `${700 + i * 80}ms`;
     radarDotsEl.appendChild(dot);
   });
 
@@ -735,9 +786,9 @@ function renderResults(report, { scroll = true } = {}) {
   const nearMiss = report.results.filter((r) => r.status === "NEAR_MISS");
   const missing = report.results.filter((r) => r.status === "MISSING");
 
-  countMatched.textContent = matched.length;
-  countNearMiss.textContent = nearMiss.length;
-  countMissing.textContent = missing.length;
+  countUp(countMatched, matched.length);
+  countUp(countNearMiss, nearMiss.length);
+  countUp(countMissing, missing.length);
 
   // report.metrics is a newer field the frontend may be serving ahead of a
   // matching backend deploy (web/frontend deploys automatically on merge,
@@ -749,9 +800,9 @@ function renderResults(report, { scroll = true } = {}) {
     const exactPct = breakdown.exact_total ? Math.round((breakdown.exact_matched / breakdown.exact_total) * 100) : 0;
     const semanticPct = breakdown.semantic_total ? Math.round((breakdown.semantic_matched / breakdown.semantic_total) * 100) : 0;
     exactMatchCount.textContent = `${breakdown.exact_matched} / ${breakdown.exact_total}`;
-    exactMatchBar.style.width = `${exactPct}%`;
+    growBar(exactMatchBar, exactPct);
     semanticMatchCount.textContent = `${breakdown.semantic_matched} / ${breakdown.semantic_total}`;
-    semanticMatchBar.style.width = `${semanticPct}%`;
+    growBar(semanticMatchBar, semanticPct);
 
     const openResults = report.results.filter((r) => r.origin === "open");
     if (openResults.length > 0) {
@@ -759,7 +810,7 @@ function renderResults(report, { scroll = true } = {}) {
       const openPct = Math.round((openMatched / openResults.length) * 100);
       openMatchRow.classList.remove("hidden");
       openMatchCount.textContent = `${openMatched} / ${openResults.length}`;
-      openMatchBar.style.width = `${openPct}%`;
+      growBar(openMatchBar, openPct);
     } else {
       openMatchRow.classList.add("hidden");
     }
@@ -789,12 +840,14 @@ function renderResults(report, { scroll = true } = {}) {
             <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full flex-shrink-0 ${colors.dot} ${opacityClass}"></span>${name}</span>
             <span class="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${colors.badge} ${opacityClass}">${section.word_count} ${t("sectionWordsUnit")}</span>
           </div>
-          <div class="w-full bg-gray-100 rounded-full h-1.5"><div class="${colors.bar} ${opacityClass} h-1.5 rounded-full" style="width: ${pct}%"></div></div>
+          <div class="w-full bg-gray-100 rounded-full h-1.5"><div class="grow-bar ${colors.bar} ${opacityClass} h-1.5 rounded-full" data-width="${pct}" style="width: 0%"></div></div>
         `;
       }
       sectionAnalysisList.appendChild(li);
     }
 
+    sectionAnalysisList.querySelectorAll(".grow-bar").forEach((bar) => growBar(bar, bar.dataset.width));
+    staggerChildren(sectionAnalysisList);
     renderRadar(report.metrics.radar);
   }
 
@@ -802,6 +855,7 @@ function renderResults(report, { scroll = true } = {}) {
   renderList(nearMissList, nearMiss, t("emptyNearMiss"));
   const noScore = pct === null || pct === undefined;
   renderList(missingList, missing, noScore ? t("emptyMissingNoScore") : t("emptyMissing"));
+  [matchedList, nearMissList, missingList].forEach(staggerChildren);
 
   const tips = buildTips(report);
   tipsList.innerHTML = "";
@@ -827,6 +881,7 @@ function renderResults(report, { scroll = true } = {}) {
     }
   }
 
+  staggerChildren(tipsList);
   resultsCard.classList.remove("opacity-40");
   if (scroll) {
     resultsCard.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1039,6 +1094,13 @@ downloadReportBtn.addEventListener("click", () => {
           scrollY: 0,
           windowWidth: document.documentElement.clientWidth,
           windowHeight: document.documentElement.clientHeight,
+          // CSS animations restart in html2canvas's cloned document, so a
+          // row could be photographed at its first, transparent frame.
+          onclone: (doc) => {
+            doc.querySelectorAll(".pop-item, .radar-grow, .dot-pop, .count-bump").forEach((el) => {
+              el.classList.remove("pop-item", "radar-grow", "dot-pop", "count-bump");
+            });
+          },
         },
       })
       .from(resultsCard)
