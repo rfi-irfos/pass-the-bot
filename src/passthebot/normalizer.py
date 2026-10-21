@@ -36,6 +36,10 @@ OTHER_SECTION_HEADING_KEYWORDS: set[str] = {
     "deine vorteile", "warum wir", "nous offrons", "ce que nous offrons",
     "ce que l'on vous propose", "avantages", "pourquoi nous rejoindre",
     "à propos", "qui sommes-nous", "missions",
+    # added 2026-10-21 from non-tech postings (issue #7)
+    "versprechen", "das erwartet dich", "das erwartet sie", "was dich erwartet",
+    "was sie erwartet", "aufgabengebiet", "ihr aufgabengebiet", "dein aufgabengebiet",
+    "deine benefits", "ihre benefits", "zusatzleistungen",
 }
 
 # Bullet phrases that describe what the employer offers, not what the
@@ -57,12 +61,17 @@ _BENEFIT_PATTERNS = [
         r"\bmodernes? büro", r"\bflexible arbeitszeiten\b",
         r"\bmutuelle\b", r"\btickets? restaurant\b", r"\btitres? restaurant\b",
         r"\bsalaire\b", r"\bcongés\b", r"\brtt\b",
+        r"weiterbildungsmöglichkeit", r"\bsinnstiftend", r"\bfirmenwagen\b",
+        r"\bdienstwagen\b", r"\bdienstauto\b", r"\bfirmenfahrzeug\b",
+        r"\büberzahlung\b", r"\blearning budget\b", r"\btraining budget\b",
     )
 ]
 
 
 def _is_benefit_phrase(phrase: str) -> bool:
     return any(p.search(phrase) for p in _BENEFIT_PATTERNS)
+
+PLAIN_LINE_MAX_WORDS = 12
 
 _BULLET_PREFIX = re.compile(r"^\s*(?:[-*•]|\d+[.)])\s+")
 
@@ -86,12 +95,19 @@ def _normalize_heading_line(line: str) -> str:
 
 
 def _matches_keyword_set(normalized: str, keywords: set[str]) -> bool:
-    if not normalized or len(normalized.split()) > 6:
+    """Single-word keywords ("kenntnisse", "skills", "profil") also occur
+    inside ordinary requirement lines ("Gute Kenntnisse im MS Office-Paket"),
+    so they only count as a heading when the line is at most three words
+    long or starts with the keyword ("Anforderungen, die du mitbringst")."""
+    words = normalized.split()
+    if not normalized or len(words) > 6:
         return False
-    return any(
-        re.search(rf"(?<![a-zäöü]){re.escape(kw)}(?![a-zäöü])", normalized)
-        for kw in keywords
-    )
+    for kw in keywords:
+        if " " not in kw and len(words) > 3 and not normalized.startswith(kw):
+            continue
+        if re.search(rf"(?<![a-zäöü]){re.escape(kw)}(?![a-zäöü])", normalized):
+            return True
+    return False
 
 
 def _is_requirement_heading(line: str) -> bool:
@@ -161,7 +177,10 @@ def extract_open_requirements(posting_text: str) -> list[OpenRequirement]:
     comma-bearing line in the section body is processed this way (not
     just the first), so a section with multiple comma-list lines (e.g.
     "Python, SQL, Excel" followed by "Deutsch, Englisch") extracts items
-    from all of them.
+    from all of them. A bullet-less line that is not such a comma list
+    counts as one item when it is short and has no closing sentence
+    punctuation (_is_plain_line_item), because some job boards strip the
+    bullet glyphs and deliver each requirement as a plain line.
 
     Known V1 limitation: a requirements section written as ordinary
     prose sentences (no bullets, no comma anywhere in the body, or a
@@ -219,7 +238,24 @@ def extract_open_requirements(posting_text: str) -> list[OpenRequirement]:
                         for f in fragments
                         if not _is_benefit_phrase(f)
                     )
+                    continue
+            phrase = line.strip()
+            if _is_plain_line_item(phrase) and not _is_benefit_phrase(phrase):
+                requirements.append(OpenRequirement(phrase=phrase, source_line=idx))
     return requirements
+
+
+def _is_plain_line_item(line: str) -> bool:
+    """A short line with no bullet glyph that reads like a list item rather
+    than a sentence: at most PLAIN_LINE_MAX_WORDS words and no closing
+    sentence punctuation. Intro lines ("Das solltest du mitbringen:") end
+    with a colon and are skipped. Job boards that strip bullet glyphs
+    (e.g. the Arbeitsagentur) deliver requirements in exactly this shape."""
+    return (
+        bool(line)
+        and len(line.split()) <= PLAIN_LINE_MAX_WORDS
+        and not line.endswith((".", ":", "?", "!"))
+    )
 
 
 def extract_discrete_keywords(text: str, entries: list[SkillEntry]) -> list[ExtractedKeyword]:

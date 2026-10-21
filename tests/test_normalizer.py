@@ -349,3 +349,44 @@ def test_values_and_success_measures_close_the_requirements_section():
 def test_french_requirement_heading_is_detected():
     posting = "Vos missions\n- Gérer les menus\nVotre profil\n- BTS diététique\n- Maîtrise d'Excel\nAvantages\n- Mutuelle\n"
     assert [r.phrase for r in extract_open_requirements(posting)] == ["BTS diététique", "Maîtrise d'Excel"]
+
+
+def test_short_plain_lines_under_a_heading_are_items_without_bullet_markers():
+    """Job boards like the Arbeitsagentur drop the bullet glyphs, so each
+    requirement arrives as a short plain line."""
+    text = (
+        "Ihr Profil:\n"
+        "Abgeschlossene kaufmännische Ausbildung\n"
+        "Gute Kenntnisse im MS Office-Paket\n"
+        "Sehr gute Deutschkenntnisse in Wort und Schrift\n"
+    )
+    result = extract_open_requirements(text)
+    assert [r.phrase for r in result] == [
+        "Abgeschlossene kaufmännische Ausbildung",
+        "Gute Kenntnisse im MS Office-Paket",
+        "Sehr gute Deutschkenntnisse in Wort und Schrift",
+    ]
+
+
+def test_plain_line_intro_ending_with_a_colon_is_not_an_item():
+    text = "Anforderungen\nDas solltest du mitbringen:\nErfahrung im Vertrieb\n"
+    result = extract_open_requirements(text)
+    assert [r.phrase for r in result] == ["Erfahrung im Vertrieb"]
+
+
+def test_promise_heading_closes_the_requirements_section():
+    text = (
+        "Ihr Profil:\n- Führerschein Klasse B\n"
+        "Unsere Versprechen an Dich\n- Fort- und Weiterbildungsmöglichkeiten\n"
+    )
+    result = extract_open_requirements(text)
+    assert [r.phrase for r in result] == ["Führerschein Klasse B"]
+
+
+def test_training_opportunities_are_a_benefit_but_required_training_is_not():
+    text = (
+        "Anforderungen\n- Weiterbildung im Wundmanagement von Vorteil\n"
+        "- Fort- und Weiterbildungsmöglichkeiten\n"
+    )
+    result = extract_open_requirements(text)
+    assert [r.phrase for r in result] == ["Weiterbildung im Wundmanagement von Vorteil"]

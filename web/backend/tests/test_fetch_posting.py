@@ -124,6 +124,21 @@ def test_falls_back_to_visible_page_text_without_navigation():
     assert "Login" not in text
 
 
+def test_page_text_drops_link_lists_of_other_jobs():
+    """Greenhouse (Gong): below a sales posting sat a table of links to
+    every other open job, which turned "Senior Backend Engineer (Python)"
+    into a Python requirement for an Account Executive."""
+    words = " ".join(f"word{i}" for i in range(200))
+    others = "".join(
+        f'<tr><td><a href="/jobs/{i}"><p>Senior Backend Engineer (Python)</p></a></td></tr>'
+        for i in range(5)
+    )
+    page = f"<html><main><h1>Account Executive</h1><p>{words}</p><table>{others}</table></main></html>"
+    _, _, method, text = extract_posting(page)
+    assert method == "page_text"
+    assert "Python" not in text
+
+
 def test_js_only_page_is_unreadable():
     """Brown-Forman: an empty Nuxt shell with no posting content."""
     page = '<html><body><div id="__nuxt"></div><script>window.__NUXT__={}</script></body></html>'
@@ -191,6 +206,33 @@ def test_missing_or_removed_posting_is_gone():
             fetch_posting("https://jobs.example.com/old", resolver=_public_resolver, transport=transport)
         assert exc.value.code == "gone"
 
+
+def test_redirect_from_a_job_to_its_board_overview_is_gone():
+    """Greenhouse sends an expired job's URL to the company's job list
+    (/gongio/jobs/123 -> /gongio?error=true) with status 200."""
+    words = " ".join(f"word{i}" for i in range(200))
+    transport = _transport({
+        "https://boards.example.com/acme/jobs/123": httpx.Response(
+            302, headers={"location": "/acme?error=true"}
+        ),
+        "https://boards.example.com/acme?error=true": _html(f"<main><p>{words}</p></main>"),
+    })
+    with pytest.raises(PostingFetchError) as exc:
+        fetch_posting("https://boards.example.com/acme/jobs/123", resolver=_public_resolver, transport=transport)
+    assert exc.value.code == "gone"
+
+
+def test_redirect_to_a_longer_path_is_followed_normally():
+    transport = _transport({
+        "https://jobs.example.com/jobs/123": httpx.Response(
+            301, headers={"location": "/de/jobs/123-buchhalter"}
+        ),
+        "https://jobs.example.com/de/jobs/123-buchhalter": _html(
+            f"<main><p>{' '.join(f'word{i}' for i in range(200))}</p>{REQUIREMENTS_HTML}</main>"
+        ),
+    })
+    source = fetch_posting("https://jobs.example.com/jobs/123", resolver=_public_resolver, transport=transport)
+    assert "Requirement number 3" in source.text
 
 def test_other_http_error_status_is_unreachable():
     transport = _transport({"https://jobs.example.com/err": _html("oops", status=500)})

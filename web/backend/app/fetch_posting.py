@@ -70,7 +70,9 @@ _BLOCK_TAGS = {
     "blockquote", "pre", "hr", "dl", "dt", "dd",
 }
 _SKIP_TAGS = {"script", "style", "noscript", "template", "svg", "head"}
-_PAGE_CHROME_TAGS = {"nav", "header", "footer", "form", "aside"}
+# Link text is skipped too: on page text, links are menus and lists of
+# other open jobs, never the posting's own requirements.
+_PAGE_CHROME_TAGS = {"nav", "header", "footer", "form", "aside", "a"}
 
 
 class PostingFetchError(Exception):
@@ -443,6 +445,17 @@ def fetch_html(
     raise PostingFetchError("unreachable", "too many redirects")
 
 
+def _redirected_to_overview(url: str, final_url: str) -> bool:
+    """True when a redirect led from a job page up to one of its parent
+    paths on the same host (e.g. /acme/jobs/123 -> /acme). Job boards do this
+    when a posting has expired, and answer with 200 and the list of other
+    jobs."""
+    start, end = urlsplit(url), urlsplit(final_url)
+    if start.hostname != end.hostname:
+        return False
+    start_path, end_path = start.path.rstrip("/"), end.path.rstrip("/")
+    return start_path != end_path and (start_path + "/").startswith(end_path + "/")
+
 def fetch_posting(
     url: str,
     resolver: Resolver = _system_resolver,
@@ -450,6 +463,8 @@ def fetch_posting(
 ) -> PostingSource:
     url = url.strip()
     final_url, page_html = fetch_html(url, resolver=resolver, transport=transport)
+    if _redirected_to_overview(url, final_url):
+        raise PostingFetchError("gone", "redirected to overview")
     title, company, method, text = extract_posting(page_html)
     return PostingSource(
         url=final_url,
