@@ -24,7 +24,7 @@ RESUME_TEXT = (
 
 def test_build_report_shape():
     report = build_report(RESULTS, RESUME_TEXT, graph_version="abc123")
-    assert report["engine_version"] == "0.2.0"
+    assert report["engine_version"] == "0.3.0"
     assert report["graph_version"] == "abc123"
     assert report["model_version"] == "unknown"
     assert len(report["results"]) == 3

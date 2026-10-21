@@ -87,7 +87,11 @@ in section 4 ("Data model") of
   rejects duplicate ids and aliases that collide with another skill.
 
 Skills outside tech (finance, marketing, healthcare, trades) and German or
-French terms are especially welcome.
+French terms are especially welcome. `tests/data/postings/` holds labelled
+example postings; `python3 scripts/measure_postings.py` shows how many of
+their skills are found, and `python3 scripts/measure_soft_skills.py` does the
+same for soft skills. Add a posting with a `.expected.yaml` file when you add
+skills for a new field (write it yourself, don't copy a real ad).
 
 ## Pull requests
 

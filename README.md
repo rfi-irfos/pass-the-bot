@@ -32,6 +32,10 @@ recruiter (or a bot) ever sees your application.
    near-miss and missing skills, keyword coverage, a section check of your
    resume and concrete tips. Download it as a PDF if you like.
 
+It works for tech and non-tech jobs alike: finance and bookkeeping, office,
+care and nursing, sales, marketing and the trades, in German and English.
+Spoken languages ("sehr gute Deutschkenntnisse") count as skills too.
+
 If the posting has no recognizable requirements, you get a clear "no score"
 instead of a misleading 100%.
 
@@ -41,12 +45,14 @@ page sets no cookies.
 
 ## How it works
 
-Discrete skills (languages, frameworks, tools, certifications, job
-titles, hard skills) are matched by normalized alias lookup with
-longest-match-first span-claiming, so "Node.js" never falsely triggers a
-"JS" match. Typos are caught as near-misses by fuzzy matching. Soft skills
+Discrete skills (programming languages, frameworks, tools, certifications,
+job titles, hard skills, spoken languages) are matched by normalized alias
+lookup with longest-match-first span-claiming, so "Node.js" never falsely
+triggers a "JS" match. German shortened compounds like "Grund- und
+Behandlungspflege" count as both words. Typos are caught as near-misses by fuzzy matching. Soft skills
 are matched by embedding similarity against curated anchor phrases,
-sentence by sentence to avoid whole-document dilution. Required and
+sentence by sentence to avoid whole-document dilution, with a stricter
+threshold on German text. Required and
 "nice to have" skills are detected from the posting's own wording and
 section headings.
 
