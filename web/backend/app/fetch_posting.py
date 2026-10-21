@@ -75,7 +75,8 @@ _PAGE_CHROME_TAGS = {"nav", "header", "footer", "form", "aside"}
 
 class PostingFetchError(Exception):
     """A pasted link could not be turned into posting text. `code` is one
-    of: unsafe_url, unreachable, timeout, too_large, not_html, unreadable."""
+    of: unsafe_url, unreachable, gone, timeout, too_large, not_html,
+    unreadable."""
 
     def __init__(self, code: str, message: str = "") -> None:
         super().__init__(message or code)
@@ -295,6 +296,23 @@ def _from_page_text(page_html: str) -> str | None:
     return text if len(text.split()) >= MIN_PAGE_TEXT_WORDS else None
 
 
+# Job boards often keep serving an expired posting's URL with 200 and a
+# notice plus a list of other jobs. Only the top of the page is checked, so a
+# phrase further down in a real posting can't trigger it.
+_EXPIRED_NOTICE = re.compile(
+    r"nicht mehr (?:verfügbar|online|aktiv|besetzbar)|bereits besetzt"
+    r"|no longer (?:available|accepting applications|active|open)"
+    r"|(?:position|job|posting|role) (?:has been filled|is closed|has expired)"
+    r"|n'est plus disponible|plus disponible|offre (?:a )?expirée",
+    re.IGNORECASE,
+)
+EXPIRED_NOTICE_WINDOW = 1500
+
+
+def _looks_expired(text: str) -> bool:
+    return bool(_EXPIRED_NOTICE.search(text[:EXPIRED_NOTICE_WINDOW]))
+
+
 def _split_page_title(page_title: str | None, site_name: str | None) -> tuple[str | None, str | None]:
     """Page titles of non-JSON-LD boards usually read "Job title | Company
     Careers" while og:site_name names the ATS vendor (e.g. "Rippling
@@ -324,11 +342,15 @@ def extract_posting(page_html: str) -> tuple[str | None, str | None, str, str]:
     )
 
     app_text = _from_app_state(scanner.app_state)
+    if app_text and _looks_expired(app_text):
+        raise PostingFetchError("gone")
     if app_text:
         text = f"{page_title}\n{app_text}" if page_title else app_text
         return page_title, site_name, "app_state", text
 
     page_text = _from_page_text(page_html)
+    if page_text and _looks_expired(page_text):
+        raise PostingFetchError("gone")
     if page_text:
         return page_title, site_name, "page_text", page_text
 
@@ -400,6 +422,8 @@ def fetch_html(
                             raise PostingFetchError("unreachable")
                         url = urljoin(url, location)
                         continue
+                    if response.status_code in (404, 410):
+                        raise PostingFetchError("gone", f"HTTP {response.status_code}")
                     if response.status_code >= 400:
                         raise PostingFetchError("unreachable", f"HTTP {response.status_code}")
                     content_type = response.headers.get("content-type", "").lower()

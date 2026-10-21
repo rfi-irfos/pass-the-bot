@@ -185,3 +185,26 @@ def test_check_returns_no_score_when_posting_has_no_requirements():
 
     assert response.status_code == 200
     assert response.json()["score"]["coverage_pct"] is None
+
+
+def test_check_says_an_expired_link_is_no_longer_online(monkeypatch):
+    from app import main
+    from app.fetch_posting import PostingFetchError
+
+    def fake_fetch(url):
+        raise PostingFetchError("gone", "HTTP 410")
+
+    monkeypatch.setattr(main, "fetch_posting", fake_fetch)
+    pdf_path = FIXTURES / "api_test_resume_link3.pdf"
+    FIXTURES.mkdir(exist_ok=True)
+    _make_resume_pdf(pdf_path, "Experienced Python developer.")
+
+    with pdf_path.open("rb") as f:
+        response = client.post(
+            "/api/check",
+            files={"resume_file": ("resume.pdf", f, "application/pdf")},
+            data={"posting_text": "https://careers.example.com/job/2", "lang": "en"},
+        )
+
+    assert response.status_code == 400
+    assert "no longer online" in response.json()["detail"]

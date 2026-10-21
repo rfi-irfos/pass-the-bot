@@ -184,10 +184,37 @@ def test_rejects_oversized_and_non_html_responses():
     assert exc.value.code == "not_html"
 
 
-def test_http_error_status_is_unreachable():
+def test_missing_or_removed_posting_is_gone():
+    for status in (404, 410):
+        transport = _transport({"https://jobs.example.com/old": _html("gone", status=status)})
+        with pytest.raises(PostingFetchError) as exc:
+            fetch_posting("https://jobs.example.com/old", resolver=_public_resolver, transport=transport)
+        assert exc.value.code == "gone"
+
+
+def test_other_http_error_status_is_unreachable():
+    transport = _transport({"https://jobs.example.com/err": _html("oops", status=500)})
     with pytest.raises(PostingFetchError) as exc:
-        fetch_posting("https://jobs.example.com/gone", resolver=_public_resolver, transport=_transport({}))
+        fetch_posting("https://jobs.example.com/err", resolver=_public_resolver, transport=transport)
     assert exc.value.code == "unreachable"
+
+
+def test_expired_notice_on_a_listing_page_is_gone():
+    others = "".join(f"<li>Other job {i} with a long description of duties and tasks here</li>" for i in range(40))
+    page = (
+        "<main><h1>118 Buchhalter Jobs</h1><p>Der Job Buchhalter bei der Firma X ist leider "
+        f"nicht mehr verfügbar.</p><ul>{others}</ul></main>"
+    )
+    with pytest.raises(PostingFetchError) as exc:
+        extract_posting(page)
+    assert exc.value.code == "gone"
+
+
+def test_expired_phrase_deep_inside_a_real_posting_is_ignored():
+    filler = " ".join(["Wir suchen eine engagierte Person für unser Team in Graz."] * 40)
+    page = f"<main><h1>Buchhalter</h1><p>{filler}</p><p>Alte Stellen sind nicht mehr verfügbar.</p></main>"
+    _, _, method, _ = extract_posting(page)
+    assert method == "page_text"
 
 
 def _json_str(value: str) -> str:

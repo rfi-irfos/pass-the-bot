@@ -47,12 +47,14 @@ PIPELINE_CONCURRENCY = asyncio.Semaphore(2)
 
 _FETCH_ERROR_MESSAGES = {
     "de": {
+        "gone": "Diese Stellenanzeige ist nicht mehr online. Falls du den Text noch hast, füge ihn bitte direkt ein.",
         "unreadable": "Diese Seite konnten wir nicht auslesen (sie lädt die Anzeige erst im Browser). Bitte kopiere den Text der Stellenanzeige und füge ihn ein.",
         "timeout": "Die Seite hat zu lange nicht geantwortet. Bitte füge den Text der Stellenanzeige direkt ein.",
         "unsafe_url": "Dieser Link kann nicht geladen werden. Bitte füge einen öffentlichen Link zur Stellenanzeige oder ihren Text ein.",
         "default": "Die Seite konnte nicht geladen werden. Bitte füge den Text der Stellenanzeige direkt ein.",
     },
     "en": {
+        "gone": "This job posting is no longer online. If you still have its text, please paste it instead.",
         "unreadable": "We couldn't read this page (it only loads the posting in the browser). Please copy the posting's text and paste it instead.",
         "timeout": "The page took too long to respond. Please paste the posting's text instead.",
         "unsafe_url": "This link can't be loaded. Please paste a public link to the posting, or its text.",
