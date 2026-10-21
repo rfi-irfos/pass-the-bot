@@ -390,3 +390,31 @@ def test_training_opportunities_are_a_benefit_but_required_training_is_not():
     )
     result = extract_open_requirements(text)
     assert [r.phrase for r in result] == ["Weiterbildung im Wundmanagement von Vorteil"]
+
+
+CARE_ENTRIES = [
+    SkillEntry(
+        id="basic_care", category="hard_skills", display={"de": "Grundpflege"},
+        status="curated", added="2026-10-21", aliases=["Grundpflege"],
+    ),
+    SkillEntry(
+        id="treatment_care", category="hard_skills", display={"de": "Behandlungspflege"},
+        status="curated", added="2026-10-21", aliases=["Behandlungspflege"],
+    ),
+]
+
+
+def test_german_suspended_compound_matches_both_words():
+    """"Grund- und Behandlungspflege" means Grundpflege and Behandlungspflege,
+    but only the second word is written out."""
+    result = extract_discrete_keywords(
+        "Durchführung der Grund- und Behandlungspflege", CARE_ENTRIES
+    )
+    by_id = {r.id: r for r in result}
+    assert set(by_id) == {"basic_care", "treatment_care"}
+    assert by_id["basic_care"].matched_text == "Grund- und Behandlungspflege"
+
+
+def test_hyphen_inside_a_word_is_not_a_suspended_compound():
+    result = extract_discrete_keywords("Grund-Behandlungspflege", CARE_ENTRIES)
+    assert {r.id for r in result} == {"treatment_care"}

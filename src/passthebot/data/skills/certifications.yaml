@@ -49,6 +49,49 @@
 - id: scrum_master
   category: certifications
   display: { de: "Certified Scrum Master", en: "Certified Scrum Master" }
-  aliases: ["Certified Scrum Master", "CSM"]
+  aliases: ["Certified Scrum Master"]
   status: curated
   added: "2026-09-14"
+
+# Non-tech jobs (issue #7)
+- id: commercial_apprenticeship
+  category: certifications
+  display: { de: "Kaufmännische Ausbildung", en: "Commercial apprenticeship" }
+  aliases: ["kaufmännische Ausbildung", "kaufmännischen Ausbildung", "kaufmännische oder technische Ausbildung", "kaufmännische Lehre", "HAK", "Handelsakademie", "commercial apprenticeship", "commercial training"]
+  status: curated
+  added: "2026-10-21"
+
+- id: certified_accountant
+  category: certifications
+  display: { de: "Buchhalter-/Bilanzbuchhalterprüfung", en: "Certified accountant" }
+  aliases: ["Bilanzbuchhalter", "Bilanzbuchhalterin", "Bilanzbuchhalterprüfung", "Buchhalterprüfung", "Certified Public Accountant", "CPA", "ACCA"]
+  status: curated
+  added: "2026-10-21"
+
+- id: nursing_qualification
+  category: certifications
+  display: { de: "Pflegeausbildung (DGKP)", en: "Nursing qualification" }
+  aliases: ["DGKP", "DGKS", "Gesundheits- und Krankenpflege", "examinierte Pflegefachkraft", "Pflegeausbildung", "Krankenpflegeausbildung", "Pflegediplom", "nursing degree", "nursing qualification"]
+  status: curated
+  added: "2026-10-21"
+
+- id: drivers_license
+  category: certifications
+  display: { de: "Führerschein", en: "Driving licence" }
+  aliases: ["Führerschein", "Fahrerlaubnis", "driver's license", "drivers license", "driving licence", "driving license", "permis B"]
+  status: curated
+  added: "2026-10-21"
+
+- id: forklift_license
+  category: certifications
+  display: { de: "Staplerschein", en: "Forklift licence" }
+  aliases: ["Staplerschein", "Gabelstaplerschein", "Staplerführerschein", "forklift license", "forklift licence"]
+  status: curated
+  added: "2026-10-21"
+
+- id: master_craftsman
+  category: certifications
+  display: { de: "Meisterprüfung", en: "Master craftsman" }
+  aliases: ["Meisterprüfung", "Meisterbrief", "Meistertitel", "Meisterschule", "Elektromeister", "Industriemeister", "master craftsman"]
+  status: curated
+  added: "2026-10-21"

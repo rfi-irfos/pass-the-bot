@@ -287,6 +287,13 @@ def extract_discrete_keywords(text: str, entries: list[SkillEntry]) -> list[Extr
     skill it happens to contain as a substring.
     """
     normalized_text = normalize_string(text)
+    # Hidden words of German suspended compounds are appended after the text,
+    # each remembering the phrase it came from (reported as matched_text).
+    expansion_sources: list[tuple[int, str]] = []
+    for word, source in _suspended_compound_expansions(text):
+        normalized_text += " | "
+        expansion_sources.append((len(normalized_text), source))
+        normalized_text += normalize_string(word)
     claimed = [False] * len(normalized_text)
 
     pairs: list[tuple[str, str, SkillEntry]] = []
@@ -308,10 +315,30 @@ def extract_discrete_keywords(text: str, entries: list[SkillEntry]) -> list[Extr
             for i in range(start, end):
                 claimed[i] = True
             if entry.id not in found:
+                matched_text = next(
+                    (src for pos, src in reversed(expansion_sources) if start >= pos), alias
+                )
                 found[entry.id] = ExtractedKeyword(
-                    id=entry.id, category=entry.category, matched_text=alias, confidence=1.0
+                    id=entry.id, category=entry.category, matched_text=matched_text,
+                    confidence=1.0,
                 )
     return list(found.values())
+
+
+# "Grund- und Behandlungspflege": the first word drops the part it shares
+# with the second ("pflege"). The shared tail is unknown, so every tail of
+# at least MIN_SHARED_TAIL letters is tried; only real aliases ever match.
+_SUSPENDED_COMPOUND = re.compile(r"(\w+)-\s+(?:und|oder|bzw\.?|sowie|&)\s+(\w+)")
+MIN_SHARED_TAIL = 4
+
+
+def _suspended_compound_expansions(text: str) -> list[tuple[str, str]]:
+    expansions: list[tuple[str, str]] = []
+    for m in _SUSPENDED_COMPOUND.finditer(text):
+        head, full = m.group(1), m.group(2)
+        for cut in range(1, len(full) - MIN_SHARED_TAIL + 1):
+            expansions.append((head + full[cut:], m.group(0)))
+    return expansions
 
 
 def split_sentences(text: str) -> list[str]:

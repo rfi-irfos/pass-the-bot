@@ -51,3 +51,21 @@ def test_every_posting_has_a_gold_file():
     assert len(POSTINGS) == 12
     for posting in POSTINGS:
         assert posting.with_suffix(".expected.yaml").exists()
+
+
+@pytest.mark.parametrize(
+    "text, wrong_id",
+    [
+        ("Excellent writing skills", "excel"),
+        ("Standort Deutschland, Kunden in Germany", "german"),
+        ("Experience with Kubernetes scheduling", "scheduling"),
+        ("Work with our Customer Success Managers (CSM)", "scrum_master"),
+        ("Datenpflege im ERP-System", "basic_care"),
+        ("Subscribe to our newsletter", "email_marketing"),
+        ("Staplerführerschein von Vorteil", "drivers_license"),
+        ("Elektromeister gesucht", "electrician"),
+    ],
+)
+def test_catalog_does_not_confuse_similar_words(text, wrong_id):
+    found = {k.id for k in extract_discrete_keywords(text, ENTRIES)}
+    assert wrong_id not in found

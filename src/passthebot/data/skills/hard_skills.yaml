@@ -106,3 +106,277 @@
   aliases: ["Data Analysis", "Datenanalyse"]
   status: curated
   added: "2026-09-14"
+
+# Non-tech jobs (issue #7)
+- id: bookkeeping
+  category: hard_skills
+  display: { de: "Buchhaltung", en: "Bookkeeping" }
+  aliases: ["Buchhaltung", "Finanzbuchhaltung", "Bookkeeping", "Financial Accounting", "Rechnungswesen", "comptabilité"]
+  status: curated
+  added: "2026-10-21"
+
+- id: balance_sheet_accounting
+  category: hard_skills
+  display: { de: "Bilanzierung", en: "Balance sheet accounting" }
+  aliases: ["Bilanzierung", "Bilanzerstellung", "balance sheet", "balance sheets"]
+  status: curated
+  added: "2026-10-21"
+
+- id: financial_closing
+  category: hard_skills
+  display: { de: "Monats- und Jahresabschluss", en: "Month-end and year-end close" }
+  aliases: ["Monatsabschluss", "Monatsabschlüsse", "Jahresabschluss", "Jahresabschlüsse", "month-end close", "year-end close", "financial closing", "financial statements"]
+  status: curated
+  added: "2026-10-21"
+
+- id: payroll
+  category: hard_skills
+  display: { de: "Lohnverrechnung", en: "Payroll" }
+  aliases: ["Lohnverrechnung", "Personalverrechnung", "Lohnbuchhaltung", "Gehaltsabrechnung", "Lohnabrechnung", "Lohn- und Gehaltsabrechnung", "Payroll", "paie"]
+  status: curated
+  added: "2026-10-21"
+
+- id: controlling
+  category: hard_skills
+  display: { de: "Controlling", en: "Controlling" }
+  aliases: ["Controlling", "Financial Controlling", "contrôle de gestion"]
+  status: curated
+  added: "2026-10-21"
+
+- id: cost_accounting
+  category: hard_skills
+  display: { de: "Kostenrechnung", en: "Cost accounting" }
+  aliases: ["Kostenrechnung", "Kosten- und Leistungsrechnung", "KLR", "cost accounting"]
+  status: curated
+  added: "2026-10-21"
+
+- id: accounts_payable_receivable
+  category: hard_skills
+  display: { de: "Kreditoren- und Debitorenbuchhaltung", en: "Accounts payable and receivable" }
+  aliases: ["Kreditorenbuchhaltung", "Debitorenbuchhaltung", "Kreditoren", "Debitoren", "accounts payable", "accounts receivable"]
+  status: curated
+  added: "2026-10-21"
+
+- id: payment_transactions
+  category: hard_skills
+  display: { de: "Zahlungsverkehr", en: "Payment transactions" }
+  aliases: ["Zahlungsverkehr", "payment transactions"]
+  status: curated
+  added: "2026-10-21"
+
+- id: vat_returns
+  category: hard_skills
+  display: { de: "Umsatzsteuer und UVA", en: "VAT returns" }
+  aliases: ["UVA", "Umsatzsteuervoranmeldung", "Umsatzsteuervoranmeldungen", "Umsatzsteuer", "USt-Voranmeldung", "VAT returns", "VAT return", "VAT filings"]
+  status: curated
+  added: "2026-10-21"
+
+- id: ifrs
+  category: hard_skills
+  display: { de: "IFRS", en: "IFRS" }
+  aliases: ["IFRS"]
+  status: curated
+  added: "2026-10-21"
+
+- id: local_gaap
+  category: hard_skills
+  display: { de: "UGB/HGB", en: "Local GAAP (UGB/HGB)" }
+  aliases: ["UGB", "HGB", "Unternehmensgesetzbuch", "Handelsgesetzbuch", "local GAAP"]
+  status: curated
+  added: "2026-10-21"
+
+- id: office_management
+  category: hard_skills
+  display: { de: "Büroorganisation", en: "Office management" }
+  aliases: ["Office Management", "Büroorganisation", "Büromanagement", "office operations"]
+  status: curated
+  added: "2026-10-21"
+
+- id: business_correspondence
+  category: hard_skills
+  display: { de: "Korrespondenz", en: "Business correspondence" }
+  aliases: ["Geschäftskorrespondenz", "Korrespondenz", "Korrespondenzen", "correspondence", "business correspondence"]
+  status: curated
+  added: "2026-10-21"
+
+- id: scheduling
+  category: hard_skills
+  display: { de: "Terminplanung", en: "Scheduling" }
+  aliases: ["Terminplanung", "Terminkoordination", "Terminvereinbarung", "Terminverwaltung", "Kalenderführung", "Kalenderverwaltung", "calendar management", "appointment scheduling"]
+  status: curated
+  added: "2026-10-21"
+
+- id: customer_service
+  category: hard_skills
+  display: { de: "Kundenservice", en: "Customer service" }
+  aliases: ["Kundenservice", "Kundendienst", "customer service", "customer support", "service client"]
+  status: curated
+  added: "2026-10-21"
+
+- id: basic_care
+  category: hard_skills
+  display: { de: "Grundpflege", en: "Basic care" }
+  aliases: ["Grundpflege", "basic care", "personal care"]
+  status: curated
+  added: "2026-10-21"
+
+- id: treatment_care
+  category: hard_skills
+  display: { de: "Behandlungspflege", en: "Treatment care" }
+  aliases: ["Behandlungspflege", "treatment care"]
+  status: curated
+  added: "2026-10-21"
+
+- id: care_documentation
+  category: hard_skills
+  display: { de: "Pflegedokumentation", en: "Care documentation" }
+  aliases: ["Pflegedokumentation", "Pflegeplanung", "care documentation", "nursing documentation", "care planning"]
+  status: curated
+  added: "2026-10-21"
+
+- id: wound_management
+  category: hard_skills
+  display: { de: "Wundmanagement", en: "Wound management" }
+  aliases: ["Wundmanagement", "Wundversorgung", "wound care", "wound management"]
+  status: curated
+  added: "2026-10-21"
+
+- id: medication_administration
+  category: hard_skills
+  display: { de: "Medikamentengabe", en: "Medication administration" }
+  aliases: ["Medikamentengabe", "Medikamentenverabreichung", "Verabreichung von Medikamenten", "Medikamentenmanagement", "medication administration", "administering medication"]
+  status: curated
+  added: "2026-10-21"
+
+- id: customer_acquisition
+  category: hard_skills
+  display: { de: "Neukundenakquise", en: "New business development" }
+  aliases: ["Neukundenakquise", "Neukundengewinnung", "Kundenakquise", "Akquise", "Kaltakquise", "new business development", "new business", "prospecting", "customer acquisition"]
+  status: curated
+  added: "2026-10-21"
+
+- id: key_account_management
+  category: hard_skills
+  display: { de: "Key Account Management", en: "Key account management" }
+  aliases: ["Key Account Management", "Key Account", "Key Accounts", "Key-Account-Management"]
+  status: curated
+  added: "2026-10-21"
+
+- id: account_management
+  category: hard_skills
+  display: { de: "Kundenbetreuung", en: "Account management" }
+  aliases: ["Kundenbetreuung", "Bestandskunden", "Bestandskundenbetreuung", "account management"]
+  status: curated
+  added: "2026-10-21"
+
+- id: negotiation
+  category: hard_skills
+  display: { de: "Verhandlungsführung", en: "Negotiation" }
+  aliases: ["Verhandlungsführung", "Verhandlungsgeschick", "Verhandlungssicherheit", "Verhandlungsstärke", "Preisverhandlungen", "Verhandlungen", "negotiation", "negotiations", "négociation"]
+  status: curated
+  added: "2026-10-21"
+
+- id: crm
+  category: hard_skills
+  display: { de: "CRM", en: "CRM" }
+  aliases: ["CRM", "CRM-System", "CRM-Systeme", "CRM-Systemen", "Customer Relationship Management"]
+  status: curated
+  added: "2026-10-21"
+
+- id: b2b_sales
+  category: hard_skills
+  display: { de: "B2B-Vertrieb", en: "B2B sales" }
+  aliases: ["B2B-Vertrieb", "B2B Vertrieb", "B2B-Verkauf", "B2B Sales", "B2B SaaS Sales"]
+  status: curated
+  added: "2026-10-21"
+
+- id: seo
+  category: hard_skills
+  display: { de: "SEO", en: "SEO" }
+  aliases: ["SEO", "Suchmaschinenoptimierung", "search engine optimization", "search engine optimisation"]
+  status: curated
+  added: "2026-10-21"
+
+- id: sea
+  category: hard_skills
+  display: { de: "SEA", en: "SEA" }
+  aliases: ["SEA", "Suchmaschinenwerbung", "search engine advertising"]
+  status: curated
+  added: "2026-10-21"
+
+- id: social_media_marketing
+  category: hard_skills
+  display: { de: "Social-Media-Marketing", en: "Social media marketing" }
+  aliases: ["Social Media", "Social Media Marketing", "réseaux sociaux"]
+  status: curated
+  added: "2026-10-21"
+
+- id: content_marketing
+  category: hard_skills
+  display: { de: "Content-Marketing", en: "Content marketing" }
+  aliases: ["Content Marketing", "Content-Erstellung", "Contenterstellung", "Content Creation", "create content"]
+  status: curated
+  added: "2026-10-21"
+
+- id: email_marketing
+  category: hard_skills
+  display: { de: "E-Mail-Marketing", en: "Email marketing" }
+  aliases: ["E-Mail-Marketing", "Email Marketing", "Newsletter-Marketing", "Newsletter-Erstellung"]
+  status: curated
+  added: "2026-10-21"
+
+- id: campaign_management
+  category: hard_skills
+  display: { de: "Kampagnenmanagement", en: "Campaign management" }
+  aliases: ["campaign management", "Kampagnenmanagement", "Kampagnenplanung"]
+  status: curated
+  added: "2026-10-21"
+
+- id: performance_marketing
+  category: hard_skills
+  display: { de: "Performance-Marketing", en: "Performance marketing" }
+  aliases: ["Performance Marketing"]
+  status: curated
+  added: "2026-10-21"
+
+- id: electrical_installation
+  category: hard_skills
+  display: { de: "Elektroinstallation", en: "Electrical installation" }
+  aliases: ["Elektroinstallation", "Elektroinstallationen", "electrical installation", "electrical installations"]
+  status: curated
+  added: "2026-10-21"
+
+- id: circuit_diagrams
+  category: hard_skills
+  display: { de: "Schalt- und Stromlaufpläne", en: "Circuit diagrams" }
+  aliases: ["Schaltplan", "Schaltpläne", "Schaltplänen", "Stromlaufplan", "Stromlaufpläne", "Stromlaufplänen", "circuit diagrams", "wiring diagrams"]
+  status: curated
+  added: "2026-10-21"
+
+- id: control_cabinet_building
+  category: hard_skills
+  display: { de: "Schaltschrankbau", en: "Control cabinet building" }
+  aliases: ["Schaltschrankbau", "Schaltschränke", "Schaltschränken", "Schaltanlagenbau", "control cabinet", "control cabinets", "panel building"]
+  status: curated
+  added: "2026-10-21"
+
+- id: maintenance_repair
+  category: hard_skills
+  display: { de: "Wartung und Instandhaltung", en: "Maintenance and repair" }
+  aliases: ["Wartung und Instandhaltung", "Instandhaltung", "Instandsetzung", "Wartungsarbeiten", "maintenance and repair"]
+  status: curated
+  added: "2026-10-21"
+
+- id: plc_programming
+  category: hard_skills
+  display: { de: "SPS-Programmierung", en: "PLC programming" }
+  aliases: ["SPS", "SPS-Programmierung", "SPS-Steuerungen", "PLC", "PLC programming", "TIA Portal", "Siemens TIA Portal", "Siemens S7"]
+  status: curated
+  added: "2026-10-21"
+
+- id: photovoltaics
+  category: hard_skills
+  display: { de: "Photovoltaik", en: "Photovoltaics" }
+  aliases: ["Photovoltaik", "PV-Anlagen", "photovoltaics", "solar PV"]
+  status: curated
+  added: "2026-10-21"

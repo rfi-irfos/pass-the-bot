@@ -142,3 +142,123 @@
   aliases: ["Kali Linux", "Kali"]
   status: curated
   added: "2026-09-14"
+
+# Non-tech jobs (issue #7)
+- id: ms_office
+  category: tools
+  display: { de: "MS Office", en: "Microsoft Office" }
+  aliases: ["MS Office", "MS-Office", "Microsoft Office", "Office 365", "Microsoft 365", "M365", "Office-Paket"]
+  status: curated
+  added: "2026-10-21"
+
+- id: excel
+  category: tools
+  display: { de: "Excel", en: "Excel" }
+  aliases: ["Excel", "MS Excel", "Microsoft Excel", "Excel-Kenntnisse"]
+  status: curated
+  added: "2026-10-21"
+
+- id: word
+  category: tools
+  display: { de: "Word", en: "Word" }
+  aliases: ["Word", "MS Word", "Microsoft Word"]
+  status: curated
+  added: "2026-10-21"
+
+- id: powerpoint
+  category: tools
+  display: { de: "PowerPoint", en: "PowerPoint" }
+  aliases: ["PowerPoint", "MS PowerPoint", "Microsoft PowerPoint"]
+  status: curated
+  added: "2026-10-21"
+
+- id: outlook
+  category: tools
+  display: { de: "Outlook", en: "Outlook" }
+  aliases: ["Outlook", "MS Outlook", "Microsoft Outlook"]
+  status: curated
+  added: "2026-10-21"
+
+- id: sap
+  category: tools
+  display: { de: "SAP", en: "SAP" }
+  aliases: ["SAP", "SAP FI", "SAP CO", "SAP FI/CO", "SAP MM", "SAP SD", "SAP S/4HANA", "SAP ERP", "S/4HANA"]
+  status: curated
+  added: "2026-10-21"
+
+- id: datev
+  category: tools
+  display: { de: "DATEV", en: "DATEV" }
+  aliases: ["DATEV"]
+  status: curated
+  added: "2026-10-21"
+
+- id: bmd
+  category: tools
+  display: { de: "BMD", en: "BMD" }
+  aliases: ["BMD", "BMD NTCS"]
+  status: curated
+  added: "2026-10-21"
+
+- id: lexware
+  category: tools
+  display: { de: "Lexware", en: "Lexware" }
+  aliases: ["Lexware"]
+  status: curated
+  added: "2026-10-21"
+
+- id: salesforce
+  category: tools
+  display: { de: "Salesforce", en: "Salesforce" }
+  aliases: ["Salesforce", "SFDC"]
+  status: curated
+  added: "2026-10-21"
+
+- id: hubspot
+  category: tools
+  display: { de: "HubSpot", en: "HubSpot" }
+  aliases: ["HubSpot"]
+  status: curated
+  added: "2026-10-21"
+
+- id: google_analytics
+  category: tools
+  display: { de: "Google Analytics", en: "Google Analytics" }
+  aliases: ["Google Analytics", "GA4"]
+  status: curated
+  added: "2026-10-21"
+
+- id: google_ads
+  category: tools
+  display: { de: "Google Ads", en: "Google Ads" }
+  aliases: ["Google Ads", "Google AdWords", "AdWords"]
+  status: curated
+  added: "2026-10-21"
+
+- id: meta_ads
+  category: tools
+  display: { de: "Meta Ads", en: "Meta Ads" }
+  aliases: ["Meta Ads", "Facebook Ads", "Instagram Ads", "Meta Business Suite"]
+  status: curated
+  added: "2026-10-21"
+
+- id: canva
+  category: tools
+  display: { de: "Canva", en: "Canva" }
+  aliases: ["Canva"]
+  status: curated
+  added: "2026-10-21"
+
+- id: adobe_creative_suite
+  category: tools
+  display: { de: "Adobe Creative Suite", en: "Adobe Creative Suite" }
+  aliases: ["Adobe Creative Suite", "Adobe Creative Cloud", "Adobe CC"]
+  status: curated
+  added: "2026-10-21"
+
+- id: eplan
+  category: tools
+  display: { de: "EPLAN", en: "EPLAN" }
+  aliases: ["EPLAN", "EPLAN Electric P8"]
+  status: curated
+  added: "2026-10-21"

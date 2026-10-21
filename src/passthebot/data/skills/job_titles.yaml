@@ -64,3 +64,53 @@
   aliases: ["Project Manager", "Projektleiter", "Projektmanager"]
   status: curated
   added: "2026-09-14"
+
+# Non-tech jobs (issue #7)
+- id: accountant
+  category: job_titles
+  display: { de: "Buchhalter:in", en: "Accountant" }
+  aliases: ["Buchhalter", "Buchhalterin", "Accountant", "comptable"]
+  status: curated
+  added: "2026-10-21"
+
+- id: office_manager
+  category: job_titles
+  display: { de: "Office Manager", en: "Office Manager" }
+  aliases: ["Office Manager", "Office Managerin", "Office-Manager", "Office-Managerin"]
+  status: curated
+  added: "2026-10-21"
+
+- id: administrative_assistant
+  category: job_titles
+  display: { de: "Sachbearbeiter:in / Assistenz", en: "Administrative assistant" }
+  aliases: ["administrative assistant", "Sachbearbeiter", "Sachbearbeiterin", "Büroassistent", "Büroassistentin", "Office Assistant", "Assistenz der Geschäftsführung"]
+  status: curated
+  added: "2026-10-21"
+
+- id: nurse
+  category: job_titles
+  display: { de: "Pflegefachkraft", en: "Nurse" }
+  aliases: ["Pflegefachkraft", "Pflegefachfrau", "Pflegefachmann", "Krankenpfleger", "Krankenpflegerin", "Gesundheits- und Krankenpfleger", "Nurse", "Registered Nurse", "infirmier", "infirmière"]
+  status: curated
+  added: "2026-10-21"
+
+- id: account_executive
+  category: job_titles
+  display: { de: "Vertriebsmitarbeiter:in", en: "Account Executive" }
+  aliases: ["Account Executive", "Vertriebsmitarbeiter", "Vertriebsmitarbeiterin", "Außendienstmitarbeiter", "Außendienstmitarbeiterin", "Sales Representative", "Sales Rep"]
+  status: curated
+  added: "2026-10-21"
+
+- id: marketing_manager
+  category: job_titles
+  display: { de: "Marketing Manager", en: "Marketing Manager" }
+  aliases: ["Marketing Manager", "Marketing Managerin", "Marketingmanager", "Marketingmanagerin"]
+  status: curated
+  added: "2026-10-21"
+
+- id: electrician
+  category: job_titles
+  display: { de: "Elektriker:in", en: "Electrician" }
+  aliases: ["Elektriker", "Elektrikerin", "Elektroniker", "Elektronikerin", "Elektrotechniker", "Elektrotechnikerin", "Elektroinstallateur", "Electrician"]
+  status: curated
+  added: "2026-10-21"

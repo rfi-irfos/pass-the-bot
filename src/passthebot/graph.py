@@ -12,12 +12,13 @@ DEFAULT_DATA_DIR = Path(__file__).parent / "data" / "skills"
 
 Category = Literal[
     "languages", "frameworks", "tools", "certifications",
-    "job_titles", "hard_skills", "soft_skills",
+    "job_titles", "hard_skills", "soft_skills", "spoken_languages",
 ]
 Status = Literal["curated", "ai-suggested-pending", "ai-suggested-approved"]
 
 DISCRETE_CATEGORIES: set[str] = {
     "languages", "frameworks", "tools", "certifications", "job_titles", "hard_skills",
+    "spoken_languages",
 }
 ACTIVE_STATUSES: set[str] = {"curated", "ai-suggested-approved"}
 

@@ -76,7 +76,8 @@ Skills live in `src/passthebot/data/skills/*.yaml`. The schema is described
 in section 4 ("Data model") of
 `docs/superpowers/specs/2026-09-14-matching-engine-design.md`.
 
-- Discrete skills (languages, tools, certifications, ...) are matched by
+- Discrete skills (programming languages, tools, certifications, spoken
+  languages, ...) are matched by
   their `aliases`.
 - Soft skills are matched by meaning, using `anchor_phrases` and an
   `embedding_threshold`.
