@@ -4,7 +4,7 @@ const GAUGE_CIRCUMFERENCE = 2 * Math.PI * 60;
 const TRANSLATIONS = {
   de: {
     pageTitle: "Pass The Bot! Sieh deinen Lebenslauf wie ein Bewerbermanagementsystem (ATS)",
-    tagline: "Sieh deinen Lebenslauf so, wie ihn ein Bewerbermanagementsystem (ATS) sieht.",
+    tagline: "Sieh deinen Lebenslauf so, wie ihn ein Bewerber\u00ADmanagement\u00ADsystem (ATS) sieht.",
     desc1: 'Anzeige oder Link einfügen, Lebenslauf hochladen und sofort eine transparente Auswertung bekommen: welche geforderten Skills erkannt wurden, welche knapp danebenlagen (Tippfehler wie "Dockr" statt "Docker"), und welche wirklich fehlen.',
     badgeFree: "Kostenlos",
     badgeNoAccount: "Kein Account",
