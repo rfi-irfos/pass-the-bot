@@ -49,6 +49,18 @@ MIN_DESCRIPTION_WORDS = 30
 MIN_APP_STATE_CHARS = 200
 MIN_PAGE_TEXT_WORDS = 150
 
+# Chinese, Japanese and Thai have no spaces between words, so a whole
+# paragraph is one whitespace token. Count those characters instead,
+# about two per word.
+_NO_SPACE_SCRIPT_RE = re.compile(r"[\u0e00-\u0e7f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]")
+CHARS_PER_WORD_NO_SPACE_SCRIPT = 2
+
+
+def _word_count(text: str) -> int:
+    no_space_chars = len(_NO_SPACE_SCRIPT_RE.findall(text))
+    other_words = len(_NO_SPACE_SCRIPT_RE.sub(" ", text).split())
+    return other_words + no_space_chars // CHARS_PER_WORD_NO_SPACE_SCRIPT
+
 USER_AGENT = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/130.0 Safari/537.36"
@@ -259,7 +271,7 @@ def _from_jsonld(scripts: list[str]) -> tuple[str | None, str | None, str] | Non
             if not _is_job_posting(obj) or not isinstance(obj.get("description"), str):
                 continue
             body = _description_to_text(obj["description"])
-            if len(body.split()) < MIN_DESCRIPTION_WORDS:
+            if _word_count(body) < MIN_DESCRIPTION_WORDS:
                 continue
             title = obj.get("title") if isinstance(obj.get("title"), str) else None
             text = f"{title.strip()}\n{body}" if title and title.strip() else body
@@ -295,7 +307,7 @@ def _from_app_state(scripts: list[str]) -> str | None:
 def _from_page_text(page_html: str) -> str | None:
     match = re.search(r"<(main|article)\b.*?</\1>", page_html, re.IGNORECASE | re.DOTALL)
     text = html_to_text(match.group(0) if match else page_html, skip_page_chrome=True)
-    return text if len(text.split()) >= MIN_PAGE_TEXT_WORDS else None
+    return text if _word_count(text) >= MIN_PAGE_TEXT_WORDS else None
 
 
 # Job boards often keep serving an expired posting's URL with 200 and a

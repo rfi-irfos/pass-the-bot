@@ -124,6 +124,22 @@ def test_falls_back_to_visible_page_text_without_navigation():
     assert "Login" not in text
 
 
+def test_page_text_counts_words_in_scripts_without_spaces():
+    """A real Chinese posting (campus.niuqizp.com) was rejected as unreadable:
+    without spaces, a whole paragraph counted as one word."""
+    duties = "负责后端系统的研发工作，不断优化系统架构，保障服务稳定；" * 12
+    page = f"<html><main><h1>后端开发</h1><p>岗位职责：</p><p>{duties}</p></main></html>"
+    _, _, method, text = extract_posting(page)
+    assert method == "page_text"
+    assert text.startswith("后端开发")
+
+
+def test_page_text_still_rejects_short_chinese_pages():
+    page = "<html><main><h1>后端开发</h1><p>职位已下线，请查看其他职位。</p></main></html>"
+    with pytest.raises(PostingFetchError):
+        extract_posting(page)
+
+
 def test_page_text_drops_link_lists_of_other_jobs():
     """Greenhouse (Gong): below a sales posting sat a table of links to
     every other open job, which turned "Senior Backend Engineer (Python)"
