@@ -1,3 +1,5 @@
+import pytest
+
 from passthebot.graph import SkillEntry
 from passthebot.normalizer import extract_discrete_keywords, extract_open_requirements
 
@@ -425,3 +427,32 @@ def test_detect_language_tells_german_from_english():
 
     assert detect_language("Du bringst eine kaufmännische Ausbildung und Erfahrung mit.") == "de"
     assert detect_language("You bring a degree and experience with the tools.") == "en"
+
+
+@pytest.mark.parametrize("heading", ["Must-haves", "Must haves", "Must have", "🎯 Must-haves:"])
+def test_plural_must_have_heading_is_not_an_item(heading):
+    text = f"Requirements\n{heading}\nHands-on workflow experience\nPython\n"
+    phrases = [r.phrase for r in extract_open_requirements(text)]
+    assert phrases == ["Hands-on workflow experience", "Python"]
+
+
+@pytest.mark.parametrize("heading", ["Nice-to-haves", "Nice to haves", "Nice to have", "Von Vorteil", "Desirable"])
+def test_optional_heading_marks_its_items_optional(heading):
+    text = f"Requirements\nPython\n\n{heading}\nDocker\n"
+    result = extract_open_requirements(text)
+    assert [(r.phrase, r.optional) for r in result] == [("Python", False), ("Docker", True)]
+
+
+def test_requirement_sentence_is_not_mistaken_for_a_heading():
+    text = "Requirements\nMust have Python experience\nNice to have some Docker\n"
+    phrases = [r.phrase for r in extract_open_requirements(text)]
+    assert phrases == ["Must have Python experience", "Nice to have some Docker"]
+
+
+def test_extract_discrete_keywords_records_every_alias_found():
+    entry = SkillEntry(
+        id="german", category="spoken_languages", display={"en": "German"},
+        status="curated", added="2026-11-06", aliases=["Deutsch", "German"],
+    )
+    result = extract_discrete_keywords("Team spricht Deutsch. Fluent German.", [entry])
+    assert sorted(result[0].mentions) == ["Deutsch", "German"]

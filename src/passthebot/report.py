@@ -101,13 +101,20 @@ def _build_radar(
     }
 
 
+def _counted(results: list[MatchResult]) -> list[MatchResult]:
+    """Skills the posting merely mentions outside its requirements sections
+    stay in the report for transparency, but are no yardstick for the resume."""
+    return [r for r in results if r.importance != "mentioned"]
+
+
 def build_report(
     results: list[MatchResult],
     resume_text: str,
     graph_version: str,
-    engine_version: str = "0.3.1",
+    engine_version: str = "0.4.0",
     model_version: str = "unknown",
 ) -> dict:
+    counted = _counted(results)
     required_results = [r for r in results if r.required]
     required_total = len(required_results)
     required_matched = sum(1 for r in required_results if r.status == "MATCH")
@@ -134,9 +141,9 @@ def build_report(
         "metrics": {
             "readability": asdict(readability),
             "sections": [asdict(s) for s in sections],
-            "match_breakdown": _match_breakdown(results),
+            "match_breakdown": _match_breakdown(counted),
             "radar": _build_radar(
-                results, required_matched, required_total, readability.score, sections
+                counted, required_matched, required_total, readability.score, sections
             ),
             "posting_understood": len(results) > 0,
         },

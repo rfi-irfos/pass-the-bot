@@ -245,11 +245,17 @@ def _is_job_posting(obj: dict) -> bool:
     return any(isinstance(k, str) and k.lower() == "jobposting" for k in kinds)
 
 
+_LEFTOVER_TAG = re.compile(r"</?(?:p|ul|ol|li|div|br|strong|b|h[1-6]|span)\b[^<>]*>", re.IGNORECASE)
+
+
 def _description_to_text(description: str) -> str:
-    # Some boards double-escape the HTML inside JSON-LD ("&lt;p&gt;...").
-    if "<" not in description and "&lt;" in description:
-        description = html_lib.unescape(description)
-    return html_to_text(description)
+    # Some boards double-escape the HTML inside JSON-LD ("&lt;p&gt;..."), some
+    # only part of it ("<p>Intro</p>&lt;ul&gt;..."), which leaves tags standing
+    # as text after the first pass.
+    text = html_to_text(description)
+    if _LEFTOVER_TAG.search(text):
+        text = html_to_text(text)
+    return text
 
 
 def _org_name(org) -> str | None:

@@ -9,6 +9,7 @@ from typing import Literal
 from passthebot.fuzzy import fuzzy_best_match
 from passthebot.graph import DISCRETE_CATEGORIES, SkillEntry
 from passthebot.normalizer import ExtractedKeyword, OpenRequirement, split_sentences
+from passthebot.requirement import KeywordImportance
 from passthebot.validate_graph import normalize_string
 
 Status = Literal["MATCH", "NEAR_MISS", "MISSING"]
@@ -24,12 +25,22 @@ class MatchResult:
     suggested_alias: str | None = None
     confidence: float | None = None
     origin: Literal["curated", "open"] = "curated"
+    importance: Literal["required", "task", "optional", "mentioned"] = "required"
+    posting_evidence: str | None = None
+
+
+def _final_level(detected: str, required: bool) -> str:
+    """required_ids can overrule detection in both directions."""
+    if required:
+        return "task" if detected == "task" else "required"
+    return "optional" if detected in ("required", "task") else detected
 
 
 def match(
     posting_keywords: list[ExtractedKeyword],
     resume_keywords: list[ExtractedKeyword],
     required_ids: set[str],
+    importance: dict[str, KeywordImportance] | None = None,
 ) -> list[MatchResult]:
     """For every keyword found in the posting, decide whether the resume
     satisfies it by canonical id (never by raw text). No fuzzy fallback across
@@ -39,28 +50,27 @@ def match(
     This function only ever produces MATCH/MISSING. NEAR_MISS is applied
     afterward as a separate enrichment pass by `enrich_near_misses` below,
     keeping this function's canonical-id comparison pure and deterministic.
+
+    required_ids has the final say on what is required, so a caller's explicit
+    override stays authoritative over the detected `importance`.
     """
+    importance = importance or {}
     resume_ids = {k.id for k in resume_keywords}
     results: list[MatchResult] = []
     for posting_kw in posting_keywords:
-        if posting_kw.id in resume_ids:
-            results.append(
-                MatchResult(
-                    id=posting_kw.id,
-                    category=posting_kw.category,
-                    status="MATCH",
-                    required=posting_kw.id in required_ids,
-                )
+        required = posting_kw.id in required_ids
+        detected = importance.get(posting_kw.id)
+        level = detected.level if detected else "optional"
+        results.append(
+            MatchResult(
+                id=posting_kw.id,
+                category=posting_kw.category,
+                status="MATCH" if posting_kw.id in resume_ids else "MISSING",
+                required=required,
+                importance=_final_level(level, required),
+                posting_evidence=detected.evidence if detected else None,
             )
-        else:
-            results.append(
-                MatchResult(
-                    id=posting_kw.id,
-                    category=posting_kw.category,
-                    status="MISSING",
-                    required=posting_kw.id in required_ids,
-                )
-            )
+        )
     return results
 
 
@@ -179,14 +189,12 @@ def match_open_requirements(
     curated, exact-alias matches without re-deriving it from confidence
     or category.
 
-    Every returned result has required=True: an open-vocabulary phrase is
-    definitionally extracted from a requirements-style heading
-    (normalizer.extract_open_requirements only looks under
-    REQUIREMENT_HEADING_KEYWORDS), so it represents an actual stated
-    requirement, not an optional extra -- unlike curated matches, there is
-    no separate signal-phrase pass (passthebot.requirement) distinguishing
-    required vs. nice-to-have for open phrases, so all of them count
-    toward required coverage.
+    A phrase counts toward required coverage unless it was listed under an
+    optional heading such as "Nice-to-haves" (OpenRequirement.optional): an
+    open-vocabulary phrase is definitionally extracted from a requirements-
+    style heading, so that heading alone decides it -- unlike curated
+    matches, there is no separate signal-phrase pass (passthebot.requirement)
+    for open phrases.
 
     MISSING results carry confidence=None, not the raw sub-threshold
     score, matching the convention used elsewhere in this module (match()
@@ -239,10 +247,11 @@ def match_open_requirements(
                 id=req.phrase,
                 category="open_requirements",
                 status=status,
-                required=True,
+                required=not req.optional,
                 found_text=best_sentence if status != "MISSING" else None,
                 confidence=score if status != "MISSING" else None,
                 origin="open",
+                importance="optional" if req.optional else "required",
             )
         )
     return results

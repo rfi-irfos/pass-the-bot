@@ -22,7 +22,7 @@ const TRANSLATIONS = {
       { title: "Anzeige gelesen", subtitle: "Text der Stellenanzeige übernommen" },
       { title: "Skills der Anzeige erkannt", subtitle: "Fachbegriffe per Skill-Graph, Soft Skills per Embedding" },
       { title: "Skills im Lebenslauf erkannt", subtitle: "Fachbegriffe per Skill-Graph, Soft Skills per Embedding" },
-      { title: "Pflichtanforderungen erkannt", subtitle: 'Signalwörter wie "erforderlich" oder "must have" gesucht' },
+      { title: "Pflichtanforderungen erkannt", subtitle: 'Abschnitte und Signalwörter wie "erforderlich" oder "must have" geprüft' },
       { title: "Wunschkenntnisse erkannt", subtitle: 'Signalwörter wie "von Vorteil" oder "nice to have" gesucht' },
       { title: "Direkter Abgleich", subtitle: "Skill-IDs aus Anzeige und Lebenslauf verglichen" },
       { title: "Tippfehler geprüft", subtitle: 'Ähnliche Schreibweisen im Lebenslauf gesucht, z. B. "Dockr"' },
@@ -62,6 +62,21 @@ const TRANSLATIONS = {
     tipFixOpen: (name) =>
       `Dein Lebenslauf deckt "${name}" vielleicht schon ab, aber nicht eindeutig genug: die Anzeige verlangt das explizit und es wurde nicht sicher erkannt.`,
     tipRequired: (name) => `Ergänze Belege für ${name}: das ist laut Anzeige ein Pflicht-Skill.`,
+    tipTask: (name) => `Zeige Erfahrung mit ${name}, falls vorhanden: das gehört laut Anzeige zu den Aufgaben der Stelle.`,
+    tagOptional: "Wunsch",
+    tagTask: "Aufgabe",
+    evidenceLabel: "In der Anzeige:",
+    mentionedHeading: "Nur erwähnt",
+    mentionedHint: "Diese Begriffe stehen außerhalb der Anforderungen, etwa in der Firmenvorstellung. Dein Score bleibt davon unberührt.",
+    tallyRequired: "Pflicht",
+    tallyOptional: "Wunsch",
+    tallyCount: (matched, total) => `${matched} von ${total}`,
+    printTitle: "Lebenslauf-Prüfung",
+    printFooter: (version) => `Erstellt mit Pass The Bot, Engine ${version}`,
+    printGroupTask: "Aufgaben der Stelle",
+    printStatus: { MATCH: "Gefunden", NEAR_MISS: "Knapp", MISSING: "Fehlt" },
+    inResume: "Steht im Lebenslauf",
+    notInResume: "Steht nicht im Lebenslauf",
     tipOptional: (name) => `Erwähne ${name}, falls vorhanden: laut Anzeige von Vorteil.`,
     tipMissingSection: (name) =>
       `Ergänze einen "${name}"-Abschnitt: dein Lebenslauf enthält aktuell keine erkennbare "${name}"-Überschrift.`,
@@ -105,7 +120,7 @@ const TRANSLATIONS = {
     radarHeading: "ATS-Radar",
     radarRequiredSkills: "Pflicht-Skills",
     radarSoftSkills: "Soft Skills",
-    radarWordingAccuracy: "Formulierungsgenauigkeit",
+    radarWordingAccuracy: "Formulierungs\u00ADgenauigkeit",
     radarReadability: "Lesbarkeit",
     radarSectionCompleteness: "Abschnitts-Vollständigkeit",
     radarEmpty: "Das Radar braucht erkannte Anforderungen aus der Anzeige. Ohne sie gibt es nichts zu vergleichen.",
@@ -130,7 +145,7 @@ const TRANSLATIONS = {
       { title: "Job posting read", subtitle: "Posting text loaded" },
       { title: "Skills detected in the posting", subtitle: "Hard skills via the skill graph, soft skills via embeddings" },
       { title: "Skills detected in your resume", subtitle: "Hard skills via the skill graph, soft skills via embeddings" },
-      { title: "Required skills identified", subtitle: 'Signal phrases like "required" or "must have"' },
+      { title: "Required skills identified", subtitle: 'Sections and signal phrases like "required" or "must have"' },
       { title: "Nice-to-haves identified", subtitle: 'Signal phrases like "nice to have" or "a plus"' },
       { title: "Direct matching", subtitle: "Skill IDs from posting and resume compared" },
       { title: "Typos checked", subtitle: 'Similar spellings searched for, e.g. "Dockr"' },
@@ -170,6 +185,21 @@ const TRANSLATIONS = {
     tipFixOpen: (name) =>
       `Your resume may already cover "${name}", but not clearly enough: the posting is looking for this and it wasn't confidently matched.`,
     tipRequired: (name) => `Add evidence of ${name}: this is listed as a required skill in the posting.`,
+    tipTask: (name) => `Show experience with ${name} if you have it: the posting names it as part of the work.`,
+    tagOptional: "Nice to have",
+    tagTask: "Part of the work",
+    evidenceLabel: "In the posting:",
+    mentionedHeading: "Only mentioned",
+    mentionedHint: "These terms appear outside the requirements, for example in the company intro. Your score stays the same with or without them.",
+    tallyRequired: "Required",
+    tallyOptional: "Nice to have",
+    tallyCount: (matched, total) => `${matched} of ${total}`,
+    printTitle: "Resume check",
+    printFooter: (version) => `Created with Pass The Bot, engine ${version}`,
+    printGroupTask: "Part of the work",
+    printStatus: { MATCH: "Found", NEAR_MISS: "Close", MISSING: "Missing" },
+    inResume: "In your resume",
+    notInResume: "Not in your resume",
     tipOptional: (name) => `Consider mentioning ${name} if you have it: it's listed as a nice-to-have.`,
     tipMissingSection: (name) =>
       `Add a "${name}" section: your resume doesn't have a recognizable "${name}" heading right now.`,
@@ -258,6 +288,9 @@ const openMatchRow = document.getElementById("open-match-row");
 const openMatchCount = document.getElementById("open-match-count");
 const openMatchBar = document.getElementById("open-match-bar");
 const totalKeywordCount = document.getElementById("total-keyword-count");
+const skillTally = document.getElementById("skill-tally");
+const mentionedCard = document.getElementById("mentioned-card");
+const mentionedList = document.getElementById("mentioned-list");
 const sectionAnalysisList = document.getElementById("section-analysis-list");
 
 const radarPolygon = document.getElementById("radar-polygon");
@@ -456,49 +489,162 @@ function growBar(el, pct) {
   requestAnimationFrame(() => requestAnimationFrame(() => (el.style.width = `${pct}%`)));
 }
 
+// A report from a backend older than this frontend has no importance field
+// (web/frontend deploys on merge, the Fly backend separately).
+function levelOf(item) {
+  return item.importance || (item.required ? "required" : "optional");
+}
+
+const LEVEL_ORDER = { required: 0, task: 1, optional: 2, mentioned: 3 };
+
+function byLevel(a, b) {
+  return LEVEL_ORDER[levelOf(a)] - LEVEL_ORDER[levelOf(b)];
+}
+
+const LEVEL_TAGS = { optional: "tagOptional", task: "tagTask" };
+
+function skillRowContent(item, prefix) {
+  const head = document.createElement("span");
+  head.className = "min-w-0";
+  if (prefix) head.appendChild(prefix);
+
+  const label = document.createElement("span");
+  label.className = "font-medium";
+  label.textContent = item.display_name;
+  head.appendChild(label);
+
+  if (item.origin === "open") {
+    const marker = document.createElement("span");
+    marker.className = "text-gray-500 ml-1";
+    marker.title = t("openMatchTooltip");
+    marker.textContent = "~";
+    head.appendChild(marker);
+  }
+
+  const tagKey = LEVEL_TAGS[levelOf(item)];
+  if (tagKey) {
+    const tag = document.createElement("span");
+    tag.className = "ml-1.5 inline-block text-xs text-gray-700 bg-gray-100 rounded px-1.5 whitespace-nowrap";
+    tag.textContent = t(tagKey);
+    head.appendChild(tag);
+  }
+
+  if (item.status === "NEAR_MISS" && item.suggested_alias) {
+    head.appendChild(document.createElement("br"));
+    const foundSpan = document.createElement("span");
+    foundSpan.className = "text-gray-600";
+    foundSpan.textContent = t("foundLabel")(item.found_text);
+    head.appendChild(foundSpan);
+  }
+  return head;
+}
+
+// The posting's own sentence, one click away, so a suggestion can always be
+// checked against what the posting really says (issue #13). Third-party text:
+// textContent only.
+function skillRow(item, prefix) {
+  const li = document.createElement("li");
+  li.className = "skill-row px-3 py-2";
+  const head = skillRowContent(item, prefix);
+  if (!item.posting_evidence) {
+    li.appendChild(head);
+    return li;
+  }
+  const details = document.createElement("details");
+  const summary = document.createElement("summary");
+  summary.appendChild(head);
+  details.appendChild(summary);
+
+  const quote = document.createElement("p");
+  quote.className = "quote mt-1.5 text-xs text-gray-700";
+  const quoteLabel = document.createElement("span");
+  quoteLabel.className = "font-semibold";
+  quoteLabel.textContent = `${t("evidenceLabel")} `;
+  quote.appendChild(quoteLabel);
+  quote.appendChild(document.createTextNode(item.posting_evidence));
+  details.appendChild(quote);
+
+  li.appendChild(details);
+  return li;
+}
+
 function renderList(listEl, items, emptyText) {
   listEl.innerHTML = "";
   if (items.length === 0) {
     const li = document.createElement("li");
     li.textContent = emptyText;
-    li.className = "text-gray-400 italic";
+    li.className = "text-gray-500 italic";
     listEl.appendChild(li);
     return;
   }
   for (const item of items) {
-    const li = document.createElement("li");
-    li.className = "bg-white/70 rounded px-3 py-2";
-
-    const label = document.createElement("span");
-    label.className = "font-medium";
-    label.textContent = item.display_name;
-    li.appendChild(label);
-
-    if (item.origin === "open") {
-      const marker = document.createElement("span");
-      marker.className = "text-gray-400 ml-1";
-      marker.title = t("openMatchTooltip");
-      marker.textContent = "~";
-      li.appendChild(marker);
-    }
-
-    if (item.status === "NEAR_MISS" && item.suggested_alias) {
-      li.appendChild(document.createElement("br"));
-      const foundSpan = document.createElement("span");
-      foundSpan.className = "text-gray-500";
-      foundSpan.textContent = t("foundLabel")(item.found_text);
-      li.appendChild(foundSpan);
-    }
-
-    listEl.appendChild(li);
+    listEl.appendChild(skillRow(item));
   }
+}
+
+function renderMentioned(items) {
+  mentionedCard.classList.toggle("hidden", items.length === 0);
+  mentionedList.innerHTML = "";
+  for (const item of items) {
+    const has = item.status === "MATCH";
+    const mark = document.createElement("span");
+    mark.className = `mr-1.5 font-bold ${has ? "text-green-700" : "text-gray-500"}`;
+    mark.textContent = has ? "✓" : "○";
+    mark.title = t(has ? "inResume" : "notInResume");
+    mark.setAttribute("aria-label", mark.title);
+    mentionedList.appendChild(skillRow(item, mark));
+  }
+  staggerChildren(mentionedList);
+}
+
+const TILE_ORDER = { MATCH: 0, NEAR_MISS: 1, MISSING: 2 };
+
+function tallyRow(labelKey, items) {
+  const row = document.createElement("div");
+  row.className = "flex items-center gap-3 text-sm";
+
+  const label = document.createElement("span");
+  label.className = "w-24 shrink-0 font-medium text-gray-700";
+  label.textContent = t(labelKey);
+  row.appendChild(label);
+
+  const strip = document.createElement("div");
+  strip.className = "skill-strip";
+  strip.setAttribute("aria-hidden", "true");
+  [...items]
+    .sort((a, b) => TILE_ORDER[a.status] - TILE_ORDER[b.status])
+    .forEach((item) => {
+      const tile = document.createElement("span");
+      tile.className = `tile tile-${item.status}`;
+      tile.title = item.display_name;
+      strip.appendChild(tile);
+    });
+  row.appendChild(strip);
+
+  const count = document.createElement("span");
+  count.className = "shrink-0 ml-auto font-semibold text-gray-900 whitespace-nowrap";
+  count.textContent = t("tallyCount")(items.filter((i) => i.status === "MATCH").length, items.length);
+  row.appendChild(count);
+
+  skillTally.appendChild(row);
+  staggerChildren(strip);
+}
+
+function renderTally(counted) {
+  skillTally.innerHTML = "";
+  const wanted = counted.filter((r) => r.required);
+  const extras = counted.filter((r) => !r.required);
+  if (wanted.length) tallyRow("tallyRequired", wanted);
+  if (extras.length) tallyRow("tallyOptional", extras);
+  skillTally.classList.toggle("hidden", counted.length === 0);
 }
 
 function buildTips(report) {
   const tips = [];
-  const nearMiss = report.results.filter((r) => r.status === "NEAR_MISS");
-  const missingRequired = report.results.filter((r) => r.status === "MISSING" && r.required);
-  const missingOptional = report.results.filter((r) => r.status === "MISSING" && !r.required);
+  const counted = report.results.filter((r) => levelOf(r) !== "mentioned");
+  const nearMiss = counted.filter((r) => r.status === "NEAR_MISS");
+  const missingRequired = counted.filter((r) => r.status === "MISSING" && r.required).sort(byLevel);
+  const missingOptional = counted.filter((r) => r.status === "MISSING" && !r.required);
 
   for (const item of nearMiss) {
     if (item.origin === "open") {
@@ -507,11 +653,14 @@ function buildTips(report) {
       tips.push(t("tipFix")(item.found_text, item.suggested_alias, item.display_name));
     }
   }
+  // A long open requirement reads "Topic: You have a track record of ...".
+  // The tip only needs the topic.
+  const tipName = (item) => (item.origin === "open" ? item.display_name.split(":")[0] : item.display_name);
   for (const item of missingRequired) {
-    tips.push(t("tipRequired")(item.display_name));
+    tips.push(t(levelOf(item) === "task" ? "tipTask" : "tipRequired")(tipName(item)));
   }
   for (const item of missingOptional) {
-    tips.push(t("tipOptional")(item.display_name));
+    tips.push(t("tipOptional")(tipName(item)));
   }
   if (report.metrics && report.metrics.sections) {
     for (const section of report.metrics.sections) {
@@ -526,6 +675,118 @@ function buildTips(report) {
     }
   }
   return tips;
+}
+
+function printEl(tag, className, text) {
+  const el = document.createElement(tag);
+  if (className) el.className = className;
+  if (text !== undefined) el.textContent = text;
+  return el;
+}
+
+function printRow(item) {
+  const row = printEl("div", "print-row");
+  row.appendChild(printEl("div", `print-status print-${item.status}`, t("printStatus")[item.status]));
+  const body = printEl("div");
+  body.appendChild(printEl("div", "print-name", item.display_name));
+  if (item.status === "NEAR_MISS" && item.found_text) {
+    body.appendChild(printEl("div", "print-note", t("foundLabel")(item.found_text)));
+  }
+  if (item.posting_evidence) {
+    body.appendChild(printEl("div", "print-note", `${t("evidenceLabel")} ${item.posting_evidence}`));
+  }
+  row.appendChild(body);
+  return row;
+}
+
+// What needs work comes first in each group.
+const PRINT_STATUS_ORDER = { MISSING: 0, NEAR_MISS: 1, MATCH: 2 };
+const PRINT_KEEP_GROUP_MAX = 10;
+
+function printGroup(heading, items, hint) {
+  // A short group stays whole; only one that may outgrow a page breaks at all.
+  const group = printEl("section", items.length <= PRINT_KEEP_GROUP_MAX ? "print-keep" : "");
+  const sorted = [...items].sort((a, b) => PRINT_STATUS_ORDER[a.status] - PRINT_STATUS_ORDER[b.status]);
+  // A heading never stays alone at the bottom of a page.
+  const start = printEl("div", "print-keep");
+  start.appendChild(printEl("h2", "", heading));
+  if (hint) start.appendChild(printEl("p", "print-note", hint));
+  start.appendChild(printRow(sorted[0]));
+  group.appendChild(start);
+  sorted.slice(1).forEach((item) => group.appendChild(printRow(item)));
+  return group;
+}
+
+function printPairs(heading, pairs) {
+  const box = printEl("div");
+  box.appendChild(printEl("h2", "", heading));
+  for (const [label, value] of pairs) {
+    const pair = printEl("div", "print-pair");
+    pair.appendChild(printEl("span", "", label));
+    pair.appendChild(printEl("span", "print-name", value));
+    box.appendChild(pair);
+  }
+  return box;
+}
+
+// The PDF is its own sheet, built from the report rather than photographed
+// from the widget: every quote readable, nothing hidden behind a click.
+function buildPrintSheet(report) {
+  const sheet = printEl("div", "print-sheet");
+  const lang = document.documentElement.lang;
+  sheet.appendChild(printEl("h1", "", `Pass The Bot! ${t("printTitle")}`));
+  sheet.appendChild(printEl("p", "print-sub", new Date().toLocaleDateString(lang)));
+  const source = report.posting_source;
+  if (source) {
+    sheet.appendChild(printEl("p", "print-sub", [source.title, source.company, source.host].filter(Boolean).join(", ")));
+  }
+
+  const results = report.results || [];
+  const atLevel = (level) => results.filter((r) => levelOf(r) === level);
+  const pct = report.score.coverage_pct;
+  const score = printEl("div", "print-score");
+  if (pct === null || pct === undefined) {
+    score.appendChild(printEl("div", "", t("postingNotUnderstood")));
+  } else {
+    score.appendChild(printEl("div", "print-pct", `${Math.round(pct)}%`));
+    score.appendChild(printEl("div", "", t("scoreSummary")(pct, report.score.required_matched, report.score.required_total)));
+  }
+  sheet.appendChild(score);
+
+  const tips = buildTips(report);
+  if (tips.length) {
+    const box = printEl("section", "print-keep");
+    box.appendChild(printEl("h2", "", t("tipsHeading")));
+    const list = printEl("ul", "print-tips");
+    tips.forEach((tip) => list.appendChild(printEl("li", "", `• ${tip}`)));
+    box.appendChild(list);
+    sheet.appendChild(box);
+  }
+
+  for (const [level, label] of [["required", t("tallyRequired")], ["task", t("printGroupTask")], ["optional", t("tallyOptional")]]) {
+    const items = atLevel(level);
+    if (items.length) sheet.appendChild(printGroup(label, items));
+  }
+  const mentioned = atLevel("mentioned");
+  if (mentioned.length) sheet.appendChild(printGroup(t("mentionedHeading"), mentioned, t("mentionedHint")));
+
+  const metrics = report.metrics || {};
+  const radarPairs = RADAR_AXES
+    .filter((axis) => metrics.radar && Number.isFinite(metrics.radar[axis.key]))
+    .map((axis) => [t(axis.labelKey), `${Math.round(metrics.radar[axis.key])}%`]);
+  const sectionPairs = (metrics.sections || []).map((section) => [
+    t("sectionNames")[section.id] || section.id,
+    section.found ? `${section.word_count} ${t("sectionWordsUnit")}` : t("sectionMissing"),
+  ]);
+  if (radarPairs.length || sectionPairs.length) {
+    const columns = printEl("div", "print-columns print-keep");
+    if (radarPairs.length) columns.appendChild(printPairs(t("radarHeading"), radarPairs));
+    if (sectionPairs.length) columns.appendChild(printPairs(t("sectionAnalysisHeading"), sectionPairs));
+    sheet.appendChild(columns);
+  }
+
+  sheet.appendChild(printEl("p", "print-footer", t("printFooter")(report.engine_version)));
+  return sheet;
 }
 
 function easeOutBack(x) {
@@ -736,7 +997,9 @@ function clearResults() {
   [exactMatchCount, semanticMatchCount, openMatchCount, totalKeywordCount].forEach((el) => (el.textContent = ""));
   [exactMatchBar, semanticMatchBar, openMatchBar].forEach((el) => (el.style.width = "0%"));
   openMatchRow.classList.add("hidden");
-  [radarRingsEl, radarSpokesEl, radarDotsEl, radarLabelsEl].forEach((el) => (el.innerHTML = ""));
+  [radarRingsEl, radarSpokesEl, radarDotsEl, radarLabelsEl, skillTally, mentionedList].forEach((el) => (el.innerHTML = ""));
+  skillTally.classList.add("hidden");
+  mentionedCard.classList.add("hidden");
   radarPolygon.setAttribute("points", "");
   document.getElementById("radar-empty").classList.add("hidden");
   document.getElementById("radar-container").classList.remove("hidden");
@@ -782,9 +1045,12 @@ function renderResults(report, { scroll = true } = {}) {
     scoreSummary.textContent = t("scoreSummary")(pct, report.score.required_matched, report.score.required_total);
   }
 
-  const matched = report.results.filter((r) => r.status === "MATCH");
-  const nearMiss = report.results.filter((r) => r.status === "NEAR_MISS");
-  const missing = report.results.filter((r) => r.status === "MISSING");
+  const counted = report.results.filter((r) => levelOf(r) !== "mentioned").sort(byLevel);
+  const matched = counted.filter((r) => r.status === "MATCH");
+  const nearMiss = counted.filter((r) => r.status === "NEAR_MISS");
+  const missing = counted.filter((r) => r.status === "MISSING");
+  renderTally(counted);
+  renderMentioned(report.results.filter((r) => levelOf(r) === "mentioned"));
 
   countUp(countMatched, matched.length);
   countUp(countNearMiss, nearMiss.length);
@@ -798,15 +1064,19 @@ function renderResults(report, { scroll = true } = {}) {
   if (report.metrics) {
     const breakdown = report.metrics.match_breakdown;
     const exactPct = breakdown.exact_total ? Math.round((breakdown.exact_matched / breakdown.exact_total) * 100) : 0;
-    const semanticPct = breakdown.semantic_total ? Math.round((breakdown.semantic_matched / breakdown.semantic_total) * 100) : 0;
+    // match_breakdown's semantic numbers include the open phrases, which have
+    // a row of their own here.
+    const openResults = report.results.filter((r) => r.origin === "open");
+    const openMatched = openResults.filter((r) => r.status === "MATCH").length;
+    const softMatched = breakdown.semantic_matched - openMatched;
+    const softTotal = breakdown.semantic_total - openResults.length;
+    const semanticPct = softTotal ? Math.round((softMatched / softTotal) * 100) : 0;
     exactMatchCount.textContent = `${breakdown.exact_matched} / ${breakdown.exact_total}`;
     growBar(exactMatchBar, exactPct);
-    semanticMatchCount.textContent = `${breakdown.semantic_matched} / ${breakdown.semantic_total}`;
+    semanticMatchCount.textContent = `${softMatched} / ${softTotal}`;
     growBar(semanticMatchBar, semanticPct);
 
-    const openResults = report.results.filter((r) => r.origin === "open");
     if (openResults.length > 0) {
-      const openMatched = openResults.filter((r) => r.status === "MATCH").length;
       const openPct = Math.round((openMatched / openResults.length) * 100);
       openMatchRow.classList.remove("hidden");
       openMatchCount.textContent = `${openMatched} / ${openResults.length}`;
@@ -815,9 +1085,8 @@ function renderResults(report, { scroll = true } = {}) {
       openMatchRow.classList.add("hidden");
     }
 
-    const openMatchedForTotal = openResults.filter((r) => r.status === "MATCH").length;
-    const totalMatched = breakdown.exact_matched + breakdown.semantic_matched + openMatchedForTotal;
-    const totalCount = breakdown.exact_total + breakdown.semantic_total + openResults.length;
+    const totalMatched = breakdown.exact_matched + breakdown.semantic_matched;
+    const totalCount = breakdown.exact_total + breakdown.semantic_total;
     totalKeywordCount.textContent = `${totalMatched} / ${totalCount}`;
 
     sectionAnalysisList.innerHTML = "";
@@ -840,7 +1109,7 @@ function renderResults(report, { scroll = true } = {}) {
             <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full flex-shrink-0 ${colors.dot} ${opacityClass}"></span>${name}</span>
             <span class="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${colors.badge} ${opacityClass}">${section.word_count} ${t("sectionWordsUnit")}</span>
           </div>
-          <div class="w-full bg-gray-100 rounded-full h-1.5"><div class="grow-bar ${colors.bar} ${opacityClass} h-1.5 rounded-full" data-width="${pct}" style="width: 0%"></div></div>
+          <div class="bar-well w-full rounded-full h-1.5"><div class="grow-bar bar-fill ${colors.bar} ${opacityClass} h-1.5 rounded-full" data-width="${pct}" style="width: 0%"></div></div>
         `;
       }
       sectionAnalysisList.appendChild(li);
@@ -1044,7 +1313,7 @@ downloadReportBtn.addEventListener("click", () => {
   // corporate proxy), html2pdf() would throw synchronously with zero
   // feedback to the user. Check for it up front and surface an error
   // instead of silently doing nothing.
-  if (typeof html2pdf === "undefined") {
+  if (!lastReport || typeof html2pdf === "undefined") {
     showError(t("downloadFailed"));
     return;
   }
@@ -1065,19 +1334,6 @@ downloadReportBtn.addEventListener("click", () => {
   // default for this one call.
   const { scrollX, scrollY } = window;
   window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-  // Blocks not yet scrolled into view are still transparent; reveal them
-  // so the PDF never contains empty cards.
-  resultsCard.querySelectorAll("[data-reveal]").forEach((el) => el.classList.add("revealed"));
-
-  // The button lives inside the captured element; hide it for the snapshot
-  // so it doesn't show up inside the exported PDF, then restore it.
-  downloadReportBtn.classList.add("hidden");
-  downloadReportBtn.classList.remove("flex");
-  function restoreButton() {
-    downloadReportBtn.classList.remove("hidden");
-    downloadReportBtn.classList.add("flex");
-  }
-
   function restoreScroll() {
     window.scrollTo({ top: scrollY, left: scrollX, behavior: "instant" });
   }
@@ -1088,29 +1344,17 @@ downloadReportBtn.addEventListener("click", () => {
   requestAnimationFrame(() => {
     html2pdf()
       .set({
-        html2canvas: {
-          useCORS: true,
-          scrollX: 0,
-          scrollY: 0,
-          windowWidth: document.documentElement.clientWidth,
-          windowHeight: document.documentElement.clientHeight,
-          // CSS animations restart in html2canvas's cloned document, so a
-          // row could be photographed at its first, transparent frame.
-          onclone: (doc) => {
-            doc.querySelectorAll(".pop-item, .radar-grow, .dot-pop, .count-bump").forEach((el) => {
-              el.classList.remove("pop-item", "radar-grow", "dot-pop", "count-bump");
-            });
-          },
-        },
+        margin: [12, 12, 12, 12],
+        filename: "pass-the-bot-report.pdf",
+        image: { type: "jpeg", quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true, scrollX: 0, scrollY: 0 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: "css", avoid: [".print-keep", ".print-row"] },
       })
-      .from(resultsCard)
-      .save("pass-the-bot-report.pdf")
-      .then(() => {
-        restoreButton();
-        restoreScroll();
-      })
+      .from(buildPrintSheet(lastReport))
+      .save()
+      .then(restoreScroll)
       .catch(() => {
-        restoreButton();
         restoreScroll();
         showError(t("downloadFailed"));
       });
