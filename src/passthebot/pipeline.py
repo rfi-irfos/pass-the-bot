@@ -7,7 +7,7 @@ from passthebot.graph import DEFAULT_DATA_DIR, active_entries, load_skill_graph
 from passthebot.matcher import enrich_near_misses, match, match_open_requirements
 from passthebot.normalizer import extract_discrete_keywords, extract_open_requirements, extract_soft_skills
 from passthebot.report import build_report, get_graph_version
-from passthebot.requirement import detect_required_ids
+from passthebot.requirement import COUNTS_TOWARD_SCORE, classify_importance
 from passthebot.validate_graph import normalize_string, validate_graph
 
 
@@ -36,7 +36,7 @@ def run_pipeline(
 
     required_ids defaults to None, in which case which posting-side skills
     count as "required" is auto-detected from the posting text itself (see
-    passthebot.requirement.detect_required_ids) instead of the caller having
+    passthebot.requirement.classify_importance) instead of the caller having
     to name skill ids manually. Pass an explicit set to override detection.
     """
     if not posting_text.strip():
@@ -60,10 +60,11 @@ def run_pipeline(
         resume_text, entries, embedder
     )
 
+    importance = classify_importance(posting_text, posting_kw)
     if required_ids is None:
-        required_ids = detect_required_ids(posting_text, posting_kw)
+        required_ids = {kw_id for kw_id, item in importance.items() if item.level in COUNTS_TOWARD_SCORE}
 
-    results = match(posting_kw, resume_kw, required_ids)
+    results = match(posting_kw, resume_kw, required_ids, importance)
     results = enrich_near_misses(results, resume_text, entries)
 
     open_requirements = extract_open_requirements(posting_text)

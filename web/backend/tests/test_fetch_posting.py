@@ -6,6 +6,7 @@ import httpx
 import pytest
 
 from app.fetch_posting import (
+    _description_to_text,
     MAX_RESPONSE_BYTES,
     PostingFetchError,
     extract_posting,
@@ -279,3 +280,19 @@ def _json_str(value: str) -> str:
     import json
 
     return json.dumps(value)
+
+
+def test_partly_escaped_description_leaves_no_tags_behind():
+    description = (
+        "<p>Intro</p>&lt;p&gt;&lt;strong&gt;Requirements:&lt;/strong&gt;&lt;/p&gt;"
+        "&lt;ul&gt;&lt;li&gt;Python&lt;/li&gt;&lt;li&gt;SQL&lt;/li&gt;&lt;/ul&gt;"
+    )
+    text = _description_to_text(description)
+    assert "<" not in text
+    assert "Requirements:" in text.splitlines()
+    assert "- Python" in text.splitlines()
+
+
+def test_description_mentioning_angle_brackets_keeps_them():
+    text = _description_to_text("<p>Salary &lt;50k or more</p>")
+    assert "<50k" in text

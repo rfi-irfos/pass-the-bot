@@ -55,7 +55,7 @@ class _StubEmbedderWithoutModelName:
 
 def test_run_pipeline_auto_detects_required_ids_when_omitted():
     """When required_ids is omitted, the posting's own required/optional
-    signal phrases decide it, per passthebot.requirement.detect_required_ids."""
+    signal phrases decide it, per passthebot.requirement.classify_importance."""
     report = run_pipeline(
         "Python is required for this role. Docker experience is nice to have.",
         "Experienced Python developer, no Docker experience.",

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Literal
 
 from passthebot.graph import SkillEntry
 from passthebot.validate_graph import normalize_string
@@ -9,16 +10,63 @@ from passthebot.validate_graph import normalize_string
 
 REQUIREMENT_HEADING_KEYWORDS: set[str] = {
     "anforderungen", "ihr profil", "profil", "qualifikationen",
-    "voraussetzungen", "must-have", "must haves", "nice-to-have",
+    "voraussetzungen", "must-have", "must-haves", "must haves",
     "requirements", "qualifications", "what you'll need",
     "what we're looking for", "your profile",
     # added 2026-10-21 from postings read via pasted links (issue #4)
     "what you need", "who you are", "about you", "you bring", "you have",
-    "mandatory experience", "essential", "desirable", "strongly preferred",
+    "mandatory experience", "essential",
     "hard skills", "how you work", "skills", "du bringst mit", "das bringst du mit",
     "sie bringen mit", "dein profil", "kenntnisse", "compétences", "prérequis",
     "votre profil",
+    # added 2026-11-06 (issue #13)
+    "was du mitbringst", "was sie mitbringen", "what you bring", "your skills",
+    "exigences", "qualifikation", "what you'll bring", "personal profile",
+    "personal attributes", "das zeichnet dich aus", "das bringen sie mit", "was wir erwarten",
+    "was wir uns von dir wünschen", "this role is for you if", "you should apply if", "vous êtes",
+    "wat neem je mee", "wat breng je mee", "was sie ausmacht",
+    "wir stellen uns vor, dass du", "what we look for", "what you must have",
+    "what makes you stand out", "what makes you a great fit",
 }
+
+# Sections listing extras rather than requirements. Items here are still
+# worth reporting, but must not count against the required-skill score.
+OPTIONAL_HEADING_KEYWORDS: set[str] = {
+    "nice-to-have", "nice-to-haves", "nice to haves", "desirable", "strongly preferred",
+    "preferred qualifications", "preferred skills", "bonus points", "bonus",
+    "good to have", "would be nice", "wünschenswert", "wuenschenswert", "pluspunkte",
+    "atouts", "ideal candidate also", "was sie idealerweise mitbringen",
+}
+
+# What the job involves day to day. Skills named here count as much as a
+# listed requirement (for many non-tech postings this section holds the core
+# keywords), but are worded differently to the user: the posting asks for the
+# work, not literally for the skill.
+TASK_HEADING_KEYWORDS: set[str] = {
+    "about the role", "responsibilities", "what you will do", "what you'll do",
+    "what you'll be doing", "what you will be doing", "your role", "the role",
+    "your tasks", "your mission", "day to day", "a day in the life",
+    "deine aufgaben", "ihre aufgaben", "aufgaben", "aufgabengebiet",
+    "ihr aufgabengebiet", "dein aufgabengebiet", "tätigkeiten", "deine tätigkeiten",
+    "ihre tätigkeiten", "das machst du", "das erwartet dich", "das erwartet sie",
+    "was dich erwartet", "was sie erwartet", "deine mission", "missions",
+    "vos missions", "in this role, you will", "what you'll own", "tasks",
+    "principal accountabilities", "das werden sie tun", "kernaufgaben", "aufgabenschwerpunkte",
+    "wat ga je doen", "zu ihren aufgaben", "impact you'll own", "the impact you will have",
+}
+
+# These phrases also open ordinary requirement lines ("Must have Python
+# experience"), so they only count as a heading when they are the whole line.
+_EXACT_REQUIRED_HEADING = re.compile(r"must[ -]have'?s?|required")
+_EXACT_OPTIONAL_HEADING = re.compile(
+    r"nice[ -]to[ -]haves?(?: \(.*)?|von vorteil(?: wäre| waere| sind| ist)?|das ist ein plus|plus"
+    r"|preferred|ideally|idealerweise(?: bringst du mit| bringen sie mit)?"
+)
+# "About Acme" names the company, "About you" asks for something.
+_ABOUT_COMPANY_HEADING = re.compile(r"about (?!you\b|the role\b)\S.{0,40}|über \S.{0,40}")
+_EDGE_DECORATION = re.compile(r"^[^\w]+|[^\w]+$")
+
+HeadingKind = Literal["required", "optional", "task", "other"]
 
 OTHER_SECTION_HEADING_KEYWORDS: set[str] = {
     "wir bieten", "we offer", "was wir bieten", "was wir dir bieten",
@@ -31,15 +79,23 @@ OTHER_SECTION_HEADING_KEYWORDS: set[str] = {
     "what you get", "our offer", "why join", "why us", "what's in it for you",
     "life at", "working at", "our values", "values", "success measures",
     "how success", "what success looks like", "kpis", "equal employment",
-    "about the role", "about the company", "responsibilities", "what you will do",
-    "what you'll do", "your role", "deine aufgaben", "ihre aufgaben", "aufgaben",
+    "about the company",
     "deine vorteile", "warum wir", "nous offrons", "ce que nous offrons",
     "ce que l'on vous propose", "avantages", "pourquoi nous rejoindre",
-    "à propos", "qui sommes-nous", "missions",
+    "à propos", "qui sommes-nous",
     # added 2026-10-21 from non-tech postings (issue #7)
-    "versprechen", "das erwartet dich", "das erwartet sie", "was dich erwartet",
-    "was sie erwartet", "aufgabengebiet", "ihr aufgabengebiet", "dein aufgabengebiet",
-    "deine benefits", "ihre benefits", "zusatzleistungen",
+    "versprechen", "deine benefits", "ihre benefits", "zusatzleistungen",
+    # added 2026-11-06 (issue #13): company talk and job-board page furniture
+    "who we are", "wer wir sind", "das sind wir", "our mission", "our story",
+    "our culture", "company description", "unternehmensbeschreibung", "seniority level",
+    "employment type", "job function", "industries", "similar jobs", "people also viewed",
+    "interview process", "hiring process", "how we hire", "bewerbungsprozess",
+    "darauf kannst du dich freuen", "what you can expect from", "was wir ihnen bieten",
+    "was du von uns erwarten kannst", "this role is not for", "you probably won't enjoy",
+    "wat bieden we", "wat krijg je", "vos avantages", "dein benefit", "leistungen",
+    "was dich bei uns erwartet", "das kannst du von uns erwarten", "you can expect",
+    "our company values", "what you'll get", "can offer you", "why this role",
+    "you'll thrive",
 }
 
 # Bullet phrases that describe what the employer offers, not what the
@@ -73,13 +129,20 @@ def _is_benefit_phrase(phrase: str) -> bool:
 
 PLAIN_LINE_MAX_WORDS = 12
 
-_BULLET_PREFIX = re.compile(r"^\s*(?:[-*•]|\d+[.)])\s+")
+_BULLET_PREFIX = re.compile(r"^\s*(?:[-*•·–—‣▪◦●○■□✓✔☑→►▶➤]|\d+[.)])\s+")
+_LEADING_SYMBOLS = re.compile(r"^[^\w(\"'„“]+")
+
+
+def strip_item_marker(line: str) -> str:
+    """The text of a list item, without its bullet glyph or leading emoji."""
+    return _LEADING_SYMBOLS.sub("", _BULLET_PREFIX.sub("", line)).strip()
 
 
 @dataclass
 class OpenRequirement:
     phrase: str
     source_line: int
+    optional: bool = False
 
 
 @dataclass
@@ -88,10 +151,15 @@ class ExtractedKeyword:
     category: str
     matched_text: str
     confidence: float
+    # Every piece of posting text this keyword was found through: all aliases
+    # of a discrete skill, the best-matching sentence of a soft skill. Used to
+    # look up where the keyword stands in the posting (requirement.py).
+    mentions: list[str] = field(default_factory=list)
 
 
 def _normalize_heading_line(line: str) -> str:
-    return line.strip().strip(":-–—").strip().lower()
+    # Postings mostly use the typographic apostrophe ("what we’re looking for").
+    return line.replace("’", "'").strip().strip(":-–—").strip().lower()
 
 
 def _matches_keyword_set(normalized: str, keywords: set[str]) -> bool:
@@ -110,17 +178,8 @@ def _matches_keyword_set(normalized: str, keywords: set[str]) -> bool:
     return False
 
 
-def _is_requirement_heading(line: str) -> bool:
-    if _BULLET_PREFIX.match(line):
-        return False
-    return _matches_keyword_set(_normalize_heading_line(line), REQUIREMENT_HEADING_KEYWORDS)
-
-
-def _is_any_recognized_heading(line: str) -> bool:
-    """True if `line` matches a known requirement heading OR a known
-    non-requirement section heading (benefits/company-info sections that
-    commonly follow a requirements section, e.g. "Wir bieten" / "About
-    us"). Used only to find where a requirements section's body ends.
+def heading_kind(line: str) -> HeadingKind | None:
+    """What kind of section `line` opens, or None if it is not a known heading.
 
     Deliberately keyword-based, not shape-based: an earlier version of
     this module treated any short, standalone, non-bullet line as a
@@ -133,14 +192,31 @@ def _is_any_recognized_heading(line: str) -> bool:
     comma-list, or a non-heading intro line) or fails to close one (a
     second, unprotected comma-list line). Matching only a known keyword
     set sidesteps all of that: an unrecognized line simply never matches,
-    with no positional heuristics needed."""
+    with no positional heuristics needed.
+
+    Optional keywords are tried first because "Nice-to-have skills" also
+    contains the requirement keyword "skills"."""
+    normalized = _normalize_heading_line(_BULLET_PREFIX.sub("", line))
+    bare = _EDGE_DECORATION.sub("", normalized)
+    if _EXACT_OPTIONAL_HEADING.fullmatch(bare):
+        return "optional"
+    if _EXACT_REQUIRED_HEADING.fullmatch(bare):
+        return "required"
+    # Beyond the unambiguous phrases above, a bulleted line is always an item.
     if _BULLET_PREFIX.match(line):
-        return False
-    normalized = _normalize_heading_line(line)
-    return (
-        _matches_keyword_set(normalized, REQUIREMENT_HEADING_KEYWORDS)
-        or _matches_keyword_set(normalized, OTHER_SECTION_HEADING_KEYWORDS)
-    )
+        return None
+    # A full stop ends a sentence, not a heading ("What you bring..." stays one).
+    if normalized.endswith(".") and not normalized.endswith(".."):
+        return None
+    if _matches_keyword_set(normalized, OPTIONAL_HEADING_KEYWORDS):
+        return "optional"
+    if _matches_keyword_set(normalized, REQUIREMENT_HEADING_KEYWORDS):
+        return "required"
+    if _matches_keyword_set(normalized, TASK_HEADING_KEYWORDS):
+        return "task"
+    if _matches_keyword_set(normalized, OTHER_SECTION_HEADING_KEYWORDS) or _ABOUT_COMPANY_HEADING.fullmatch(bare):
+        return "other"
+    return None
 
 
 def extract_open_requirements(posting_text: str) -> list[OpenRequirement]:
@@ -202,27 +278,29 @@ def extract_open_requirements(posting_text: str) -> list[OpenRequirement]:
     heading sets, not a validated classifier.
     """
     lines = posting_text.splitlines()
-    heading_indices = [idx for idx, line in enumerate(lines) if _is_requirement_heading(line)]
+    kinds = {idx: kind for idx, line in enumerate(lines) if (kind := heading_kind(line))}
+    heading_indices = [idx for idx, kind in kinds.items() if kind in ("required", "optional")]
     if not heading_indices:
         return []
 
-    boundary_indices = [idx for idx, line in enumerate(lines) if _is_any_recognized_heading(line)]
+    boundary_indices = list(kinds)
 
     requirements: list[OpenRequirement] = []
     for start_idx in heading_indices:
+        optional = kinds[start_idx] == "optional"
         end_idx = next((idx for idx in boundary_indices if idx > start_idx), len(lines))
         section_lines = [
             (idx, lines[idx]) for idx in range(start_idx + 1, end_idx) if lines[idx].strip()
         ]
 
         bullet_items = [
-            (idx, _BULLET_PREFIX.sub("", line).strip())
+            (idx, strip_item_marker(line))
             for idx, line in section_lines
             if _BULLET_PREFIX.match(line)
         ]
         if bullet_items:
             requirements.extend(
-                OpenRequirement(phrase=phrase, source_line=idx)
+                OpenRequirement(phrase=phrase, source_line=idx, optional=optional)
                 for idx, phrase in bullet_items
                 if phrase and not _is_benefit_phrase(phrase)
             )
@@ -234,14 +312,14 @@ def extract_open_requirements(posting_text: str) -> list[OpenRequirement]:
                 fragments = [f for f in fragments if f]
                 if fragments and all(len(f.split()) <= 8 for f in fragments):
                     requirements.extend(
-                        OpenRequirement(phrase=f, source_line=idx)
+                        OpenRequirement(phrase=f, source_line=idx, optional=optional)
                         for f in fragments
                         if not _is_benefit_phrase(f)
                     )
                     continue
             phrase = line.strip()
             if _is_plain_line_item(phrase) and not _is_benefit_phrase(phrase):
-                requirements.append(OpenRequirement(phrase=phrase, source_line=idx))
+                requirements.append(OpenRequirement(phrase=phrase, source_line=idx, optional=optional))
     return requirements
 
 
@@ -314,14 +392,16 @@ def extract_discrete_keywords(text: str, entries: list[SkillEntry]) -> list[Extr
                 continue
             for i in range(start, end):
                 claimed[i] = True
+            source = next(
+                (src for pos, src in reversed(expansion_sources) if start >= pos), alias
+            )
             if entry.id not in found:
-                matched_text = next(
-                    (src for pos, src in reversed(expansion_sources) if start >= pos), alias
-                )
                 found[entry.id] = ExtractedKeyword(
-                    id=entry.id, category=entry.category, matched_text=matched_text,
+                    id=entry.id, category=entry.category, matched_text=source,
                     confidence=1.0,
                 )
+            if source not in found[entry.id].mentions:
+                found[entry.id].mentions.append(source)
     return list(found.values())
 
 
@@ -433,15 +513,18 @@ def extract_soft_skills(
     for entry in entries:
         if not entry.anchor_phrases:
             continue
+        threshold = entry.embedding_threshold if entry.embedding_threshold is not None else 0.48
+        if is_german:
+            threshold = max(threshold, GERMAN_TEXT_MIN_THRESHOLD)
         best_phrase: str | None = None
         best_score = float("-inf")
+        hits: list[str] = []
         for sentence in sentences:
             phrase, score = embedder.best_match(sentence, entry.anchor_phrases)
             if score > best_score:
                 best_phrase, best_score = phrase, score
-        threshold = entry.embedding_threshold if entry.embedding_threshold is not None else 0.48
-        if is_german:
-            threshold = max(threshold, GERMAN_TEXT_MIN_THRESHOLD)
+            if score >= threshold:
+                hits.append(sentence)
         if best_score >= threshold:
             found.append(
                 ExtractedKeyword(
@@ -449,6 +532,7 @@ def extract_soft_skills(
                     category=entry.category,
                     matched_text=best_phrase,
                     confidence=best_score,
+                    mentions=hits,
                 )
             )
     return found

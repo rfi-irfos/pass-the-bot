@@ -84,6 +84,117 @@
     transform: translateY(14px) scale(0.94) rotateY(0deg);
   }
   #hero-icon.revealed { transform: translateY(0) scale(1) rotateY(1080deg); }
+  /* A pile of applications: two sheets peek out from under the app card. */
+  .paper-stack { position: relative; isolation: isolate; }
+  .paper-stack::before, .paper-stack::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 10px 10px -8px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    box-shadow: 0 10px 24px -14px rgba(15, 23, 42, 0.3);
+  }
+  .paper-stack::after { inset: 18px 18px -15px; background: #f8fafc; z-index: -2; }
+  @media (min-width: 640px) {
+    .paper-stack::before { transform: rotate(-0.5deg); }
+    .paper-stack::after { transform: rotate(0.45deg); }
+  }
+
+  /* Things you put something into sit below the sheet... */
+  .well {
+    background: linear-gradient(#eef2f7, #f8fafc 40%);
+    box-shadow: inset 0 2px 4px rgba(15, 23, 42, 0.1), inset 0 0 0 1px rgba(15, 23, 42, 0.05);
+    border-radius: 0.5rem;
+  }
+  /* ...and the one thing you press stands above it, like a key. */
+  #submit-btn {
+    background-image: linear-gradient(#1c7a42, #166534);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 4px 0 #0f4a26, 0 12px 20px -8px rgba(22, 101, 52, 0.6);
+  }
+  #submit-btn:hover:not(:disabled) {
+    filter: brightness(1.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 4px 0 #0f4a26, 0 14px 24px -8px rgba(22, 101, 52, 0.7);
+  }
+  #submit-btn:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 0 #0f4a26;
+  }
+
+  /* One tile per skill the posting asks for: raised when the resume has it,
+     a punched-out hole when it doesn't. */
+  .skill-strip { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
+  .tile { width: 13px; height: 20px; border-radius: 3px; }
+  .tile-MATCH {
+    background: linear-gradient(#22c55e, #15803d);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 2px rgba(21, 128, 61, 0.55);
+  }
+  .tile-NEAR_MISS {
+    background: linear-gradient(#fbbf24, #d97706);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 2px rgba(217, 119, 6, 0.55);
+  }
+  .tile-MISSING {
+    background: #fee2e2;
+    box-shadow: inset 0 2px 3px rgba(127, 29, 29, 0.35);
+  }
+
+  #results-card section {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 1px 2px rgba(15, 23, 42, 0.06), 0 12px 20px -16px rgba(15, 23, 42, 0.4);
+  }
+  .bar-well { background: #e8edf3; box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.18); }
+  .bar-fill { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35); }
+
+  /* A skill is a small sheet on its card; opening it shows the posting's words. */
+  .skill-row {
+    background: #ffffff;
+    border-left: 3px solid var(--rail, #d1d5db);
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+    overflow-wrap: anywhere;
+  }
+  #matched-list { --rail: #16a34a; }
+  #nearmiss-list { --rail: #f59e0b; }
+  #missing-list { --rail: #dc2626; }
+  .skill-row summary { cursor: pointer; list-style: none; display: flex; align-items: flex-start; gap: 0.5rem; }
+  .skill-row summary::-webkit-details-marker { display: none; }
+  .skill-row summary::after {
+    content: "";
+    flex-shrink: 0;
+    margin: 0.4em 0 0 auto;
+    width: 0.45em;
+    height: 0.45em;
+    border-right: 2px solid #6b7280;
+    border-bottom: 2px solid #6b7280;
+    transform: rotate(45deg);
+    transition: transform 0.2s ease;
+  }
+  .skill-row details[open] summary::after { transform: translateY(0.15em) rotate(-135deg); }
+  .skill-row summary:focus-visible { outline: 2px solid #15803d; outline-offset: 2px; border-radius: 2px; }
+  @keyframes quote-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  .skill-row details[open] .quote { animation: quote-in 0.25s ease both; }
+
+  /* The downloaded report: one flat column, because html2canvas can't paint
+     the widget's inset shadows and three columns are too narrow on A4. */
+  .print-sheet { width: calc(100% - 14px); color: #111827; background: #ffffff; font-size: 13px; line-height: 1.45; }
+  .print-sheet h1 { font-size: 22px; font-weight: 700; }
+  .print-sheet h2 { font-size: 15px; font-weight: 700; margin: 18px 0 6px; padding-bottom: 3px; border-bottom: 2px solid #111827; }
+  .print-sub { color: #4b5563; }
+  .print-score { display: flex; align-items: center; gap: 16px; margin-top: 12px; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 6px; }
+  .print-pct { font-size: 34px; font-weight: 700; line-height: 1; white-space: nowrap; }
+  .print-row { display: flex; gap: 10px; padding: 6px 0; border-bottom: 1px solid #e5e7eb; overflow-wrap: anywhere; }
+  .print-status { flex: 0 0 76px; font-weight: 700; }
+  .print-MATCH { color: #15803d; }
+  .print-NEAR_MISS { color: #b45309; }
+  .print-MISSING { color: #b91c1c; }
+  .print-name { font-weight: 600; }
+  .print-note { color: #374151; font-size: 12px; }
+  .print-columns { display: flex; gap: 24px; }
+  .print-columns > div { flex: 1; min-width: 0; }
+  .print-pair { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; border-bottom: 1px solid #e5e7eb; }
+  .print-tips li { padding: 3px 0 3px 12px; text-indent: -12px; }
+  .print-footer { margin-top: 16px; color: #4b5563; font-size: 11px; }
+
   /* App card: layered shadow so the widget lifts off the busy background. */
   .app-card {
     box-shadow:
@@ -111,8 +222,6 @@
   #results-card section { transition: transform 0.3s ease, box-shadow 0.3s ease; }
   #results-card section:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -12px rgba(15, 23, 42, 0.25); }
   #submit-btn { transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease; }
-  #submit-btn:hover:not(:disabled) { box-shadow: 0 10px 24px -10px rgba(21, 128, 61, 0.7); }
-  #submit-btn:active:not(:disabled) { transform: scale(0.985); }
   .drop-zone { transition: border-color 0.2s ease, background-color 0.2s ease; }
   .drop-zone:hover { border-color: #16a34a; background-color: #f0fdf4; }
   .badge-pill { transition: transform 0.2s ease; }
@@ -125,15 +234,15 @@
 
   /* Inside the app card: the two inputs and the button rise in one after
      another when the card scrolls into view. */
-  .app-card [data-stagger] {
+  .paper-stack [data-stagger] {
     opacity: 0;
     transform: translateY(16px);
     transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .app-card.in-view [data-stagger] { opacity: 1; transform: none; }
-  .app-card.in-view [data-stagger="1"] { transition-delay: 0.25s; }
-  .app-card.in-view [data-stagger="2"] { transition-delay: 0.4s; }
-  .app-card.in-view [data-stagger="3"] { transition-delay: 0.55s; }
+  .paper-stack.in-view [data-stagger] { opacity: 1; transform: none; }
+  .paper-stack.in-view [data-stagger="1"] { transition-delay: 0.25s; }
+  .paper-stack.in-view [data-stagger="2"] { transition-delay: 0.4s; }
+  .paper-stack.in-view [data-stagger="3"] { transition-delay: 0.55s; }
 
   /* Result rows pop in one by one (--i is set per row in app.js). */
   @keyframes item-pop {
@@ -159,13 +268,16 @@
   @keyframes dot-pop { from { transform: scale(0); } to { transform: scale(1); } }
   .dot-pop { transform-box: fill-box; transform-origin: center; animation: dot-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 
+  #radar-polygon { filter: drop-shadow(0 3px 4px rgba(21, 128, 61, 0.45)); }
+  #gauge-circle { filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.35)); }
+
   /* Short green pulse on the drop zone when a file is chosen. */
   @keyframes file-ok { 0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.45); } 100% { box-shadow: 0 0 0 14px rgba(22, 163, 74, 0); } }
   .drop-zone.file-ok { animation: file-ok 0.7s ease-out; border-color: #16a34a; border-style: solid; background-color: #f0fdf4; }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
-    [data-scroll-reveal], [data-reveal], .app-card [data-stagger] { opacity: 1 !important; transform: none !important; }
+    [data-scroll-reveal], [data-reveal], .paper-stack [data-stagger] { opacity: 1 !important; transform: none !important; }
   }
 </style>
 </head>
@@ -241,7 +353,8 @@
     <main class="relative w-full max-w-4xl mx-auto px-4 sm:px-6 py-12">
 
     <!-- Single expanding app card: form on top, results grow in below -->
-    <div class="app-card relative bg-white border border-gray-200 rounded-2xl mb-8 overflow-hidden" data-scroll-reveal>
+    <div class="paper-stack mb-10" data-scroll-reveal>
+    <div class="app-card relative bg-white border border-gray-200 rounded-2xl overflow-hidden">
     <button type="button" id="info-btn" aria-label="What is an ATS?"
       class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-amber-50 border border-amber-200 shadow-lg flex items-center justify-center text-amber-500 hover:text-amber-600 hover:bg-amber-100 transition">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -253,18 +366,18 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div data-stagger="1">
           <label for="posting_text" class="block text-center text-lg font-semibold mb-3" data-i18n="labelPosting"></label>
-          <div class="relative h-32">
+          <div class="well relative h-32">
             <textarea id="posting_text" name="posting_text" required
-              class="relative z-10 w-full h-32 bg-transparent border border-gray-300 rounded-lg p-4 text-base focus:outline-none focus:ring-2 focus:ring-black resize-none"></textarea>
+              class="relative z-10 w-full h-32 bg-transparent border border-transparent rounded-lg p-4 text-base focus:outline-none focus:ring-2 focus:ring-black resize-none"></textarea>
             <div id="posting-placeholder"
-              class="absolute inset-0 flex items-center justify-center text-center text-base text-gray-400 px-6 pointer-events-none"
+              class="absolute inset-0 flex items-center justify-center text-center text-base text-gray-500 px-6 pointer-events-none"
               data-i18n="placeholderPosting"></div>
           </div>
         </div>
 
         <div data-stagger="2">
           <label for="resume_file" class="block text-center text-lg font-semibold mb-3" data-i18n="labelCv"></label>
-          <div class="drop-zone relative border-2 border-dashed border-gray-300 rounded-lg h-32 flex flex-col items-center justify-center text-center p-4">
+          <div class="well drop-zone relative border-2 border-dashed border-gray-300 rounded-lg h-32 flex flex-col items-center justify-center text-center p-4">
             <div id="file-name-display" class="text-sm text-gray-600 px-2 truncate max-w-full flex flex-col items-center gap-1">
               <svg width="28" height="28" viewBox="0 0 28 28" class="mb-1">
                 <circle cx="14" cy="14" r="13" fill="none" stroke="#9ca3af" stroke-width="1.5"></circle>
@@ -280,7 +393,7 @@
       </div>
 
       <button type="submit" id="submit-btn" data-stagger="3"
-        class="w-full mt-6 bg-green-800 hover:bg-green-900 text-white rounded-lg py-4 text-lg font-semibold transition flex items-center justify-center gap-2">
+        class="w-full mt-6 bg-green-800 text-white rounded-lg py-4 text-lg font-semibold transition flex items-center justify-center gap-2">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <circle cx="8.5" cy="8.5" r="6" stroke="#ffffff" stroke-width="2"></circle>
           <path d="M13.5 13.5 L18 18" stroke="#ffffff" stroke-width="2" stroke-linecap="round"></path>
@@ -321,15 +434,30 @@
       </div>
       <div class="flex flex-col md:flex-row items-center gap-8 mb-8 revealed" data-reveal>
         <svg width="140" height="140" viewBox="0 0 140 140" class="shrink-0">
-          <circle cx="70" cy="70" r="60" fill="none" stroke="#e5e7eb" stroke-width="12"></circle>
+          <defs>
+            <linearGradient id="gauge-well" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#cbd5e1"></stop>
+              <stop offset="1" stop-color="#f1f5f9"></stop>
+            </linearGradient>
+            <radialGradient id="gauge-disc" cx="0.4" cy="0.3" r="0.85">
+              <stop offset="0" stop-color="#ffffff"></stop>
+              <stop offset="1" stop-color="#e8edf3"></stop>
+            </radialGradient>
+            <filter id="gauge-lift" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#0f172a" flood-opacity="0.28"></feDropShadow>
+            </filter>
+          </defs>
+          <circle cx="70" cy="70" r="60" fill="none" stroke="url(#gauge-well)" stroke-width="13"></circle>
+          <circle cx="70" cy="70" r="47" fill="url(#gauge-disc)" filter="url(#gauge-lift)"></circle>
           <circle id="gauge-circle" cx="70" cy="70" r="60" fill="none" stroke="#16a34a" stroke-width="12"
             stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377"
             transform="rotate(-90 70 70)"></circle>
           <text id="gauge-text" x="70" y="75" text-anchor="middle" font-size="26" font-weight="bold" fill="#111827">·</text>
         </svg>
-        <div>
+        <div class="min-w-0 flex-1">
           <h2 class="text-lg font-semibold mb-1" data-i18n="atsResultHeading"></h2>
-          <p id="score-summary" class="text-gray-500 mb-4" data-i18n="scorePrompt"></p>
+          <p id="score-summary" class="text-gray-600" data-i18n="scorePrompt"></p>
+          <div id="skill-tally" class="hidden mt-4 space-y-2"></div>
         </div>
       </div>
 
@@ -357,6 +485,12 @@
         </section>
       </div>
 
+      <div id="mentioned-card" class="hidden mb-8 revealed" data-reveal>
+        <h3 class="font-semibold" data-i18n="mentionedHeading"></h3>
+        <p class="text-sm text-gray-600 mb-3" data-i18n="mentionedHint"></p>
+        <ul id="mentioned-list" class="grid sm:grid-cols-2 md:grid-cols-3 gap-2 text-sm"></ul>
+      </div>
+
       <div class="grid md:grid-cols-[1fr_1fr_1.15fr] gap-4 mb-8 revealed" data-reveal>
         <section class="bg-white border border-gray-200 rounded-xl p-4">
           <h3 class="font-semibold mb-3" data-i18n="keywordCoverageHeading"></h3>
@@ -366,8 +500,8 @@
                 <span data-i18n="exactMatchLabel"></span>
                 <span id="exact-match-count"></span>
               </div>
-              <div class="w-full bg-gray-100 rounded-full h-2">
-                <div id="exact-match-bar" class="bg-green-600 h-2 rounded-full" style="width: 0%"></div>
+              <div class="bar-well w-full rounded-full h-2.5">
+                <div id="exact-match-bar" class="bar-fill bg-green-600 h-2.5 rounded-full" style="width: 0%"></div>
               </div>
             </div>
             <div>
@@ -375,8 +509,8 @@
                 <span data-i18n="semanticMatchLabel"></span>
                 <span id="semantic-match-count"></span>
               </div>
-              <div class="w-full bg-gray-100 rounded-full h-2">
-                <div id="semantic-match-bar" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+              <div class="bar-well w-full rounded-full h-2.5">
+                <div id="semantic-match-bar" class="bar-fill bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
               </div>
             </div>
             <div id="open-match-row" class="hidden">
@@ -384,8 +518,8 @@
                 <span data-i18n="openMatchLabel"></span>
                 <span id="open-match-count"></span>
               </div>
-              <div class="w-full bg-gray-100 rounded-full h-2">
-                <div id="open-match-bar" class="bg-teal-600 h-2 rounded-full" style="width: 0%"></div>
+              <div class="bar-well w-full rounded-full h-2.5">
+                <div id="open-match-bar" class="bar-fill bg-teal-600 h-2.5 rounded-full" style="width: 0%"></div>
               </div>
             </div>
           </div>
@@ -405,7 +539,13 @@
             <svg viewBox="0 0 230 230" width="230" height="230">
               <g id="radar-rings"></g>
               <g id="radar-spokes"></g>
-              <polygon id="radar-polygon" points="" fill="rgba(22,163,74,0.55)" stroke="#15803d" stroke-width="3" stroke-linejoin="round"></polygon>
+              <defs>
+                <radialGradient id="radar-fill" cx="0.5" cy="0.5" r="0.6">
+                  <stop offset="0" stop-color="#4ade80" stop-opacity="0.8"></stop>
+                  <stop offset="1" stop-color="#15803d" stop-opacity="0.65"></stop>
+                </radialGradient>
+              </defs>
+              <polygon id="radar-polygon" points="" fill="url(#radar-fill)" stroke="#15803d" stroke-width="2.5" stroke-linejoin="round"></polygon>
               <g id="radar-dots"></g>
             </svg>
             <div id="radar-labels" class="absolute inset-0 pointer-events-none"></div>
@@ -427,6 +567,8 @@
           <span data-i18n="downloadReportBtn"></span>
         </button>
       </div>
+    </div>
+    </div>
     </div>
 
     </main>

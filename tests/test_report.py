@@ -24,7 +24,7 @@ RESUME_TEXT = (
 
 def test_build_report_shape():
     report = build_report(RESULTS, RESUME_TEXT, graph_version="abc123")
-    assert report["engine_version"] == "0.3.1"
+    assert report["engine_version"] == "0.4.0"
     assert report["graph_version"] == "abc123"
     assert report["model_version"] == "unknown"
     assert len(report["results"]) == 3
@@ -165,3 +165,16 @@ def test_build_report_posting_understood_is_false_when_nothing_extracted():
 def test_build_report_posting_understood_is_true_when_anything_extracted():
     report = build_report(RESULTS, RESUME_TEXT, graph_version="abc123")
     assert report["metrics"]["posting_understood"] is True
+
+
+def test_mentioned_results_stay_out_of_scores_and_breakdown():
+    results = [
+        MatchResult(id="python", category="languages", status="MATCH", required=True, importance="required"),
+        MatchResult(id="docker", category="tools", status="MATCH", required=False, importance="optional"),
+        MatchResult(id="terraform", category="tools", status="MISSING", required=False, importance="optional"),
+        MatchResult(id="sap", category="tools", status="MISSING", required=False, importance="mentioned"),
+    ]
+    report = build_report(results, "Experienced developer.", graph_version="x")
+    assert report["score"]["required_total"] == 1
+    assert report["metrics"]["match_breakdown"]["exact_total"] == 3
+    assert [r["id"] for r in report["results"]][-1] == "sap"

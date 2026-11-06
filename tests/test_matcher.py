@@ -1,6 +1,7 @@
 from passthebot.graph import SkillEntry
 from passthebot.matcher import enrich_near_misses, match, match_open_requirements
 from passthebot.normalizer import ExtractedKeyword, OpenRequirement
+from passthebot.requirement import KeywordImportance
 
 POSTING = [
     ExtractedKeyword(id="python", category="languages", matched_text="Python", confidence=1.0),
@@ -227,3 +228,27 @@ def test_open_phrase_not_matching_any_claimed_soft_skill_anchor_is_kept():
     )
     assert len(results) == 1
     assert results[0].status == "MATCH"
+
+
+def test_match_carries_importance_and_evidence():
+    posting = [ExtractedKeyword(id="sap", category="tools", matched_text="SAP", confidence=1.0)]
+    importance = {"sap": KeywordImportance(level="mentioned", evidence="SAP invested in us.")}
+    result = match(posting, [], required_ids=set(), importance=importance)[0]
+    assert result.required is False
+    assert result.importance == "mentioned"
+    assert result.posting_evidence == "SAP invested in us."
+
+
+def test_match_lets_explicit_required_ids_override_importance():
+    posting = [ExtractedKeyword(id="sap", category="tools", matched_text="SAP", confidence=1.0)]
+    importance = {"sap": KeywordImportance(level="mentioned", evidence=None)}
+    result = match(posting, [], required_ids={"sap"}, importance=importance)[0]
+    assert result.required is True
+    assert result.importance == "required"
+
+
+def test_open_requirement_from_optional_section_is_optional():
+    reqs = [OpenRequirement(phrase="MCP experience", source_line=1, optional=True)]
+    results = match_open_requirements(reqs, "Unrelated resume.", _StubEmbedder({}), set())
+    assert results[0].required is False
+    assert results[0].importance == "optional"
