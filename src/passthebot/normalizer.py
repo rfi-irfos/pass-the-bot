@@ -168,7 +168,7 @@ _BENEFIT_PATTERNS = [
         # contains "our" or "we" later on ("Kubernetes: experience operating our clusters",
         # "Sales - we need someone who ...") stays a requirement.
         r"^[^:]{2,40}:\s+(?:we|our)\b",
-        r"^[^:]{2,40}:\s+(?:each|every) \w+ (?:has|gets|receives)\b(?!\s+(?:to|must)\b)",
+        r"^[^:]{2,40}:\s+(?:each|every) \w+(?: \w+)? (?:has|gets|receives)\b(?!\s+(?:to|must)\b)",
         r"^[^–—:]{2,40}\s[–—-]\s+(?:we (?:love|recogni[sz]e|offer|provide|celebrate|give|value)"
         r"|our (?:benefits|platform|culture|company|team))\b",
     )
@@ -382,6 +382,7 @@ def extract_open_requirements(posting_text: str) -> list[OpenRequirement]:
                     and not phrase.endswith(":")
                     and len(phrase.split()) <= PLAIN_LIST_ITEM_MAX_WORDS
                     and not _PROSE_OPENER.match(phrase)
+                    and not _SOFT_HINT.search(phrase)
                     and not _is_benefit_phrase(phrase)
                 ):
                     requirements.append(OpenRequirement(phrase=phrase, source_line=idx, optional=optional))
@@ -401,8 +402,10 @@ def extract_open_requirements(posting_text: str) -> list[OpenRequirement]:
                     )
                     continue
             phrase = line.strip()
-            if _is_plain_line_item(phrase) and not _is_benefit_phrase(phrase):
-                requirements.append(OpenRequirement(phrase=phrase, source_line=idx, optional=optional))
+            if (_is_plain_line_item(phrase) or _is_plain_sentence_item(phrase)) and not _is_benefit_phrase(phrase):
+                requirements.append(
+                    OpenRequirement(phrase=phrase.rstrip("."), source_line=idx, optional=optional)
+                )
     return requirements
 
 
@@ -416,6 +419,24 @@ def _is_plain_line_item(line: str) -> bool:
         bool(line)
         and len(line.split()) <= PLAIN_LINE_MAX_WORDS
         and not line.endswith((".", ":", "?", "!"))
+    )
+
+
+# "Experience in logistics would be a bonus." is a wish, not a demand.
+_SOFT_HINT = re.compile(r"\bwould be\b|\bis a (?:plus|bonus|advantage)\b|\bnice to have\b", re.IGNORECASE)
+PLAIN_SENTENCE_MAX_WORDS = 20
+
+
+def _is_plain_sentence_item(line: str) -> bool:
+    """A bullet-less line that is one short sentence ("Knowledge graph
+    experience."): a full stop only at the end, no first or second person
+    prose, no soft wish. Job boards hand over short sections this way."""
+    return (
+        line.endswith(".")
+        and line.count(".") == 1
+        and len(line.split()) <= PLAIN_SENTENCE_MAX_WORDS
+        and not _PROSE_OPENER.match(line)
+        and not _SOFT_HINT.search(line)
     )
 
 

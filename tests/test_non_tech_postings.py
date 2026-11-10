@@ -48,7 +48,7 @@ def test_open_requirements_keep_requirements_and_drop_benefits(posting):
 
 
 def test_every_posting_has_a_gold_file():
-    assert len(POSTINGS) == 12
+    assert len(POSTINGS) >= 12  # grows with every new real-world shape; never shrinks
     for posting in POSTINGS:
         assert posting.with_suffix(".expected.yaml").exists()
 

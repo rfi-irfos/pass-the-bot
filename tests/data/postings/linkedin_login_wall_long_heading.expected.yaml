@@ -1,0 +1,4 @@
+expected: []
+forbidden: []
+open_expected: ["system design and testing", "software development life cycle", "cloud technologies"]
+open_forbidden: ["sign in", "base pay", "recruiter name", "talent acquisition", "show more", "continue to join", "design and build services"]

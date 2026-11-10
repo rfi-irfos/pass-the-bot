@@ -1,0 +1,4 @@
+expected: []
+forbidden: []
+open_expected: ["discount pricing", "eye care optometry", "gift vouchers and refunds", "operating our production clusters", "each dispenser has to hold", "closed b2b deals"]
+open_forbidden: ["staff discounts", "free eye tests", "company car", "car allowance"]

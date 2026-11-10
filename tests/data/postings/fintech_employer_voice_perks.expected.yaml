@@ -1,0 +1,4 @@
+expected: []
+forbidden: []
+open_expected: ["event-driven architectures", "observability tooling"]
+open_forbidden: ["best-in-class", "impact-driven", "team celebrations", "development budget", "committed to a culture"]

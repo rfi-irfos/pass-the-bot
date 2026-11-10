@@ -45,6 +45,7 @@ def measure_posting(text: str, gold: dict, entries) -> dict:
 def main(dirs: list[Path]) -> None:
     entries = active_entries(load_skill_graph(DEFAULT_DATA_DIR))
     total_expected = total_hits = total_false = total_open_bad = 0
+    open_wanted = open_found = open_leaks = 0
     for directory in dirs:
         for posting in sorted(directory.glob("*.txt")):
             gold_file = posting.with_suffix(".expected.yaml")
@@ -54,6 +55,9 @@ def main(dirs: list[Path]) -> None:
             total_hits += len(m["hits"])
             total_false += len(m["forbidden_hits"])
             total_open_bad += len(m["open_missed"]) + len(m["open_forbidden_hits"])
+            open_wanted += len(gold.get("open_expected", []))
+            open_found += len(gold.get("open_expected", [])) - len(m["open_missed"])
+            open_leaks += len(m["open_forbidden_hits"])
             print(f"{posting.stem}: {len(m['hits'])}/{m['expected_total']} skills")
             if m["missed"]:
                 print(f"    missed: {sorted(m['missed'])}")
@@ -67,10 +71,12 @@ def main(dirs: list[Path]) -> None:
             if m["open_forbidden_hits"]:
                 print(f"    open BENEFIT: {m['open_forbidden_hits']}")
     recall = 100 * total_hits / total_expected if total_expected else 0.0
+    open_recall = 100 * open_found / open_wanted if open_wanted else 0.0
     print(
         f"\nrecall {total_hits}/{total_expected} ({recall:.0f}%) · "
         f"false positives {total_false} · open-requirement errors {total_open_bad}"
     )
+    print(f"open requirements: recall {open_found}/{open_wanted} ({open_recall:.0f}%) · benefit leaks {open_leaks}")
 
 
 if __name__ == "__main__":
