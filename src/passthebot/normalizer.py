@@ -27,6 +27,14 @@ REQUIREMENT_HEADING_KEYWORDS: set[str] = {
     "wat neem je mee", "wat breng je mee", "was sie ausmacht",
     "wir stellen uns vor, dass du", "what we look for", "what you must have",
     "what makes you stand out", "what makes you a great fit",
+    # added 2026-11-10 (real LinkedIn ads, issue #15): five-word headings such
+    # as "Required Qualifications, Capabilities, And Skills" only match as phrases
+    "required qualifications", "minimum qualifications", "basic qualifications",
+    "required skills", "required experience", "minimum requirements",
+    "person specification", "candidate profile", "what we would like from you",
+    "what we'd like from you", "what we are looking for", "essential criteria",
+    "skills required", "experience & skills", "experience and skills",
+    "skills and experience", "skills & experience",
 }
 
 # Sections listing extras rather than requirements. Items here are still
@@ -96,7 +104,22 @@ OTHER_SECTION_HEADING_KEYWORDS: set[str] = {
     "was dich bei uns erwartet", "das kannst du von uns erwarten", "you can expect",
     "our company values", "what you'll get", "can offer you", "why this role",
     "you'll thrive",
+    # added 2026-11-10 (issue #15)
+    "the package", "package", "rewards", "in return", "what we can offer",
+    "our benefits", "on offer", "why apply", "what to look forward to",
+    "what we give you", "what's next",
 }
+
+# Job-board page furniture (LinkedIn's logged-out view repeats these around
+# the ad). "Sign in to evaluate your skills" would otherwise open a
+# requirements section through the word "skills" and swallow the pay range,
+# the recruiter's name and the ad's first paragraphs.
+_PAGE_CHROME_LINE = re.compile(
+    r"(?:sign in|join or sign in|join to apply|new to linkedin|by clicking continue"
+    r"|show (?:more|less)|direct message the job poster|tailor my resume"
+    r"|am i a good fit|use ai to assess)\b",
+    re.IGNORECASE,
+)
 
 # Bullet phrases that describe what the employer offers, not what the
 # candidate needs. Dropped from open requirements even when their section
@@ -120,8 +143,30 @@ _BENEFIT_PATTERNS = [
         r"weiterbildungsmöglichkeit", r"\bsinnstiftend", r"\bfirmenwagen\b",
         r"\bdienstwagen\b", r"\bdienstauto\b", r"\bfirmenfahrzeug\b",
         r"\büberzahlung\b", r"\blearning budget\b", r"\btraining budget\b",
+        # added 2026-11-10 (issue #15): UK benefits copied from LinkedIn as
+        # plain lines straight after the requirements, without a heading
+        r"\bhybrid (?:working|work|model)\b", r"\bcycle to work\b",
+        r"\b(?:healthcare|medical|dental) (?:scheme|insurance|cover|plan)\b",
+        r"\bprivate (?:healthcare|medical)\b", r"\blife (?:assurance|insurance)\b",
+        r"\bannual (?:holiday|leave)\b", r"\bdays'? (?:holiday|annual leave|paid leave)\b",
+        r"\bholiday allowance\b", r"\bseason ticket\b", r"\btravel loan\b",
+        r"\b(?:internal|external)(?: and (?:internal|external))? training\b",
+        r"\b(?:training|development|career) (?:opportunities|programmes?|programs?)\b",
+        r"\bbonus (?:scheme|plan)\b", r"\bemployee (?:assistance|discounts?)\b",
+        r"\benhanced (?:maternity|paternity|parental)\b", r"\bflexible benefits\b",
+        r"\bsalary sacrifice\b", r"\bshare (?:save|scheme|options?)\b",
     )
 ]
+
+
+_COMMA_OUTSIDE_BRACKETS = re.compile(r",(?![^()]*\))")
+
+# A sentence addressed to the candidate is prose, even when its comma-separated
+# clauses are short: "You're someone who enjoys partnering, influencing ...".
+_PROSE_OPENER = re.compile(
+    r"(?:you|you['’](?:ll|re|ve|d)|we|i|ideally|most importantly|sie|du|ihr)\b",
+    re.IGNORECASE,
+)
 
 
 def _is_benefit_phrase(phrase: str) -> bool:
@@ -198,6 +243,8 @@ def heading_kind(line: str) -> HeadingKind | None:
     contains the requirement keyword "skills"."""
     normalized = _normalize_heading_line(_BULLET_PREFIX.sub("", line))
     bare = _EDGE_DECORATION.sub("", normalized)
+    if _PAGE_CHROME_LINE.match(normalized):
+        return "other"
     if _EXACT_OPTIONAL_HEADING.fullmatch(bare):
         return "optional"
     if _EXACT_REQUIRED_HEADING.fullmatch(bare):
@@ -307,8 +354,10 @@ def extract_open_requirements(posting_text: str) -> list[OpenRequirement]:
             continue
 
         for idx, line in section_lines:
-            if "," in line:
-                fragments = [item.strip().strip(".") for item in line.split(",")]
+            if "," in line and not _PROSE_OPENER.match(line.strip()):
+                # A comma inside brackets lists alternatives within one item:
+                # "Qualified accountant (ACA, ACCA or CIMA)" stays whole.
+                fragments = [item.strip().strip(".") for item in _COMMA_OUTSIDE_BRACKETS.split(line)]
                 fragments = [f for f in fragments if f]
                 if fragments and all(len(f.split()) <= 8 for f in fragments):
                     requirements.extend(
