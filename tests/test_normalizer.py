@@ -580,3 +580,22 @@ def test_plain_sentence_lines_keep_their_commas():
         "Strong understanding of standards, including OWL, RDF, SKOS and SHACL",
         "Experience with governance platforms such as Graphologi, PoolParty or similar tools",
     ]
+
+
+def test_perks_in_the_employers_voice_are_not_requirements():
+    text = (
+        "Requirements\n"
+        "- Strong FP&A experience, including budgeting and forecasting\n"
+        "- Best-in-class AI tools: Every Upvenger has 20,000 per year to spend on tools\n"
+        "- Team celebrations: Participate in company-wide events\n"
+        "- Impact-driven work: We’re building the infrastructure of tomorrow\n"
+        "- Company car or car allowance - providing support to help you stay mobile\n"
+        "- Eye Care Vouchers – free eye tests\n"
+        "- Everyday Discounts – our benefits platform gives you access to retailers\n"
+        "- Reward & Recognition – we recognise those who go above and beyond\n"
+        "- Proficiency in Python: Django and Flask preferred\n"
+    )
+    assert [r.phrase for r in extract_open_requirements(text)] == [
+        "Strong FP&A experience, including budgeting and forecasting",
+        "Proficiency in Python: Django and Flask preferred",
+    ]

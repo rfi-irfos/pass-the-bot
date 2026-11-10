@@ -124,6 +124,7 @@ const TRANSLATIONS = {
     radarReadability: "Lesbarkeit",
     radarSectionCompleteness: "Abschnitts-Vollständigkeit",
     radarEmpty: "Das Radar braucht erkannte Anforderungen aus der Anzeige. Ohne sie gibt es nichts zu vergleichen.",
+    radarNote: "So liest du das Radar: Lesbarkeit misst nur deinen Lebenslauf. Kurze Sätze und kurze Wörter bringen mehr Punkte, lange Fachbegriffe senken den Wert. In Fachgebieten mit langen Begriffen ist ein niedriger Wert normal. Bewerbungssoftware (ATS) sucht nach den Wörtern der Anzeige und bewertet die Lesbarkeit nicht.",
   },
   en: {
     pageTitle: "Pass The Bot! See your CV the way an Applicant Tracking System (ATS) sees it",
@@ -247,6 +248,7 @@ const TRANSLATIONS = {
     radarReadability: "Readability",
     radarSectionCompleteness: "Section Completeness",
     radarEmpty: "The radar needs recognized requirements from the posting. Without them there is nothing to compare.",
+    radarNote: "How to read the radar: readability only measures your resume. Short sentences and short words score higher, long technical terms lower the value. In fields with long terms a low value is normal. Applicant tracking software (ATS) looks for the words of the posting and does not score readability.",
   },
 };
 
