@@ -1,7 +1,5 @@
 # Pass The Bot!
 
-[![CI](https://img.shields.io/github/actions/workflow/status/rfi-irfos/pass-the-bot/ci.yml?branch=master&style=flat-square&label=CI&logo=github)](https://github.com/rfi-irfos/pass-the-bot/actions/workflows/ci.yml)
-[![Pages Deploy](https://img.shields.io/github/actions/workflow/status/rfi-irfos/pass-the-bot/pages.yml?branch=master&style=flat-square&label=pages&logo=githubpages&logoColor=white)](https://github.com/rfi-irfos/pass-the-bot/actions/workflows/pages.yml)
 [![Live Demo](https://img.shields.io/badge/demo-live-16a34a?style=flat-square)](https://rfi-irfos.github.io/pass-the-bot/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
