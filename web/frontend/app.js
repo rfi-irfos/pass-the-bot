@@ -100,9 +100,7 @@ const TRANSLATIONS = {
     infoBody4:
       "Pass The Bot dreht das um: Lass deine Bewerbung hier durchlaufen, bevor du sie irgendwo hochlädst, mit der gleichen nachvollziehbaren Logik, die viele echte ATS-Systeme verwenden. Schwarz auf weiß, welche Skills erkannt wurden, welche knapp danebenlagen und welche fehlen. <strong>Keine Blackbox, keine Überraschung.</strong>",
     privacyNote:
-      "Diagnose statt KI-Blackbox: Das System entscheidet deterministisch und nachvollziehbar, warum ein Keyword-Filter dich durchlässt oder aussortiert, ohne deinen Lebenslauf umzuschreiben. Deine Daten werden dabei nicht gespeichert, nicht zum Trainieren eines Modells verwendet, und diese Seite setzt keine Cookies: alles bleibt in deinem Browser und wird nur für diese eine Prüfung an die Analyse-Engine geschickt.",
-    loveNote:
-      "Wir pflegen Pass The Bot mit viel Liebe aus Graz, kostenlos für alle. Wenn es dir geholfen hat, freut sich das Team über einen Glückskeks.",
+      "Diagnose statt KI-Blackbox: Das System entscheidet deterministisch und nachvollziehbar, warum ein Keyword-Filter dich durchlässt oder aussortiert, ohne deinen Lebenslauf umzuschreiben. Deine Daten werden dabei nicht gespeichert, nicht zum Trainieren eines Modells verwendet, und diese Seite setzt keine Cookies: alles bleibt in deinem Browser und wird nur für diese eine Prüfung an die Analyse-Engine geschickt. Wir pflegen Pass The Bot mit viel Liebe aus Graz, kostenlos für alle. Wenn es dir geholfen hat, freut sich das Team über einen Glückskeks.",
     coffeeLink: "Kauf uns einen Glückskeks",
     keywordCoverageHeading: "Keyword-Abdeckung",
     exactMatchLabel: "Exakte Treffer",
@@ -225,9 +223,7 @@ const TRANSLATIONS = {
     infoBody4:
       "Pass The Bot flips that around: run your application through here before you submit it anywhere, using the same kind of deterministic, explainable logic many real ATS systems use. See in plain sight which skills were recognized, which were close misses, and which are missing. <strong>No black box, no surprises.</strong>",
     privacyNote:
-      "A diagnosis, not an AI black box: the system decides deterministically and transparently why a keyword filter would pass or reject you, without rewriting your resume for you. None of your data is stored or used to train anything, and this page sets no cookies: everything stays in your browser and is sent to the analysis engine only for this one check.",
-    loveNote:
-      "We maintain Pass The Bot with love from Graz, free for everyone. If it helped you, the team is always happy about a fortune cookie.",
+      "A diagnosis, not an AI black box: the system decides deterministically and transparently why a keyword filter would pass or reject you, without rewriting your resume for you. None of your data is stored or used to train anything, and this page sets no cookies: everything stays in your browser and is sent to the analysis engine only for this one check. We maintain Pass The Bot with love from Graz, free for everyone. If it helped you, the team is always happy about a fortune cookie.",
     coffeeLink: "Buy us a fortune cookie",
     keywordCoverageHeading: "Keyword Coverage",
     exactMatchLabel: "Exact Matches",
