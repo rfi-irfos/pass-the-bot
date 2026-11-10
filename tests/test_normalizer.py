@@ -565,3 +565,18 @@ def test_experience_and_skills_required_heading():
         "Good working knowledge of Outlook and Excel",
         "At least 3 years in a similar role",
     ]
+
+
+def test_plain_sentence_lines_keep_their_commas():
+    text = (
+        "Essential\n"
+        "Experience developing ontologies, taxonomies, thesauri or business glossaries.\n"
+        "Strong understanding of standards, including OWL, RDF, SKOS and SHACL.\n"
+        "Experience with governance platforms such as Graphologi, PoolParty or similar tools.\n"
+        "What's In It For You\nGroup pension scheme\n"
+    )
+    assert [r.phrase for r in extract_open_requirements(text)] == [
+        "Experience developing ontologies, taxonomies, thesauri or business glossaries",
+        "Strong understanding of standards, including OWL, RDF, SKOS and SHACL",
+        "Experience with governance platforms such as Graphologi, PoolParty or similar tools",
+    ]

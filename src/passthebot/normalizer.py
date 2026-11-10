@@ -173,6 +173,8 @@ def _is_benefit_phrase(phrase: str) -> bool:
     return any(p.search(phrase) for p in _BENEFIT_PATTERNS)
 
 PLAIN_LINE_MAX_WORDS = 12
+PLAIN_LIST_MIN_LINES = 3
+PLAIN_LIST_ITEM_MAX_WORDS = 30
 
 _BULLET_PREFIX = re.compile(r"^\s*(?:[-*•·–—‣▪◦●○■□✓✔☑→►▶➤]|\d+[.)])\s+")
 _LEADING_SYMBOLS = re.compile(r"^[^\w(\"'„“]+")
@@ -351,6 +353,22 @@ def extract_open_requirements(posting_text: str) -> list[OpenRequirement]:
                 for idx, phrase in bullet_items
                 if phrase and not _is_benefit_phrase(phrase)
             )
+            continue
+
+        # Three or more plain lines are a list written one item per line
+        # (LinkedIn strips the bullets), so a comma inside a line belongs to
+        # that item: "Experience with ontologies, taxonomies and thesauri."
+        if len(section_lines) >= PLAIN_LIST_MIN_LINES:
+            for idx, line in section_lines:
+                phrase = line.strip().rstrip(".")
+                if (
+                    phrase
+                    and not phrase.endswith(":")
+                    and len(phrase.split()) <= PLAIN_LIST_ITEM_MAX_WORDS
+                    and not _PROSE_OPENER.match(phrase)
+                    and not _is_benefit_phrase(phrase)
+                ):
+                    requirements.append(OpenRequirement(phrase=phrase, source_line=idx, optional=optional))
             continue
 
         for idx, line in section_lines:
