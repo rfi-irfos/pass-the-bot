@@ -8,7 +8,10 @@ Each posting `<name>.txt` has a gold file `<name>.expected.yaml` with:
                   (benefits read as requirements)
 
 Usage:
-  python scripts/measure_postings.py [DIR ...]   # default: tests/data/postings
+  python scripts/measure_postings.py [--include-pending] [DIR ...]   # default: tests/data/postings
+
+--include-pending also matches ai-suggested-pending entries, to show what a proposed
+batch would change before a human sets them to curated (tests/data/postings_pending/).
 """
 
 from __future__ import annotations
@@ -42,8 +45,9 @@ def measure_posting(text: str, gold: dict, entries) -> dict:
     }
 
 
-def main(dirs: list[Path]) -> None:
-    entries = active_entries(load_skill_graph(DEFAULT_DATA_DIR))
+def main(dirs: list[Path], include_pending: bool = False) -> None:
+    graph = load_skill_graph(DEFAULT_DATA_DIR)
+    entries = graph if include_pending else active_entries(graph)
     total_expected = total_hits = total_false = total_open_bad = 0
     open_wanted = open_found = open_leaks = 0
     for directory in dirs:
@@ -80,4 +84,5 @@ def main(dirs: list[Path]) -> None:
 
 
 if __name__ == "__main__":
-    main([Path(d) for d in sys.argv[1:]] or [DEFAULT_DIR])
+    args = [a for a in sys.argv[1:] if a != "--include-pending"]
+    main([Path(d) for d in args] or [DEFAULT_DIR], include_pending="--include-pending" in sys.argv[1:])

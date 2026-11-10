@@ -1,0 +1,2 @@
+expected: [cnc_machining, welding, quality_management, lean_manufacturing]
+forbidden: [python, devops, plc_programming]
