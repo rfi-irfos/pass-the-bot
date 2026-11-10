@@ -456,3 +456,112 @@ def test_extract_discrete_keywords_records_every_alias_found():
     )
     result = extract_discrete_keywords("Team spricht Deutsch. Fluent German.", [entry])
     assert sorted(result[0].mentions) == ["Deutsch", "German"]
+
+
+LINKEDIN_UK_POSTING = (
+    "Finance Business Partner\n"
+    "What we're looking for\n"
+    "Qualified accountant (ACA, ACCA or CIMA)\n"
+    "Experience partnering with budget holders\n"
+    "Hybrid working environment (currently one day in office)\n"
+    "Cycle to work scheme\n"
+    "Extensive internal and external training\n"
+    "What’s In It For You\n"
+    "Group healthcare and life assurance scheme\n"
+    "25 days annual holiday with incremental increase up to 30 days\n"
+    "Season ticket travel loan\n"
+)
+
+
+def test_uk_benefit_lines_right_after_requirements_are_not_requirements():
+    """Issue #15: LinkedIn delivers lists as plain lines, and the benefits
+    followed the requirements without a heading of their own."""
+    result = extract_open_requirements(LINKEDIN_UK_POSTING)
+    assert [r.phrase for r in result] == [
+        "Qualified accountant (ACA, ACCA or CIMA)",
+        "Experience partnering with budget holders",
+    ]
+
+
+def test_the_package_heading_closes_the_requirements():
+    text = (
+        "Requirements\n- Strong Excel skills\n"
+        "The package\n- Bike to the office every Friday\n"
+    )
+    result = extract_open_requirements(text)
+    assert [r.phrase for r in result] == ["Strong Excel skills"]
+
+
+def test_comma_inside_brackets_does_not_split_a_comma_list():
+    text = "Requirements\nExcel, Qualified accountant (ACA, ACCA or CIMA), SAP\n"
+    result = extract_open_requirements(text)
+    assert [r.phrase for r in result] == [
+        "Excel", "Qualified accountant (ACA, ACCA or CIMA)", "SAP",
+    ]
+
+
+def test_required_training_is_still_a_requirement():
+    text = "Requirements\n- Training in first aid\n- Experience in healthcare settings\n"
+    result = extract_open_requirements(text)
+    assert [r.phrase for r in result] == [
+        "Training in first aid", "Experience in healthcare settings",
+    ]
+
+
+def test_long_required_qualifications_heading_is_recognised():
+    text = (
+        "Job Responsibilities\n- Build services\n"
+        "Required Qualifications, Capabilities, And Skills\n"
+        "- Experience across the Software Development Life Cycle\n"
+        "- Exposure to agile methodologies\n"
+        "Preferred Qualifications, Capabilities, And Skills\n- Experience with AWS\n"
+    )
+    found = [(r.phrase, r.optional) for r in extract_open_requirements(text)]
+    assert found == [
+        ("Experience across the Software Development Life Cycle", False),
+        ("Exposure to agile methodologies", False),
+        ("Experience with AWS", True),
+    ]
+
+
+def test_linkedin_login_wall_is_not_a_requirements_section():
+    text = (
+        "Sign in to evaluate your skills\nSign in with Email\nor\n"
+        "By clicking Continue to join or sign in, you agree to LinkedIn’s , , and .\n"
+        "Base pay range\n£32,000.00/yr - £35,000.00/yr\nJoanna Nathan\n"
+        "Main Responsibilities Will Include\n- Managing the offices\n"
+        "Person Specification\n- Calm under pressure\n"
+        "Show more\nShow less\nSeniority level\nEntry level\n"
+    )
+    assert [r.phrase for r in extract_open_requirements(text)] == ["Calm under pressure"]
+
+
+def test_whats_on_offer_closes_requirements():
+    text = (
+        "About You\n- Advanced Excel skills\n"
+        "What's on Offer?\n- A growing business environment offering challenge\n"
+        "- The chance to build a finance function\n"
+    )
+    assert [r.phrase for r in extract_open_requirements(text)] == ["Advanced Excel skills"]
+
+
+def test_prose_addressed_to_the_candidate_is_not_split_on_commas():
+    text = (
+        "About You\n"
+        "You're someone who enjoys partnering stakeholders, influencing decisions, "
+        "turning data into clear recommendations\n"
+    )
+    assert extract_open_requirements(text) == []
+
+
+def test_what_we_would_like_from_you_opens_requirements():
+    text = "What we would like from you:\n- A current NMC registration\nWhat to look forward to:\n- Birthday off\n"
+    assert [r.phrase for r in extract_open_requirements(text)] == ["A current NMC registration"]
+
+
+def test_experience_and_skills_required_heading():
+    text = "Experience & Skills Required\n- Good working knowledge of Outlook and Excel\n- At least 3 years in a similar role\nAbout Acme\nWe do things.\n"
+    assert [r.phrase for r in extract_open_requirements(text)] == [
+        "Good working knowledge of Outlook and Excel",
+        "At least 3 years in a similar role",
+    ]
