@@ -42,7 +42,9 @@ def test_run_pipeline_uses_default_data_dir_and_repo_root_when_omitted():
     report = run_pipeline("Requires Python.", "Experienced Python developer.", {"python"})
     assert "engine_version" in report
     assert "model_version" in report
-    assert report["graph_version"] != "unknown"
+    # graph_version comes from git; an exported checkout has no .git
+    if (Path(__file__).resolve().parents[1] / ".git").exists():
+        assert report["graph_version"] != "unknown"
 
 
 class _StubEmbedderWithoutModelName:
