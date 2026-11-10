@@ -185,10 +185,51 @@ _PROSE_OPENER = re.compile(
 )
 
 
+def _looks_like_subheading(line: str) -> bool:
+    """A short non-bullet line inside a section body: it can open a block of
+    bullets under a heading the keyword sets do not know ("Come grow with us")."""
+    stripped = line.strip()
+    return (
+        not _BULLET_PREFIX.match(line)
+        and len(stripped.split()) <= SUBHEADING_MAX_WORDS
+        and not stripped.endswith(".")
+        and "," not in stripped
+    )
+
+
+def _perk_block_indices(section_lines: list[tuple[int, str]]) -> set[int]:
+    """Line indices of bullets that sit in a perk block.
+
+    Bullets under an unknown sub-heading form one block. When at least two bullets of a
+    block, and at least a third of it, already read as perks by pattern, the
+    rest of the block is perks as well: "Free parking" and "Dog-friendly
+    teams" need no pattern of their own once "Salary" and "Pension scheme" sit
+    next to them. Bullets before the first sub-heading are never dropped here,
+    so a requirements list keeps judging line by line."""
+    blocks: list[list[tuple[int, str]]] = []
+    current: list[tuple[int, str]] | None = None
+    for idx, line in section_lines:
+        if _BULLET_PREFIX.match(line):
+            if current is not None:
+                current.append((idx, strip_item_marker(line)))
+        elif _looks_like_subheading(line):
+            current = []
+            blocks.append(current)
+    dropped: set[int] = set()
+    for block in blocks:
+        flagged = sum(_is_benefit_phrase(phrase) for _, phrase in block)
+        if flagged >= PERK_BLOCK_MIN_FLAGGED and flagged * PERK_BLOCK_MIN_SHARE >= len(block):
+            dropped.update(idx for idx, _ in block)
+    return dropped
+
+
 def _is_benefit_phrase(phrase: str) -> bool:
     return any(p.search(phrase) for p in _BENEFIT_PATTERNS)
 
 PLAIN_LINE_MAX_WORDS = 12
+SUBHEADING_MAX_WORDS = 6
+PERK_BLOCK_MIN_FLAGGED = 2  # one hit can be a requirement that mentions money
+PERK_BLOCK_MIN_SHARE = 3  # flagged bullets must be at least 1/3 of the block
 PLAIN_LIST_MIN_LINES = 3
 PLAIN_LIST_ITEM_MAX_WORDS = 30
 
@@ -358,10 +399,11 @@ def extract_open_requirements(posting_text: str) -> list[OpenRequirement]:
             (idx, lines[idx]) for idx in range(start_idx + 1, end_idx) if lines[idx].strip()
         ]
 
+        perk_block = _perk_block_indices(section_lines)
         bullet_items = [
             (idx, strip_item_marker(line))
             for idx, line in section_lines
-            if _BULLET_PREFIX.match(line)
+            if _BULLET_PREFIX.match(line) and idx not in perk_block
         ]
         if bullet_items:
             requirements.extend(

@@ -631,3 +631,32 @@ def test_short_sections_of_plain_sentences_count_but_wishes_do_not():
 def test_employer_voice_with_a_two_word_subject_is_a_perk():
     text = "Requirements\n- Python skills\n- Best-in-class tools: Every team member has a yearly budget\n"
     assert [r.phrase for r in extract_open_requirements(text)] == ["Python skills"]
+
+
+def test_unknown_subheading_with_mostly_perk_bullets_is_a_perk_block():
+    text = (
+        "Requirements\n- Python skills\n"
+        "Come grow with us\n"
+        "- Salary up to 40,000\n- Group pension scheme\n- Free parking on site\n- Dog-friendly teams\n"
+    )
+    assert [r.phrase for r in extract_open_requirements(text)] == ["Python skills"]
+
+
+def test_unknown_subheading_with_requirement_bullets_is_kept():
+    text = (
+        "Requirements\n- Python skills\n"
+        "Technical skills\n- Experience with ERP systems\n- Knowledge of stock control\n"
+        "Soft skills\n- Clear written communication\n- Free parking management experience\n"
+    )
+    assert [r.phrase for r in extract_open_requirements(text)] == [
+        "Python skills",
+        "Experience with ERP systems",
+        "Knowledge of stock control",
+        "Clear written communication",
+        "Free parking management experience",
+    ]
+
+
+def test_a_single_perk_bullet_under_an_unknown_subheading_does_not_drop_its_block():
+    text = "Requirements\n- Python skills\nOther\n- Salary expectations in your cover letter\n- Experience with SQL\n"
+    assert "Experience with SQL" in [r.phrase for r in extract_open_requirements(text)]
