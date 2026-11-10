@@ -1,0 +1,4 @@
+expected: []
+forbidden: []
+open_expected: ["bac+3", "excel", "rigueur"]
+open_forbidden: ["mutuelle", "tickets restaurant", "rtt"]

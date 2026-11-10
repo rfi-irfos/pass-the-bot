@@ -612,3 +612,22 @@ def test_requirements_containing_perk_words_are_kept():
     ]
     text = "Requirements\n- Python skills\n" + "".join(f"- {c}\n" for c in keep)
     assert [r.phrase for r in extract_open_requirements(text)] == ["Python skills", *keep]
+
+
+def test_short_sections_of_plain_sentences_count_but_wishes_do_not():
+    text = (
+        "Desirable\n"
+        "Knowledge graph experience.\n"
+        "Experience with modelling platforms such as PoolParty or similar tools.\n"
+        "Experience in logistics would be a bonus.\n"
+        "You will be someone who enjoys partnering with stakeholders.\n"
+    )
+    assert [r.phrase for r in extract_open_requirements(text)] == [
+        "Knowledge graph experience",
+        "Experience with modelling platforms such as PoolParty or similar tools",
+    ]
+
+
+def test_employer_voice_with_a_two_word_subject_is_a_perk():
+    text = "Requirements\n- Python skills\n- Best-in-class tools: Every team member has a yearly budget\n"
+    assert [r.phrase for r in extract_open_requirements(text)] == ["Python skills"]

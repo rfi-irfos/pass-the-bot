@@ -1,0 +1,4 @@
+expected: []
+forbidden: []
+open_expected: ["controlled vocabularies or business glossaries", "including skos, rdf and owl", "knowledge graph experience", "poolparty or similar"]
+open_forbidden: ["pension", "healthcare and life", "hybrid working", "annual holiday", "season ticket", "cycle to work", "internal and external training", "bonus scheme"]
