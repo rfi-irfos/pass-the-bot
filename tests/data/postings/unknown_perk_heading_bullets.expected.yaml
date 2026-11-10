@@ -2,3 +2,4 @@ expected: []
 forbidden: []
 open_expected: ["coordinating suppliers", "excel for tracking", "written communication", "erp systems", "stock control"]
 open_forbidden: ["salary up to", "pension scheme", "free parking", "dog-friendly", "trip to the mountains"]
+pending_ok: [inventory_management]  # "stock control" is a real requirement here

@@ -1,0 +1,2 @@
+expected: [cash_handling, visual_merchandising, inventory_management]
+forbidden: [python, crm]

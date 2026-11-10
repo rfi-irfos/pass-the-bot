@@ -1,0 +1,2 @@
+expected: [childcare_pedagogy, social_work_casework, first_aid]
+forbidden: [python, nurse, lesson_planning]

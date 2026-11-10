@@ -1,0 +1,2 @@
+expected: [hotel_front_office, restaurant_service, haccp_food_hygiene, first_aid, german, english]
+forbidden: [python, devops, cash_handling]

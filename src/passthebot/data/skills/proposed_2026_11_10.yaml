@@ -1,0 +1,317 @@
+# Proposed 2026-11-10 by an AI review pass. All entries are ai-suggested-pending and ignored
+# by matching until a human reviews them and sets status: curated (see CONTRIBUTING.md).
+# Source of the terms: the occupational groups the graph did not cover yet (hospitality,
+# logistics, production, construction, education and social work, HR and law, retail,
+# laboratory and environment). Measure the effect with: scripts/measure_postings.py --include-pending
+- id: haccp_food_hygiene
+  category: hard_skills
+  display:
+    de: HACCP / Lebensmittelhygiene
+    en: HACCP / food hygiene
+  aliases:
+  - HACCP
+  - Lebensmittelhygiene
+  - food hygiene
+  - hygiène alimentaire
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: restaurant_service
+  category: hard_skills
+  display:
+    de: Restaurantservice
+    en: Restaurant service
+  aliases:
+  - Restaurantservice
+  - Servicefachkraft
+  - table service
+  - waiting tables
+  - service en salle
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: hotel_front_office
+  category: hard_skills
+  display:
+    de: Hotelrezeption
+    en: Hotel front office
+  aliases:
+  - Hotelrezeption
+  - Front Office Hotel
+  - hotel front desk
+  - hotel reception
+  - réception d'hôtel
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: warehouse_operations
+  category: hard_skills
+  display:
+    de: Lagerlogistik
+    en: Warehouse operations
+  aliases:
+  - Lagerlogistik
+  - Kommissionierung
+  - order picking
+  - warehouse operations
+  - préparation de commandes
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: route_planning
+  category: hard_skills
+  display:
+    de: Tourenplanung
+    en: Route planning
+  aliases:
+  - Tourenplanung
+  - Transportplanung
+  - route planning
+  - plan delivery routes
+  - plan routes
+  - route optimisation
+  - planification des tournées
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: customs_clearance
+  category: hard_skills
+  display:
+    de: Zollabwicklung
+    en: Customs clearance
+  aliases:
+  - Zollabwicklung
+  - Zollabfertigung
+  - customs clearance
+  - dédouanement
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: dangerous_goods
+  category: hard_skills
+  display:
+    de: Gefahrgut (ADR)
+    en: Dangerous goods (ADR)
+  aliases:
+  - Gefahrgut
+  - ADR
+  - dangerous goods
+  - matières dangereuses
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: cnc_machining
+  category: hard_skills
+  display:
+    de: CNC-Fertigung
+    en: CNC machining
+  aliases:
+  - CNC
+  - CNC-Fräsen
+  - CNC machining
+  - usinage CNC
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: welding
+  category: hard_skills
+  display:
+    de: Schweißen
+    en: Welding
+  aliases:
+  - Schweißen
+  - Schweißer
+  - welding
+  - soudage
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: quality_management
+  category: hard_skills
+  display:
+    de: Qualitätsmanagement
+    en: Quality management
+  aliases:
+  - ISO 9001
+  - Qualitätsmanagement
+  - quality management system
+  - management de la qualité
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: lean_manufacturing
+  category: hard_skills
+  display:
+    de: Lean Production
+    en: Lean manufacturing
+  aliases:
+  - Lean Manufacturing
+  - Lean Production
+  - Kaizen
+  - KVP
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: construction_site_management
+  category: hard_skills
+  display:
+    de: Bauleitung
+    en: Construction site management
+  aliases:
+  - Bauleitung
+  - Bauleiter
+  - site management
+  - conduite de travaux
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: autocad
+  category: tools
+  display:
+    de: AutoCAD
+    en: AutoCAD
+  aliases:
+  - AutoCAD
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: childcare_pedagogy
+  category: hard_skills
+  display:
+    de: Kinderbetreuung / Elementarpädagogik
+    en: Childcare / early years education
+  aliases:
+  - Kinderbetreuung
+  - Elementarpädagogik
+  - childcare
+  - early years education
+  - petite enfance
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: lesson_planning
+  category: hard_skills
+  display:
+    de: Unterrichtsplanung
+    en: Lesson planning
+  aliases:
+  - Unterrichtsplanung
+  - lesson planning
+  - planification pédagogique
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: social_work_casework
+  category: hard_skills
+  display:
+    de: Sozialarbeit
+    en: Social work
+  aliases:
+  - Sozialarbeit
+  - Klientenarbeit
+  - social work
+  - travail social
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: recruiting
+  category: hard_skills
+  display:
+    de: Recruiting
+    en: Recruiting
+  aliases:
+  - Personalbeschaffung
+  - Personalgewinnung
+  - Bewerbermanagement
+  - candidate sourcing
+  - full cycle recruitment
+  - full cycle recruiting
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: employment_law
+  category: hard_skills
+  display:
+    de: Arbeitsrecht
+    en: Employment law
+  aliases:
+  - Arbeitsrecht
+  - employment law
+  - droit du travail
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: contract_drafting
+  category: hard_skills
+  display:
+    de: Vertragsgestaltung
+    en: Contract drafting
+  aliases:
+  - Vertragsgestaltung
+  - Vertragsprüfung
+  - contract drafting
+  - rédaction de contrats
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: cash_handling
+  category: hard_skills
+  display:
+    de: Kassenführung
+    en: Cash handling
+  aliases:
+  - Kassenführung
+  - Kassenabrechnung
+  - cash handling
+  - till operation
+  - tenue de caisse
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: visual_merchandising
+  category: hard_skills
+  display:
+    de: Warenpräsentation
+    en: Visual merchandising
+  aliases:
+  - Warenpräsentation
+  - visual merchandising
+  - merchandising
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: inventory_management
+  category: hard_skills
+  display:
+    de: Bestandsmanagement
+    en: Inventory management
+  aliases:
+  - Bestandsmanagement
+  - Inventur
+  - inventory management
+  - stock control
+  - gestion des stocks
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: environmental_management
+  category: hard_skills
+  display:
+    de: Umweltmanagement
+    en: Environmental management
+  aliases:
+  - Umweltmanagement
+  - ISO 14001
+  - environmental management
+  - management environnemental
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: hplc
+  category: hard_skills
+  display:
+    de: HPLC
+    en: HPLC
+  aliases:
+  - HPLC
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: pcr
+  category: hard_skills
+  display:
+    de: PCR
+    en: PCR
+  aliases:
+  - PCR
+  - qPCR
+  status: ai-suggested-pending
+  added: '2026-11-10'
+- id: first_aid
+  category: certifications
+  display:
+    de: Erste Hilfe
+    en: First aid
+  aliases:
+  - Erste Hilfe
+  - first aid
+  - first aider
+  - premiers secours
+  status: ai-suggested-pending
+  added: '2026-11-10'

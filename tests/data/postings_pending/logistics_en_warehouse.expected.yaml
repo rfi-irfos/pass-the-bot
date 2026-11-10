@@ -1,0 +1,2 @@
+expected: [warehouse_operations, route_planning, forklift_license, dangerous_goods, customs_clearance]
+forbidden: [python, kubernetes, inventory_management]
