@@ -30,7 +30,9 @@ def _public_resolver(host, port):
 
 def _transport(pages: dict[str, httpx.Response]) -> httpx.MockTransport:
     def handler(request: httpx.Request) -> httpx.Response:
-        return pages.get(str(request.url), httpx.Response(404))
+        # Requests are aimed at the validated IP, the page is found by Host.
+        key = f"{request.url.scheme}://{request.headers['host']}{request.url.raw_path.decode()}"
+        return pages.get(key, httpx.Response(404))
 
     return httpx.MockTransport(handler)
 
@@ -296,3 +298,49 @@ def test_partly_escaped_description_leaves_no_tags_behind():
 def test_description_mentioning_angle_brackets_keeps_them():
     text = _description_to_text("<p>Salary &lt;50k or more</p>")
     assert "<50k" in text
+
+
+# --- DNS rebinding ----------------------------------------------------------------
+
+
+def test_request_goes_to_the_validated_ip_and_keeps_host_and_sni():
+    seen = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["ip"] = request.url.host
+        seen["host"] = request.headers["host"]
+        seen["sni"] = request.extensions.get("sni_hostname")
+        return _html("<main><p>" + " ".join(f"w{i}" for i in range(200)) + "</p></main>")
+
+    fetch_posting("https://jobs.example.com/a", resolver=_public_resolver, transport=httpx.MockTransport(handler))
+    assert seen == {"ip": PUBLIC_IP, "host": "jobs.example.com", "sni": "jobs.example.com"}
+
+
+def test_dns_rebinding_cannot_redirect_the_connection_to_localhost(monkeypatch):
+    """A DNS server that answers with a public address for the first lookup
+    and with 127.0.0.1 afterwards must not get a connection to 127.0.0.1:
+    the name is resolved once and the connection uses that address."""
+    import socket
+
+    from app.fetch_posting import _system_resolver
+
+    answers = iter([PUBLIC_IP, "127.0.0.1", "127.0.0.1", "127.0.0.1"])
+    real_getaddrinfo = socket.getaddrinfo
+
+    def fake_getaddrinfo(host, port, *args, **kwargs):
+        if host == "rebind.attacker.test":
+            return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", (next(answers), port))]
+        return real_getaddrinfo(host, port, *args, **kwargs)
+
+    connects = []
+
+    def fake_connect(self, address):
+        connects.append(address)
+        raise ConnectionRefusedError
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_getaddrinfo)
+    monkeypatch.setattr(socket.socket, "connect", fake_connect)
+    with pytest.raises(PostingFetchError):
+        fetch_posting("http://rebind.attacker.test/job", resolver=_system_resolver)
+    assert connects, "the test must reach the connect step"
+    assert all(address[0] == PUBLIC_IP for address in connects)
