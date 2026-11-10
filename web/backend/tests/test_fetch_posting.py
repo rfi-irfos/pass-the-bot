@@ -344,3 +344,29 @@ def test_dns_rebinding_cannot_redirect_the_connection_to_localhost(monkeypatch):
         fetch_posting("http://rebind.attacker.test/job", resolver=_system_resolver)
     assert connects, "the test must reach the connect step"
     assert all(address[0] == PUBLIC_IP for address in connects)
+
+# --- total deadline ---------------------------------------------------------------
+
+
+def test_slow_drip_response_is_cut_off_by_the_total_deadline(monkeypatch):
+    """Every chunk arrives within the per-operation timeout, but together they
+    take longer than the whole fetch may last."""
+    import time
+
+    import app.fetch_posting as module
+
+    monkeypatch.setattr(module, "TOTAL_DEADLINE_SECONDS", 0.2)
+
+    def drip():
+        for _ in range(100):
+            time.sleep(0.05)
+            yield b"<p>x</p>"
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, headers={"content-type": "text/html"}, content=drip())
+
+    started = time.monotonic()
+    with pytest.raises(PostingFetchError) as exc:
+        fetch_posting("https://slow.example.com/job", resolver=_public_resolver, transport=httpx.MockTransport(handler))
+    assert exc.value.code == "timeout"
+    assert time.monotonic() - started < 2  # 100 chunks would take 5 s

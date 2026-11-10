@@ -35,6 +35,7 @@ import ipaddress
 import json
 import re
 import socket
+import time
 from dataclasses import asdict, dataclass
 from html.parser import HTMLParser
 from typing import Callable
@@ -44,6 +45,9 @@ import httpx
 
 MAX_RESPONSE_BYTES = 3 * 1024 * 1024
 TIMEOUT_SECONDS = 10.0
+# Whole fetch incl. redirects. TIMEOUT_SECONDS applies per operation, so a server
+# sending one chunk every 9 s would otherwise hold a worker thread for hours.
+TOTAL_DEADLINE_SECONDS = 20.0
 MAX_REDIRECTS = 3
 MIN_DESCRIPTION_WORDS = 30
 MIN_APP_STATE_CHARS = 200
@@ -446,10 +450,13 @@ def fetch_html(
         "Accept": "text/html,application/xhtml+xml",
         "Accept-Language": "en,de;q=0.9,fr;q=0.8",
     }
+    deadline = time.monotonic() + TOTAL_DEADLINE_SECONDS
     with httpx.Client(
         follow_redirects=False, timeout=TIMEOUT_SECONDS, headers=headers, transport=transport
     ) as client:
         for _ in range(MAX_REDIRECTS + 1):
+            if time.monotonic() > deadline:
+                raise PostingFetchError("timeout")
             ip = _validate_url(url, resolver)
             pinned_url, host_header, extensions = _pinned_request(url, ip)
             try:
@@ -474,6 +481,8 @@ def fetch_html(
                         body.extend(chunk)
                         if len(body) > MAX_RESPONSE_BYTES:
                             raise PostingFetchError("too_large")
+                        if time.monotonic() > deadline:
+                            raise PostingFetchError("timeout")
                     encoding = response.encoding or "utf-8"
                     return url, bytes(body).decode(encoding, errors="replace")
             except httpx.TimeoutException as exc:
