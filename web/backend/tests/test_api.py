@@ -208,3 +208,53 @@ def test_check_says_an_expired_link_is_no_longer_online(monkeypatch):
 
     assert response.status_code == 400
     assert "no longer online" in response.json()["detail"]
+
+
+# --- input limits -------------------------------------------------------------------
+
+
+def _resume_pdf_bytes() -> bytes:
+    path = FIXTURES / "api_test_limits.pdf"
+    FIXTURES.mkdir(exist_ok=True)
+    _make_resume_pdf(path, "Experienced Python developer.")
+    return path.read_bytes()
+
+
+def test_oversized_upload_is_rejected_by_content_length_with_cors_headers():
+    big = b"0" * (6 * 1024 * 1024)
+    response = client.post(
+        "/api/check",
+        files={"resume_file": ("resume.pdf", big, "application/pdf")},
+        data={"posting_text": "Python"},
+        headers={"Origin": "https://rfi-irfos.github.io"},
+    )
+    assert response.status_code == 413
+    assert response.headers["access-control-allow-origin"] == "https://rfi-irfos.github.io"
+
+
+def test_oversized_upload_without_content_length_is_stopped_while_streaming():
+    from app.main import MAX_REQUEST_BYTES
+
+    def chunks():
+        yield b"--x\r\nContent-Disposition: form-data; name=\"resume_file\"; filename=\"r.pdf\"\r\n\r\n"
+        for _ in range(MAX_REQUEST_BYTES // (1024 * 1024) + 2):
+            yield b"0" * (1024 * 1024)
+
+    response = client.post(
+        "/api/check", content=chunks(), headers={"content-type": "multipart/form-data; boundary=x"}
+    )
+    assert response.status_code == 413
+
+
+def test_overlong_posting_text_is_rejected_in_both_languages():
+    from app.main import MAX_POSTING_CHARS
+
+    long_text = "Python " * (MAX_POSTING_CHARS // 7 + 10)
+    for lang, expected in (("en", "too long"), ("de", "zu lang")):
+        response = client.post(
+            "/api/check",
+            files={"resume_file": ("resume.pdf", _resume_pdf_bytes(), "application/pdf")},
+            data={"posting_text": long_text, "lang": lang},
+        )
+        assert response.status_code == 400
+        assert expected in response.json()["detail"]

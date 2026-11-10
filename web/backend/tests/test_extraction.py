@@ -65,3 +65,64 @@ def test_extract_text_rejects_empty_pdf():
 def test_extract_text_rejects_corrupt_docx():
     with pytest.raises(ExtractionError, match="Could not read this DOCX"):
         extract_text(b"this is not a valid docx file at all", "resume.docx")
+
+
+# --- limits against small files that expand into huge work ----------------------
+
+
+def _docx_with_xml_of(size_bytes: int) -> bytes:
+    """A valid DOCX whose document.xml is `size_bytes` of repeated paragraphs.
+    Deflate shrinks that to a few hundred KB, like a real zip bomb."""
+    import io
+    import zipfile
+
+    base = io.BytesIO()
+    document = Document()
+    document.add_paragraph("Python")
+    document.save(base)
+    out = io.BytesIO()
+    with zipfile.ZipFile(io.BytesIO(base.getvalue())) as zin, zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zout:
+        for name in zin.namelist():
+            data = zin.read(name)
+            if name == "word/document.xml":
+                head, tail = data.split(b"<w:body>")
+                end = tail.rindex(b"</w:body>")
+                filler = b"<w:p><w:r><w:t>a</w:t></w:r></w:p>"
+                marker = b"<w:p><w:r><w:t>Python</w:t></w:r></w:p>"
+                data = head + b"<w:body>" + marker + filler * (size_bytes // len(filler)) + tail[end:]
+            zout.writestr(name, data)
+    return out.getvalue()
+
+
+def test_docx_zip_bomb_is_rejected_before_it_is_parsed():
+    import time
+
+    raw = _docx_with_xml_of(40 * 1024 * 1024)
+    assert len(raw) < 1024 * 1024  # small upload, huge content
+    started = time.monotonic()
+    with pytest.raises(ExtractionError, match="too large"):
+        extract_text(raw, "bomb.docx")
+    assert time.monotonic() - started < 2  # header check only, nothing unpacked
+
+
+def test_docx_of_normal_size_still_works():
+    assert "Python" in extract_text(_docx_with_xml_of(200 * 1024), "ok.docx")
+
+
+def test_pdf_with_too_many_pages_is_rejected():
+    from app.extraction import MAX_PDF_PAGES
+
+    path = FIXTURES / "many_pages.pdf"
+    c = canvas.Canvas(str(path))
+    for i in range(MAX_PDF_PAGES + 1):
+        c.drawString(100, 750, f"Page {i} Python")
+        c.showPage()
+    c.save()
+    with pytest.raises(ExtractionError, match="more than"):
+        extract_text(path.read_bytes(), "long.pdf")
+
+
+def test_resume_with_too_much_text_is_rejected(monkeypatch):
+    monkeypatch.setattr("app.extraction.MAX_RESUME_CHARS", 20)
+    with pytest.raises(ExtractionError, match="too much text"):
+        extract_text((FIXTURES / "sample_resume.pdf").read_bytes(), "r.pdf")
