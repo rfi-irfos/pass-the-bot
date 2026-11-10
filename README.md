@@ -1,10 +1,11 @@
-# Pass The Bot!
 
 [![Live Demo](https://img.shields.io/badge/demo-live-16a34a?style=flat-square)](https://rfi-irfos.github.io/pass-the-bot/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![Stars](https://img.shields.io/github/stars/rfi-irfos/pass-the-bot?style=flat-square&logo=github&color=yellow)](https://github.com/rfi-irfos/pass-the-bot/stargazers)
 [![Last Commit](https://img.shields.io/github/last-commit/rfi-irfos/pass-the-bot?style=flat-square&logo=git&logoColor=white)](https://github.com/rfi-irfos/pass-the-bot/commits/master)
+
+# Pass The Bot!
 
 **See your resume the way an ATS reads it.**
 
