@@ -599,3 +599,16 @@ def test_perks_in_the_employers_voice_are_not_requirements():
         "Strong FP&A experience, including budgeting and forecasting",
         "Proficiency in Python: Django and Flask preferred",
     ]
+
+
+def test_requirements_containing_perk_words_are_kept():
+    keep = [
+        "Kubernetes: experience operating our production clusters",
+        "Certification: each nurse has to hold a valid licence",
+        "Sales experience - we need someone who has closed B2B deals",
+        "Experience with discount pricing and promotions",
+        "Experience in eye care optometry",
+        "Handling gift vouchers and refunds at the till",
+    ]
+    text = "Requirements\n- Python skills\n" + "".join(f"- {c}\n" for c in keep)
+    assert [r.phrase for r in extract_open_requirements(text)] == ["Python skills", *keep]

@@ -155,13 +155,22 @@ _BENEFIT_PATTERNS = [
         r"\bbonus (?:scheme|plan)\b", r"\bemployee (?:assistance|discounts?)\b",
         r"\benhanced (?:maternity|paternity|parental)\b", r"\bflexible benefits\b",
         r"\bsalary sacrifice\b", r"\bshare (?:save|scheme|options?)\b",
-        # added 2026-11-10 (real ads): perks without a heading we know
-        r"\bcompany car\b", r"\bcar allowance\b", r"\beye ?care\b", r"\bvouchers?\b",
-        r"\bdiscounts?\b", r"\breward (?:&|and) recognition\b", r"\bdevelopment budget\b",
-        # "Label: ..." or "Label - ..." in the employer's voice ("We're building ...",
-        # "Each Upvenger has ...", "our benefits platform ...") is a perk, not a demand
-        r"^[^:]{2,40}:\s.*\b(?:we|our|(?:each|every) \w+ (?:has|gets))\b",
-        r"^[^–—:]{2,40}\s[–—-]\s.*\b(?:we|our)\b",
+        # added 2026-11-10 (real ads): perks without a heading we know. Kept
+        # narrow on purpose: bare "discount", "voucher" or "eye care" also name
+        # real retail and healthcare requirements.
+        r"\bcompany car\b", r"\bcar allowance\b", r"\beye ?care vouchers?\b", r"\bfree eye tests?\b",
+        r"\b(?:gift|shopping|childcare|lunch|meal|restaurant|holiday) vouchers? (?:for|worth|as|on)\b",
+        r"\b(?:everyday|employee|staff|retail|high street|partner) discounts?\b",
+        r"\bdiscounts? (?:on|at|from) (?:over|leading|top|high street|retailers|brands|prescription)\b",
+        r"\breward (?:&|and) recognition\b", r"\bdevelopment budget\b",
+        # "Label: We're ..." / "Label: Every Acme has ..." / "Label - we love ..." open in the
+        # employer's voice. The voice has to start the sentence: a requirement that merely
+        # contains "our" or "we" later on ("Kubernetes: experience operating our clusters",
+        # "Sales - we need someone who ...") stays a requirement.
+        r"^[^:]{2,40}:\s+(?:we|our)\b",
+        r"^[^:]{2,40}:\s+(?:each|every) \w+ (?:has|gets|receives)\b(?!\s+(?:to|must)\b)",
+        r"^[^–—:]{2,40}\s[–—-]\s+(?:we (?:love|recogni[sz]e|offer|provide|celebrate|give|value)"
+        r"|our (?:benefits|platform|culture|company|team))\b",
     )
 ]
 
