@@ -132,7 +132,7 @@ _BENEFIT_PATTERNS = [
         r"\boffice (?:space|location)s?\b", r"\bmodern (?:office|workplace)s?\b",
         r"\bsalary\b", r"\bcompensation\b", r"\bvacation\b", r"\bpaid time off\b",
         r"\bparental leave\b", r"\bhealth insurance\b", r"\bpension\b",
-        r"\bstock options?\b", r"\bgym\b", r"\bfitness\b", r"\bteam events?\b",
+        r"\bstock options?\b", r"\bgym\b", r"\bfitness\b", r"\bteam (?:events?|celebrations?)\b",
         r"\bfree (?:lunch|drinks|snacks|coffee|fruit)\b",
         r"\bflexible (?:working|work|hours)\b",
         r"\bgehalt\b", r"\bvergütung\b", r"\burlaub", r"\bjobticket\b", r"\bjobrad\b",
@@ -155,6 +155,13 @@ _BENEFIT_PATTERNS = [
         r"\bbonus (?:scheme|plan)\b", r"\bemployee (?:assistance|discounts?)\b",
         r"\benhanced (?:maternity|paternity|parental)\b", r"\bflexible benefits\b",
         r"\bsalary sacrifice\b", r"\bshare (?:save|scheme|options?)\b",
+        # added 2026-11-10 (real ads): perks without a heading we know
+        r"\bcompany car\b", r"\bcar allowance\b", r"\beye ?care\b", r"\bvouchers?\b",
+        r"\bdiscounts?\b", r"\breward (?:&|and) recognition\b", r"\bdevelopment budget\b",
+        # "Label: ..." or "Label - ..." in the employer's voice ("We're building ...",
+        # "Each Upvenger has ...", "our benefits platform ...") is a perk, not a demand
+        r"^[^:]{2,40}:\s.*\b(?:we|our|(?:each|every) \w+ (?:has|gets))\b",
+        r"^[^–—:]{2,40}\s[–—-]\s.*\b(?:we|our)\b",
     )
 ]
 
