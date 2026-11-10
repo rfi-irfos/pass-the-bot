@@ -387,7 +387,13 @@ def _system_resolver(host: str, port: int) -> list[str]:
     return [info[4][0] for info in infos]
 
 
-def _validate_url(url: str, resolver: Resolver) -> None:
+def _validate_url(url: str, resolver: Resolver) -> str:
+    """Checks `url` and returns the public IP address to connect to.
+
+    The caller must connect to exactly this address. Resolving the name a
+    second time at connect time would let a DNS server answer with a public
+    address for the check and with 127.0.0.1 for the connection (DNS
+    rebinding)."""
     parts = urlsplit(url)
     if parts.scheme not in ("http", "https") or not parts.hostname:
         raise PostingFetchError("unsafe_url")
@@ -414,6 +420,17 @@ def _validate_url(url: str, resolver: Resolver) -> None:
             or ip.is_multicast or ip.is_unspecified or not ip.is_global
         ):
             raise PostingFetchError("unsafe_url")
+    return addresses[0].split("%")[0]
+
+
+def _pinned_request(url: str, ip: str) -> tuple[httpx.URL, dict[str, str], dict[str, str]]:
+    """Same request, aimed at the validated IP. The Host header and the TLS
+    server name keep the original host, so virtual hosting and certificate
+    checks behave as if the name had been used."""
+    original = httpx.URL(url)
+    host = original.host
+    pinned = original.copy_with(host=ip)
+    return pinned, {"Host": host}, {"sni_hostname": host}
 
 
 def fetch_html(
@@ -433,9 +450,12 @@ def fetch_html(
         follow_redirects=False, timeout=TIMEOUT_SECONDS, headers=headers, transport=transport
     ) as client:
         for _ in range(MAX_REDIRECTS + 1):
-            _validate_url(url, resolver)
+            ip = _validate_url(url, resolver)
+            pinned_url, host_header, extensions = _pinned_request(url, ip)
             try:
-                with client.stream("GET", url) as response:
+                with client.stream(
+                    "GET", pinned_url, headers=host_header, extensions=extensions
+                ) as response:
                     if response.is_redirect:
                         location = response.headers.get("location")
                         if not location:
