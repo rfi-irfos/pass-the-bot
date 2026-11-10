@@ -25,6 +25,12 @@ from .extraction import ExtractionError, extract_text
 from .fetch_posting import PostingFetchError, fetch_posting, looks_like_url
 
 MAX_FILE_BYTES = 5 * 1024 * 1024  # 5MB, bounds memory/processing on a free public endpoint
+# Whole request incl. multipart framing and the posting field. Enforced while
+# the body streams in, before Starlette spools it to memory or disk.
+MAX_REQUEST_BYTES = MAX_FILE_BYTES + 512 * 1024
+# Real postings are under ~15k characters. Pipeline time grows with length:
+# 20k chars took 1 s, 400k chars 9 s while holding one of two pipeline slots.
+MAX_POSTING_CHARS = 40_000
 
 app = FastAPI(title="passthebot web backend")
 
@@ -63,10 +69,74 @@ _FETCH_ERROR_MESSAGES = {
 }
 
 
+_POSTING_TOO_LONG = {
+    "en": f"The posting is too long (more than {MAX_POSTING_CHARS:,} characters). Please paste only the job description.",
+    "de": f"Die Anzeige ist zu lang (mehr als {MAX_POSTING_CHARS:_} Zeichen). Bitte füge nur die Stellenbeschreibung ein.".replace("_", "."),
+}
+
+
 def _fetch_error_message(code: str, lang: str) -> str:
     messages = _FETCH_ERROR_MESSAGES.get(lang, _FETCH_ERROR_MESSAGES["en"])
     return messages.get(code, messages["default"])
 
+class BodyLimitMiddleware:
+    """Answers 413 as soon as the request body exceeds `max_bytes`: by the
+    Content-Length header when there is one, otherwise while counting the
+    streamed chunks. Without it the whole upload is read before any size
+    check runs (150 MB upload: +450 MB RSS in the probe).
+
+    On overflow the 413 is sent right away and the app sees a disconnect.
+    Raising from `receive` would not work: FastAPI turns every body-parsing
+    exception into a 400."""
+
+    def __init__(self, app, max_bytes: int) -> None:
+        self.app = app
+        self.max_bytes = max_bytes
+
+    async def __call__(self, scope, receive, send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        for name, value in scope["headers"]:
+            if name == b"content-length" and value.isdigit() and int(value) > self.max_bytes:
+                await self._reject(send)
+                return
+
+        received = 0
+        rejected = False
+
+        async def limited_receive():
+            nonlocal received, rejected
+            if rejected:
+                return {"type": "http.disconnect"}
+            message = await receive()
+            if message["type"] == "http.request":
+                received += len(message.get("body", b""))
+                if received > self.max_bytes:
+                    rejected = True
+                    await self._reject(send)
+                    return {"type": "http.disconnect"}
+            return message
+
+        async def guarded_send(message) -> None:
+            if not rejected:
+                await send(message)
+
+        await self.app(scope, limited_receive, guarded_send)
+
+    @staticmethod
+    async def _reject(send) -> None:
+        body = b'{"detail":"The upload exceeds the 5MB limit."}'
+        await send({
+            "type": "http.response.start",
+            "status": 413,
+            "headers": [(b"content-type", b"application/json"), (b"content-length", str(len(body)).encode())],
+        })
+        await send({"type": "http.response.body", "body": body})
+
+
+# Added before CORS so CORS stays outermost and 413 answers carry its headers.
+app.add_middleware(BodyLimitMiddleware, max_bytes=MAX_REQUEST_BYTES)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -90,7 +160,8 @@ async def check(
         raise HTTPException(status_code=413, detail="resume_file exceeds the 5MB limit.")
 
     try:
-        resume_text = extract_text(raw, resume_file.filename or "")
+        # CPU-bound parsing: off the event loop so /health keeps answering.
+        resume_text = await run_in_threadpool(extract_text, raw, resume_file.filename or "")
     except ExtractionError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -104,6 +175,9 @@ async def check(
             status = 504 if exc.code == "timeout" else 400
             raise HTTPException(status_code=status, detail=_fetch_error_message(exc.code, lang)) from exc
         posting_text = posting_source.text
+
+    if len(posting_text) > MAX_POSTING_CHARS:
+        raise HTTPException(status_code=400, detail=_POSTING_TOO_LONG.get(lang, _POSTING_TOO_LONG["en"]))
 
     try:
         # Offload the CPU-bound embedding computation to a worker thread so
